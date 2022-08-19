@@ -2,12 +2,11 @@
   "cacheBootResources": true,
   "config": [ ],
   "debugBuild": false,
-  "entryAssembly": "BlazorApp1",
+  "entryAssembly": "Topo",
   "icuDataMode": 0,
   "linkerEnabled": true,
   "resources": {
     "assembly": {
-      "BlazorApp1.dll": "sha256-MA229cZUvF+SjZiYhcDarpslxTxrse4iliEPOZgQ0lU=",
       "Microsoft.AspNetCore.Components.dll": "sha256-PybbmmnZMFKWJUZa49frlsmUG4yNuwOYIlXXj+snWlg=",
       "Microsoft.AspNetCore.Components.Forms.dll": "sha256-vwa0GizKL9ASeZjp8k70fIWl61clY2Y\/YL5HAaKiejU=",
       "Microsoft.AspNetCore.Components.Web.dll": "sha256-7o2\/7wMpayeeqEu94Fc92giSaRE4bFSnLreycMBiYAI=",
@@ -61,7 +60,8 @@
       "System.Text.Encodings.Web.dll": "sha256-ALMcUEEmeXPovTHcJBd8ANt+x\/+L\/NdbkXRQW9vnzBg=",
       "System.Text.Json.dll": "sha256-kQ9Z9X4HsdNwkzSjBxd0zbcea6ygC1ZsSfklPbYzPC4=",
       "System.Text.RegularExpressions.dll": "sha256-FaPYfHtd+zqKKjK813aOg+d6+qp13R9RUmZo8xw7wyM=",
-      "System.Threading.dll": "sha256-EICSyeK\/jSXqQMMx58U7fa2eMMQ6p9438kB0AqGZ0Tc="
+      "System.Threading.dll": "sha256-EICSyeK\/jSXqQMMx58U7fa2eMMQ6p9438kB0AqGZ0Tc=",
+      "Topo.dll": "sha256-SdQMr25ZwCl8WbwKFyE+8fW+DGgRRmgKAEaWIgLtCgg="
     },
     "extensions": null,
     "lazyAssembly": null,
