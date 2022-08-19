@@ -31,7 +31,7 @@ namespace BlazorApp1.Controller
                 }
                 _storageService.Units = _loginService.GetUnits();
 
-                NavigationManager.NavigateTo("/index/");
+                NavigationManager.NavigateTo("index");
             }
 
         }
