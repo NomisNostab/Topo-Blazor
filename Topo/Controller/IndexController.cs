@@ -1,8 +1,8 @@
-﻿using BlazorApp1.Model.Index;
-using BlazorApp1.Services;
+﻿using Topo.Model.Index;
+using Topo.Services;
 using Microsoft.AspNetCore.Components;
 
-namespace BlazorApp1.Controller
+namespace Topo.Controller
 {
     public class IndexController : ComponentBase
     {

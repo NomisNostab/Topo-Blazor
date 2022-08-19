@@ -1,4 +1,4 @@
-﻿namespace BlazorApp1.Model.Login
+﻿namespace Topo.Model.Login
 {
     public class AuthenticationSuccessResultModel
     {

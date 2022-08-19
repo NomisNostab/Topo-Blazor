@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace BlazorApp1.Model.Login
+namespace Topo.Model.Login
 {
     public class LoginPageViewModel
     {

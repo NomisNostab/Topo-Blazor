@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 
-namespace BlazorApp1.Controller
+namespace Topo.Controller
 {
     public class MembersController : ComponentBase
     {

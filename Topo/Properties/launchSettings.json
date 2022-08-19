@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "BlazorApp1": {
+    "Topo": {
       "commandName": "Project",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

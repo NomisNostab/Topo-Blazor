@@ -1,4 +1,4 @@
-﻿namespace BlazorApp1.Model.Index
+﻿namespace Topo.Model.Index
 {
     public class IndexPageViewModel
     {

@@ -1,8 +1,8 @@
-﻿using BlazorApp1.Model.Login;
+﻿using Topo.Model.Login;
 using Newtonsoft.Json;
 using System.Text;
 
-namespace BlazorApp1.Services
+namespace Topo.Services
 {
 
     public interface ITerrainAPIService

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
-using BlazorApp1.Model.Login;
-using BlazorApp1.Services;
+using Topo.Model.Login;
+using Topo.Services;
 
-namespace BlazorApp1.Controller
+namespace Topo.Controller
 {
     public class LoginController : ComponentBase
     {
