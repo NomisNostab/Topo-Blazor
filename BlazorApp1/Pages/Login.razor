@@ -1,0 +1,51 @@
+﻿@page "/login"
+@inherits Controller.LoginController
+
+
+<EditForm Model="@model">
+
+    <div class="mt-3 mb-3 row">
+        <h2>Login</h2>
+    </div>
+
+    <div class="form-group mb-3 row">
+        <label for="memberNumber" class="col-sm-2 col-form-label">
+            Branch
+        </label>
+        <div class="col-sm-2">
+            <InputSelect id="department" class="form-select" @bind-Value="model.Branch">
+                @foreach (var branch in model.Branches)
+                {
+                    <option value="@branch.Value">@branch.Key</option>
+                }
+            </InputSelect>
+        </div>
+    </div>
+
+    <div class="form-group mb-3 row">
+        <label for="memberNumber" class="col-sm-2 col-form-label">
+            Member Number
+        </label>
+        <div class="col-sm-2">
+            <InputText id="memberNumber" class="form-control" placeholder="Member Number"
+                       @bind-Value="model.MemberNumber" />
+        </div>
+    </div>
+
+    <div class="form-group mb-3 row">
+        <label for="password"p class="col-sm-2 col-form-label">
+            Password
+        </label>
+        <div class="col-sm-2">
+            <input id="password" class="form-control" type="password" placeholder="Password"
+                        @bind="model.Password" />
+        </div>
+    </div>
+
+    <div class="form-group mb-3 row">
+        <div class="col-sm-2"></div>
+        <button @onclick="LogInClick" class="btn btn-primary col-sm-2">Log In</button>
+    </div>
+    
+
+</EditForm>

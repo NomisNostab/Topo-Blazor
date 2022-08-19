@@ -1,0 +1,21 @@
+﻿namespace BlazorApp1.Model.Login
+{
+    public class AuthenticationSuccessResultModel
+    {
+        public AuthenticationResult? AuthenticationResult { get; set; }
+        public ChallengeParameters? ChallengeParameters { get; set; }
+    }
+
+    public class AuthenticationResult
+    {
+        public string? AccessToken { get; set; }
+        public int? ExpiresIn { get; set; }
+        public string? IdToken { get; set; }
+        public string? RefreshToken { get; set; }
+        public string? TokenType { get; set; }
+    }
+
+    public class ChallengeParameters
+    {
+    }
+}

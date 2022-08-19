@@ -1,0 +1,63 @@
+﻿@inject BlazorApp1.Services.StorageService _storageService
+@implements IDisposable
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Topo</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+    </div>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+	<nav class="flex-column">
+		<div class="nav-item px-3">
+			<NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+				<span class="oi oi-home" aria-hidden="true"></span> Home
+			</NavLink>
+		</div>
+		@if (!_storageService.IsAuthenticated)
+		{
+			<div class="nav-item px-3">
+				<NavLink class="nav-link" href="login">
+					<span class="oi oi-lock-unlocked" aria-hidden="true"></span> Login
+				</NavLink>
+			</div>
+		}
+        else
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="members">
+                    <span class="oi oi-people" aria-hidden="true"></span> Members
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="logout">
+                    <span class="oi oi-lock-locked" aria-hidden="true"></span> Logout
+                </NavLink>
+            </div>
+        }
+	</nav>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+
+    protected override void OnInitialized()
+    {
+        _storageService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        _storageService.OnChange -= StateHasChanged;
+    }
+}
