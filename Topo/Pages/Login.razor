@@ -9,11 +9,11 @@
     </div>
 
     <div class="form-group mb-3 row">
-        <label for="memberNumber" class="col-sm-2 col-form-label">
+        <label for="branch" class="col-sm-2 col-form-label">
             Branch
         </label>
         <div class="col-sm-2">
-            <InputSelect id="department" class="form-select" @bind-Value="model.Branch">
+            <InputSelect id="branch" class="form-select" @bind-Value="model.Branch">
                 @foreach (var branch in model.Branches)
                 {
                     <option value="@branch.Value">@branch.Key</option>

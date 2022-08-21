@@ -1,4 +1,5 @@
 ﻿using Topo.Model.Login;
+using Topo.Model.Members;
 
 namespace Topo.Services
 {
@@ -27,5 +28,8 @@ namespace Topo.Services
         public string? MemberName { get; set; }
         public string? GroupName { get; set; }
         public Dictionary<string, string> Units { get; set; } = new Dictionary<string, string>();
+        public string UnitId { get; set; } = "";
+        public string UnitName { get; set; } = "";
+        public List<KeyValuePair<string, List<MemberListModel>>> CachedMembers { get; set; } = new List<KeyValuePair<string, List<MemberListModel>>>();
     }
 }

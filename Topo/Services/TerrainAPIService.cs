@@ -1,4 +1,5 @@
 ﻿using Topo.Model.Login;
+using Topo.Model.Members;
 using Newtonsoft.Json;
 using System.Text;
 
@@ -10,6 +11,7 @@ namespace Topo.Services
         public Task<AuthenticationResultModel?> LoginAsync(string? branch, string? username, string? password);
         public Task<GetUserResultModel?> GetUserAsync();
         public Task<GetProfilesResultModel> GetProfilesAsync();
+        public Task<GetMembersResultModel?> GetMembersAsync(string selectedUnitId);
     }
 
     public class TerrainAPIService : ITerrainAPIService
@@ -130,6 +132,18 @@ namespace Topo.Services
 
             return getProfilesResultModel;
         }
+
+        public async Task<GetMembersResultModel?> GetMembersAsync(string selectedUnitId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{membersAddress}units/{selectedUnitId}/members";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getMembersResultModel = DeserializeObject<GetMembersResultModel>(result);
+
+            return getMembersResultModel;
+        }
+
 
         private async Task<string> SendRequest(HttpMethod httpMethod, string requestUri, string content = "", string xAmzTargetHeader = "")
         {
