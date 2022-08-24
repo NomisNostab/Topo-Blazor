@@ -30,6 +30,16 @@ namespace Topo.Services
         public Dictionary<string, string> Units { get; set; } = new Dictionary<string, string>();
         public string UnitId { get; set; } = "";
         public string UnitName { get; set; } = "";
+        public string Section
+        {
+            get
+            {
+                var unit = GetProfilesResult.profiles.FirstOrDefault(u => u.unit.name == UnitName);
+                if (unit == null)
+                    throw new IndexOutOfRangeException($"No unit found with name {UnitName}. You may not have permissions to this section");
+                return unit.unit.section;
+            }
+        }
         public List<KeyValuePair<string, List<MemberListModel>>> CachedMembers { get; set; } = new List<KeyValuePair<string, List<MemberListModel>>>();
     }
 }

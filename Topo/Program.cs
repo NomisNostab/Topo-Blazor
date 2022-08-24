@@ -12,5 +12,6 @@ builder.Services.AddSingleton<StorageService>();
 builder.Services.AddScoped<ITerrainAPIService, TerrainAPIService>();
 builder.Services.AddScoped<IMembersService, MembersService>();
 builder.Services.AddScoped<ILoginService, LoginService>();
+builder.Services.AddScoped<IReportService, ReportService>();
 
 await builder.Build().RunAsync();

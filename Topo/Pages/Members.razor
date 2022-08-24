@@ -70,10 +70,10 @@
 
         <div class="mt-3 mb-3 row">
             <div class="col-sm-3">
-                <button type="submit" name="button" value="PatrolListPdf" class="btn btn-primary">Generate Patrol list (pdf)</button>
+                <button type="submit" name="button" @onclick="PatrolListPdfClick" class="btn btn-primary">Generate Patrol list (pdf)</button>
             </div>
             <div class="col-sm-3">
-                <button type="submit" name="button" value="PatrolListXlsx" class="btn btn-success">Generate Patrol list (xlsx)</button>
+                <button type="submit" name="button" @onclick="PatrolListXlsxClick" class="btn btn-success">Generate Patrol list (xlsx)</button>
             </div>
             <div class="col-sm-3 form-check">
                 <InputCheckbox id="includeLeaders" class="form-check-input"
@@ -85,20 +85,21 @@
         </div>
         <div class="mt-3 mb-3 row">
             <div class="col-sm-3">
-                <button type="submit" name="button" value="MemberListPdf" class="btn btn-primary">Generate Member list (pdf)</button>
+                <button type="submit" name="button" @onclick="MemberListPdfClick" class="btn btn-primary">Generate Member list (pdf)</button>
             </div>
             <div class="col-sm-3">
-                <button type="submit" name="button" value="MemberListXlsx" class="btn btn-success">Generate Member list (xlsx)</button>
+                <button type="submit" name="button" @onclick="MemberListXlsxClick" class="btn btn-success">Generate Member list (xlsx)</button>
             </div>
         </div>
         <div class="mt-3 mb-3 row">
             <div class="col-sm-3">
-                <button type="submit" name="button" value="PatrolSheetPdf" class="btn btn-primary">Generate Patrol sheets (pdf)</button>
+                <button type="submit" name="button" @onclick="PatrolSheetPdfClick" class="btn btn-primary">Generate Patrol sheets (pdf)</button>
             </div>
             <div class="col-sm-3">
-                <button type="submit" name="button" value="PatrolSheetXlsx" class="btn btn-success">Generate Patrol sheets (xlsx)</button>
+                <button type="submit" name="button" @onclick="PatrolSheetXlsxClick" class="btn btn-success">Generate Patrol sheets (xlsx)</button>
             </div>
         </div>
     }
 
 </EditForm>
+
