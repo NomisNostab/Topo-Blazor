@@ -16,4 +16,17 @@ builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 
 
+builder.Services.AddScoped<SpinnerService>();
+builder.Services.AddScoped<DisplaySpinnerAutomaticallyHttpMessageHandler>();
+builder.Services.AddScoped(s =>
+{
+    var accessTokenHandler = s.GetRequiredService<DisplaySpinnerAutomaticallyHttpMessageHandler>();
+    accessTokenHandler.InnerHandler = new HttpClientHandler();
+    var uriHelper = s.GetRequiredService<NavigationManager>();
+    return new HttpClient(accessTokenHandler)
+    {
+        BaseAddress = new Uri(uriHelper.BaseUri)
+    };
+});
+
 await builder.Build().RunAsync();
