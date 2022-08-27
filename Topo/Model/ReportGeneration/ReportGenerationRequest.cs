@@ -2,7 +2,9 @@
 {
     public enum ReportType
     {
-        MemberList
+        MemberList,
+        PatrolList,
+        PatrolSheets
     }
 
     public enum OutputType
@@ -19,5 +21,6 @@
         public string UnitName { get; set; } = string.Empty;
         public string ReportData { get; set; } = string.Empty;
         public OutputType OutputType { get; set; } = OutputType.PDF;
+        public bool IncludeLeaders { get; set; } = false;
     }
 }
