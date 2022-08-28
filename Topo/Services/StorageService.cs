@@ -41,5 +41,6 @@ namespace Topo.Services
             }
         }
         public List<KeyValuePair<string, List<MemberListModel>>> CachedMembers { get; set; } = new List<KeyValuePair<string, List<MemberListModel>>>();
+        public Dictionary<string, string> GetCalendarsResult { get; set; } = new Dictionary<string, string>();
     }
 }

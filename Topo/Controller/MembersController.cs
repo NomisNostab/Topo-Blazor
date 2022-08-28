@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using System;
-using System.Reflection.Metadata;
-using System.Text.Json;
+using Newtonsoft.Json;
 using Topo.Model.Members;
 using Topo.Model.ReportGeneration;
 using Topo.Services;
@@ -22,12 +20,18 @@ namespace Topo.Controller
         IJSRuntime JS { get; set; }
 
         [Inject]
-        IReportService _reportService { get; set; }
+        public IReportService _reportService { get; set; }
+
+        [Inject]
+        public NavigationManager NavigationManager { get; set; }
 
         public MembersPageViewModel model = new MembersPageViewModel();
 
         protected override async Task OnInitializedAsync()
         {
+            if (!_storageService.IsAuthenticated)
+                NavigationManager.NavigateTo("index");
+
             model.Units = _storageService.Units;
         }
 
@@ -73,7 +77,7 @@ namespace Topo.Controller
                 sortedPatrolList = model.Members.OrderBy(m => m.patrol_name).ToList();
             else
                 sortedPatrolList = model.Members.Where(m => m.isAdultLeader == 0).OrderBy(m => m.patrol_name).ToList();
-            var serialisedSortedMemberList = JsonSerializer.Serialize(sortedPatrolList);
+            var serialisedSortedMemberList = JsonConvert.SerializeObject(sortedPatrolList);
 
             var report = await _reportService.GetPatrolListReport(groupName, section, unitName, includeLeaders, outputType, serialisedSortedMemberList);
             return report;
@@ -102,7 +106,7 @@ namespace Topo.Controller
             var unitName = _storageService.UnitName ?? "Unit Name";
             var section = _storageService.Section;
             var sortedMemberList = model.Members.Where(m => m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
-            var serialisedSortedMemberList = JsonSerializer.Serialize(sortedMemberList);
+            var serialisedSortedMemberList = JsonConvert.SerializeObject(sortedMemberList);
 
             var report = await _reportService.GetMemberListReport(groupName, section, unitName, outputType, serialisedSortedMemberList);
             return report;
@@ -132,7 +136,7 @@ namespace Topo.Controller
             var unitName = _storageService.UnitName ?? "Unit Name";
             var section = _storageService.Section;
             var sortedMemberList = model.Members.Where(m => m.isAdultLeader == 0).OrderBy(m => m.patrol_name).ToList();
-            var serialisedSortedMemberList = JsonSerializer.Serialize(sortedMemberList);
+            var serialisedSortedMemberList = JsonConvert.SerializeObject(sortedMemberList);
 
             var report = await _reportService.GetPatrolSheetsReport(groupName, section, unitName, outputType, serialisedSortedMemberList);
             return report;

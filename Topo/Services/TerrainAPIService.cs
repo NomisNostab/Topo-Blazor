@@ -1,7 +1,8 @@
-﻿using Topo.Model.Login;
-using Topo.Model.Members;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System.Text;
+using Topo.Model.Login;
+using Topo.Model.Members;
+using Topo.Model.Program;
 
 namespace Topo.Services
 {
@@ -12,6 +13,10 @@ namespace Topo.Services
         public Task<GetUserResultModel?> GetUserAsync();
         public Task<GetProfilesResultModel> GetProfilesAsync();
         public Task<GetMembersResultModel?> GetMembersAsync(string selectedUnitId);
+        public Task<GetCalendarsResultModel?> GetCalendarsAsync(string userId);
+        public Task PutCalendarsAsync(string userId, GetCalendarsResultModel putCalendarsResultModel);
+        public Task<GetEventsResultModel?> GetEventsAsync(string userId, DateTime fromDate, DateTime toDate);
+        public Task<GetEventResultModel?> GetEventAsync(string eventId);
     }
 
     public class TerrainAPIService : ITerrainAPIService
@@ -144,6 +149,49 @@ namespace Topo.Services
             return getMembersResultModel;
         }
 
+        public async Task<GetCalendarsResultModel?> GetCalendarsAsync(string userId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{eventsAddress}members/{userId}/calendars";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getCalendarsResultModel = DeserializeObject<GetCalendarsResultModel>(result);
+
+            return getCalendarsResultModel;
+        }
+
+        public async Task PutCalendarsAsync(string userId, GetCalendarsResultModel putCalendarsResultModel)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{eventsAddress}members/{userId}/calendars";
+            var content = JsonConvert.SerializeObject(putCalendarsResultModel);
+            await SendRequest(HttpMethod.Put, requestUri, content);
+        }
+
+        public async Task<GetEventsResultModel?> GetEventsAsync(string userId, DateTime fromDate, DateTime toDate)
+        {
+            await RefreshTokenAsync();
+
+            var fromDateString = fromDate.ToString("s");
+            var toDateString = toDate.ToString("s");
+            string requestUri = $"{eventsAddress}members/{userId}/events?start_datetime={fromDateString}&end_datetime={toDateString}";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getEventsResultModel = DeserializeObject<GetEventsResultModel>(result);
+
+            return getEventsResultModel;
+        }
+
+        public async Task<GetEventResultModel?> GetEventAsync(string eventId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{eventsAddress}events/{eventId}";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getEventResultModel = DeserializeObject<GetEventResultModel>(result);
+
+            return getEventResultModel;
+        }
 
         private async Task<string> SendRequest(HttpMethod httpMethod, string requestUri, string content = "", string xAmzTargetHeader = "")
         {
