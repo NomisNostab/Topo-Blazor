@@ -8,11 +8,12 @@ namespace Topo.Services
     public interface IReportService
     {
         public Task<byte[]> GetMemberListReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberList);
-        public Task<byte[]> GetPatrolListReport(string groupName, string section, string unitName, bool includeLeaders, OutputType outputType, string serialisedSortedMemberList);
+        public Task<byte[]> GetPatrolListReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberList, bool includeLeaders);
         public Task<byte[]> GetPatrolSheetsReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberList);
         public Task<byte[]> GetSignInSheetReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberList, string eventName);
         public Task<byte[]> GetEventAttendanceReport(string groupName, string section, string unitName, OutputType outputType, string serialisedEventListModel);
         public Task<byte[]> GetAttendanceReport(string groupName, string section, string unitName, OutputType outputType, string serialisedAttendanceReportData, DateTime fromDate, DateTime toDate);
+        public Task<byte[]> GetOASWorksheetReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberAnswers, bool breakByPatrol);
     }
 
     public class ReportService : IReportService
@@ -39,7 +40,7 @@ namespace Topo.Services
             return report;
         }
 
-        public async Task<byte[]> GetPatrolListReport(string groupName, string section, string unitName, bool includeLeaders, OutputType outputType, string serialisedSortedMemberList)
+        public async Task<byte[]> GetPatrolListReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberList, bool includeLeaders)
         {
             var reportGenerationRequest = new ReportGenerationRequest()
             {
@@ -117,6 +118,23 @@ namespace Topo.Services
                 ReportData = serialisedAttendanceReportData,
                 FromDate = fromDate,
                 ToDate = toDate
+            };
+
+            var report = await CallReportGeneratorFunction(reportGenerationRequest);
+            return report;
+        }
+
+        public async Task<byte[]> GetOASWorksheetReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberAnswers, bool breakByPatrol)
+        {
+            var reportGenerationRequest = new ReportGenerationRequest()
+            {
+                ReportType = ReportType.OASWorksheet,
+                GroupName = groupName,
+                Section = section,
+                UnitName = unitName,
+                OutputType = outputType,
+                ReportData = serialisedSortedMemberAnswers,
+                BreakByPatrol = breakByPatrol
             };
 
             var report = await CallReportGeneratorFunction(reportGenerationRequest);

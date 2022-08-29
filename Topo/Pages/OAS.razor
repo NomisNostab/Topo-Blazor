@@ -1,0 +1,67 @@
+﻿@page "/oas"
+@inherits Controller.OASController
+
+
+<EditForm Model="@model">
+    <DataAnnotationsValidator />
+    <div class="mt-3 mb-3 row">
+        <h2>OAS</h2>
+    </div>
+
+    <div class="form-group mb-3 row">
+        <label for="unit" class="col-sm-2 col-form-label">
+            Select Unit
+        </label>
+        <div class="col-sm-2">
+            <select id="unit" class="form-select" value="@model.UnitId" @onchange="UnitChange">
+                <option value="">Select unit</option>
+                @foreach (var unit in model.Units)
+                {
+                    <option value="@unit.Key">@unit.Value</option>
+                }
+            </select>
+            <ValidationMessage For="@(() => model.UnitId)" />
+        </div>
+    </div>
+
+    <div class="form-group mb-3 row">
+        <label for="stages" class="col-sm-2 col-form-label">Please select a Stage:</label>
+        <div class="col-sm-6 ">
+            <select @ref="_select2Reference" id="stages" class="form-select select2" multiple @bind="model.SelectedStages">
+                @foreach (var groupedStage in @model.Stages.GroupBy(s => s.Stream))
+                {
+                    <optgroup label="@groupedStage.Key"></optgroup>
+                    @foreach (var stage in groupedStage)
+                    {
+                        <option value="@stage.TemplateLink">@stage.SelectListItemText</option>
+                    }
+                }
+            </select>
+            <label class="col-form-label validation-message">@model.StagesErrorMessage</label>
+        </div>
+    </div>
+
+    <div class="mt-3 mb-3 row">
+        <div class="col-sm-2">
+            <button type="submit" name="button" @onclick="OASWorksheetPdfClick" class="btn btn-primary">OAS Worksheet (pdf)</button>
+        </div>
+        <div class="col-sm-2">
+            <button type="submit" name="button" @onclick="OASWorksheetXlsxClick" class="btn btn-success">OAS Worksheet (xlsx)</button>
+        </div>
+        <div class="col-sm-3 form-check">
+            <InputCheckbox id="hideCompletedMembers" class="form-check-input"
+                           @bind-Value="model.HideCompletedMembers" />
+            <label for="unit" class="form-check-label">
+                Hide Completed Members
+            </label>
+        </div>
+        <div class="col-sm-3 form-check">
+            <InputCheckbox id="breakByPatrol" class="form-check-input"
+                           @bind-Value="model.BreakByPatrol" />
+            <label for="unit" class="form-check-label">
+                Break by Patrol
+            </label>
+        </div>
+    </div>
+
+</EditForm>
