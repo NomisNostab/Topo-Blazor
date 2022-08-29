@@ -9,6 +9,9 @@
     <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href="css/app.css" rel="stylesheet" />
     <link href="Topo.styles.css" rel="stylesheet" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </head>
 
 <body>
@@ -50,4 +53,24 @@
         // On older versions of Safari, it seems you need to comment this line...
         URL.revokeObjectURL(exportUrl);
     }
+
+</script>
+<script type="text/javascript">
+
+    // In your Javascript (external .js resource or <script> tag)
+    function BindSelect2() {
+        $('.select2').select2({ placeholder: "Select one or more stages" });
+    };
+
+    window.getSelectedValues = function (sel) {
+        var results = [];
+        var i;
+        for (i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].selected) {
+                results[results.length] = sel.options[i].value;
+            }
+        }
+        return results;
+    };
+
 </script>

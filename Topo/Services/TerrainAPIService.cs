@@ -2,6 +2,7 @@
 using System.Text;
 using Topo.Model.Login;
 using Topo.Model.Members;
+using Topo.Model.OAS;
 using Topo.Model.Program;
 
 namespace Topo.Services
@@ -17,6 +18,9 @@ namespace Topo.Services
         public Task PutCalendarsAsync(string userId, GetCalendarsResultModel putCalendarsResultModel);
         public Task<GetEventsResultModel?> GetEventsAsync(string userId, DateTime fromDate, DateTime toDate);
         public Task<GetEventResultModel?> GetEventAsync(string eventId);
+        public Task<GetOASTreeResultsModel?> GetOASTreeAsync(string stream);
+        public Task<GetOASTemplateResultModel?> GetOASTemplateAsync(string stream);
+        public Task<GetUnitAchievementsResultsModel> GetUnitOASAchievements(string unit, string stream, string branch, int stage);
     }
 
     public class TerrainAPIService : ITerrainAPIService
@@ -191,6 +195,53 @@ namespace Topo.Services
             var getEventResultModel = DeserializeObject<GetEventResultModel>(result);
 
             return getEventResultModel;
+        }
+
+        public async Task<GetOASTreeResultsModel?> GetOASTreeAsync(string stream)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{templatesAddress}oas/{stream}/tree.json";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getOASTreeResultsModel = DeserializeObject<GetOASTreeResultsModel>(result);
+
+            return getOASTreeResultsModel;
+        }
+
+        public async Task<GetOASTemplateResultModel?> GetOASTemplateAsync(string stream)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{templatesAddress}{stream}/latest.json";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getOASTemplateResultModel = DeserializeObject<GetOASTemplateResultModel>(result);
+
+            return getOASTemplateResultModel;
+        }
+
+        public async Task<GetUnitAchievementsResultsModel> GetUnitOASAchievements(string unit, string stream, string branch, int stage)
+        {
+            await RefreshTokenAsync();
+            string requestUri = $"{achievementsAddress}units/{unit}/achievements?type=outdoor_adventure_skill&stream={stream}&branch={branch}&stage={stage}";
+            var responseContentResult = await SendRequest(HttpMethod.Get, requestUri);
+            // Remove uploaded files from response before deserialising
+            responseContentResult = responseContentResult.Replace("\"file_uploader\": [],", "");
+            responseContentResult = responseContentResult.Replace("\"file_uploader\": []", "");
+            var fileUploaderStart = responseContentResult.IndexOf("\"file_uploader\":");
+            while (fileUploaderStart > 0)
+            {
+                var padding = 1;
+                var fileUploaderEnd = responseContentResult.IndexOf("]", fileUploaderStart);
+                var fileUploaderEndNextChar = responseContentResult.Substring(fileUploaderEnd, 2);
+                if (fileUploaderEndNextChar == "],")
+                    padding = 2;
+                var fileUploader = responseContentResult.Substring(fileUploaderStart, fileUploaderEnd - fileUploaderStart + padding);
+                responseContentResult = responseContentResult.Replace(fileUploader, "");
+                fileUploaderStart = responseContentResult.IndexOf("\"file_uploader\":", fileUploaderStart);
+            }
+            var getUnitAchievementsResultsModel = DeserializeObject<GetUnitAchievementsResultsModel>(responseContentResult);
+
+            return getUnitAchievementsResultsModel ?? new GetUnitAchievementsResultsModel();
         }
 
         private async Task<string> SendRequest(HttpMethod httpMethod, string requestUri, string content = "", string xAmzTargetHeader = "")

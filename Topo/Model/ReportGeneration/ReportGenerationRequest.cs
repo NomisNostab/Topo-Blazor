@@ -7,7 +7,8 @@
         PatrolSheets,
         SignInSheet,
         EventAttendance,
-        Attendance
+        Attendance,
+        OASWorksheet
     }
 
     public enum OutputType
@@ -28,5 +29,6 @@
         public string EventName { get; set; } = string.Empty;
         public DateTime FromDate { get; set; }
         public DateTime ToDate { get; set; }
+        public bool BreakByPatrol { get; set; }
     }
 }

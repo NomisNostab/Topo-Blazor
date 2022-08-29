@@ -79,7 +79,7 @@ namespace Topo.Controller
                 sortedPatrolList = model.Members.Where(m => m.isAdultLeader == 0).OrderBy(m => m.patrol_name).ToList();
             var serialisedSortedMemberList = JsonConvert.SerializeObject(sortedPatrolList);
 
-            var report = await _reportService.GetPatrolListReport(groupName, section, unitName, includeLeaders, outputType, serialisedSortedMemberList);
+            var report = await _reportService.GetPatrolListReport(groupName, section, unitName, outputType, serialisedSortedMemberList, includeLeaders);
             return report;
         }
 
