@@ -77,8 +77,8 @@ namespace Topo.Services
 
         public async Task<List<EventListModel>> GetEventsForDates(DateTime fromDate, DateTime toDate)
         {
-            TextInfo myTI = new CultureInfo("en-US", false).TextInfo;
-            var getEventsResultModel = await _terrainAPIService.GetEventsAsync(GetUser(), fromDate, toDate);
+            TextInfo myTI = new CultureInfo("en-AU", false).TextInfo;
+            var getEventsResultModel = await _terrainAPIService.GetEventsAsync(GetUser(), fromDate.AddDays(-1), toDate);
             if (getEventsResultModel != null && getEventsResultModel.results != null)
             {
                 var events = getEventsResultModel.results.Select(e => new EventListModel()

@@ -15,10 +15,10 @@ namespace Topo.Model.Program
 
         [Display(Name = "Challenge Area")]
         public string ChallengeArea { get; set; } = string.Empty;
-        public string EventDisplay => $"{EventName} {StartDateTime.ToString("dd/MM/yyyy")}";
+        public string EventDisplay => $"{EventName} {StartDateTime.ToShortDateString()}";
 
         [Display(Name = "Date")]
-        public string EventDate => StartDateTime.ToString("dd/MM/yyyy");
+        public string EventDate => StartDateTime.ToShortDateString();
 
         public List<EventAttendance> attendees = new List<EventAttendance>();
 

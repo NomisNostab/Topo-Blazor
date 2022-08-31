@@ -3,6 +3,7 @@ using Topo.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components;
+using System.Globalization;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -29,5 +30,10 @@ builder.Services.AddScoped(s =>
         BaseAddress = new Uri(uriHelper.BaseUri)
     };
 });
+
+System.Globalization.CultureInfo cultureInfo = new System.Globalization.CultureInfo("en-AU");
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+
 
 await builder.Build().RunAsync();
