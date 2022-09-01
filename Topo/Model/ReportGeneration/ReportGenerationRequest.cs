@@ -9,7 +9,8 @@
         EventAttendance,
         Attendance,
         OASWorksheet,
-        SIA
+        SIA,
+        Milestone
     }
 
     public enum OutputType

@@ -52,9 +52,7 @@ namespace Topo.Controller
                 var stageList = await _oasService.GetOASStageList(stream.Key);
                 oasStageList.AddRange(stageList);
             }
-            //_storageService.OASStageList = oasStageList;
             model.Stages = oasStageList;
-
         }
 
         internal async Task UnitChange(ChangeEventArgs e)
