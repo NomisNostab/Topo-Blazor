@@ -4,6 +4,7 @@ using Topo.Model.Login;
 using Topo.Model.Members;
 using Topo.Model.OAS;
 using Topo.Model.Program;
+using Topo.Model.SIA;
 
 namespace Topo.Services
 {
@@ -21,6 +22,7 @@ namespace Topo.Services
         public Task<GetOASTreeResultsModel?> GetOASTreeAsync(string stream);
         public Task<GetOASTemplateResultModel?> GetOASTemplateAsync(string stream);
         public Task<GetUnitAchievementsResultsModel> GetUnitOASAchievements(string unit, string stream, string branch, int stage);
+        public Task<GetSIAResultsModel> GetSIAResultsForMember(string memberId);
     }
 
     public class TerrainAPIService : ITerrainAPIService
@@ -242,6 +244,17 @@ namespace Topo.Services
             var getUnitAchievementsResultsModel = DeserializeObject<GetUnitAchievementsResultsModel>(responseContentResult);
 
             return getUnitAchievementsResultsModel ?? new GetUnitAchievementsResultsModel();
+        }
+
+        public async Task<GetSIAResultsModel> GetSIAResultsForMember(string memberId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{achievementsAddress}members/{memberId}/achievements?type=special_interest_area";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getSIAResultsModel = DeserializeObject<GetSIAResultsModel>(result);
+
+            return getSIAResultsModel ?? new GetSIAResultsModel();
         }
 
         private async Task<string> SendRequest(HttpMethod httpMethod, string requestUri, string content = "", string xAmzTargetHeader = "")

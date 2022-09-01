@@ -25,9 +25,6 @@ namespace Topo.Controller
         public NavigationManager NavigationManager { get; set; }
 
         [Inject]
-        public IMembersService _membersService { get; set; }
-
-        [Inject]
         public IOASService _oasService { get; set; }
 
         public OASPageViewModel model = new OASPageViewModel();
@@ -41,6 +38,7 @@ namespace Topo.Controller
                 await JS.InvokeVoidAsync("BindSelect2");
             }
         }
+
         protected override async Task OnInitializedAsync()
         {
             if (!_storageService.IsAuthenticated)

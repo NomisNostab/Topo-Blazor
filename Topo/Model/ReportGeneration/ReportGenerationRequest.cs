@@ -8,7 +8,8 @@
         SignInSheet,
         EventAttendance,
         Attendance,
-        OASWorksheet
+        OASWorksheet,
+        SIA
     }
 
     public enum OutputType
