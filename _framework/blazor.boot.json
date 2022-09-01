@@ -3,7 +3,7 @@
   "config": [ ],
   "debugBuild": false,
   "entryAssembly": "Topo",
-  "icuDataMode": 0,
+  "icuDataMode": 1,
   "linkerEnabled": true,
   "resources": {
     "assembly": {
@@ -39,14 +39,14 @@
       "System.dll": "sha256-PdeKH2Cv9Zv944vnu2iECqm1vnAbquqZ3k63QD6qB6g=",
       "System.Drawing.dll": "sha256-9jjyy+CzF2eyj144mBnwQl4XHAA6mg1dKRMXIS62ycI=",
       "System.Drawing.Primitives.dll": "sha256-7\/BX1wvy1FKSwAG02YV4mLjDKLZlcPZnEiN+d3oLlrk=",
-      "System.Linq.dll": "sha256-pt6Z7SxIsRb79iTwDdemTfRDnoTCg3dV44jhl8IwNvY=",
+      "System.Linq.dll": "sha256-UJ\/mXEMOgwSqX6+UMfZENNTqXgz4dU5F2xOMneP5jhQ=",
       "System.Linq.Expressions.dll": "sha256-42e8I58637W8KAlhWCy1EMfQXkOkbhbud1JQ5pn39kw=",
       "System.Memory.dll": "sha256-UokuFozSuCoaLbJ3EkT84XsrUyATeQOWd7PPF6xKE2M=",
       "System.Net.Http.dll": "sha256-obJ0fpXT13o+ChGgJaf6yITqNfebrwpJaS8gbkAO4q8=",
       "System.Net.Http.Json.dll": "sha256-SAzm43PC0NGBzUZvSKZhALtbVFv840PKkcc5m\/F8Fh4=",
       "System.Net.Primitives.dll": "sha256-I+HfpmZ\/SqPHjy7oomVY2RCsLISChOgpcrVH\/3wU0Gw=",
       "System.ObjectModel.dll": "sha256-RKEh\/X1e9TSTlk8VWBBy\/cMqymWX\/Vd3M5dCUD3aqrA=",
-      "System.Private.CoreLib.dll": "sha256-SxMUBoE3b8wINhhymMcLuUisncTcXqwtLx+WH2tXm2w=",
+      "System.Private.CoreLib.dll": "sha256-RSNeY1tyOX0slKWM97ql0o6gnMQUP4khHTy9HyZakkY=",
       "System.Private.Runtime.InteropServices.JavaScript.dll": "sha256-kVIshc0SOjz\/\/Q2y6XVMoO8TICiVcM2ievPVoV29M1g=",
       "System.Private.Uri.dll": "sha256-fILpqNx14dk78IKnsMi\/irI3FscgYlDs8hINxI8RGtY=",
       "System.Private.Xml.dll": "sha256-FUAg4B7Y9hw2BGdM3fdUMXyOKbO+5cPfII\/HPhjG\/Bg=",
@@ -62,7 +62,7 @@
       "System.Text.Json.dll": "sha256-kQ9Z9X4HsdNwkzSjBxd0zbcea6ygC1ZsSfklPbYzPC4=",
       "System.Text.RegularExpressions.dll": "sha256-FaPYfHtd+zqKKjK813aOg+d6+qp13R9RUmZo8xw7wyM=",
       "System.Threading.dll": "sha256-EICSyeK\/jSXqQMMx58U7fa2eMMQ6p9438kB0AqGZ0Tc=",
-      "Topo.dll": "sha256-ypwzSSsCj24XEKZDej5dZrHXwZufvsWnrQ\/l3iobgGA="
+      "Topo.dll": "sha256-alZO3IDFGktnW3Y2lifvVp2VRkLQLqTtw2s\/fOJv7z4="
     },
     "extensions": null,
     "lazyAssembly": null,
