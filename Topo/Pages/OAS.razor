@@ -13,7 +13,7 @@
         <label for="unit" class="col-sm-2 col-form-label">
             Select Unit
         </label>
-        <div class="col-sm-4">
+        <div class="col-sm-3">
             <select id="unit" class="form-select" value="@model.UnitId" @onchange="UnitChange">
                 <option value="">Select unit</option>
                 @foreach (var unit in model.Units)
@@ -23,13 +23,13 @@
             </select>
             <ValidationMessage For="@(() => model.UnitId)" />
         </div>
-        <div class="col-sm-6">
+        <div class="col-sm-7">
         </div>
     </div>
 
     <div class="form-group mb-3 row">
         <label for="stages" class="col-sm-2 col-form-label">Please select a Stage:</label>
-        <div class="col-sm-6 ">
+        <div class="col-sm-3 ">
             <select @ref="_select2Reference" id="stages" class="form-select select2" multiple @bind="model.SelectedStages">
                 @foreach (var groupedStage in @model.Stages.GroupBy(s => s.Stream))
                 {
@@ -41,6 +41,8 @@
                 }
             </select>
             <label class="col-form-label validation-message">@model.StagesErrorMessage</label>
+        </div>
+        <div class="col-sm-7">
         </div>
     </div>
 

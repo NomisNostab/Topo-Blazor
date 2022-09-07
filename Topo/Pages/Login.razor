@@ -13,7 +13,7 @@
         <label for="branch" class="col-sm-2 col-form-label">
             Branch
         </label>
-        <div class="col-sm-4">
+        <div class="col-sm-3">
             <InputSelect id="branch" class="form-select" @bind-Value="model.Branch">
                 @foreach (var branch in model.Branches)
                 {
@@ -21,7 +21,7 @@
                 }
             </InputSelect>
         </div>
-        <div class="col-sm-6">
+        <div class="col-sm-7">
         </div>
     </div>
 
@@ -29,11 +29,11 @@
         <label for="memberNumber" class="col-sm-2 col-form-label">
             Member Number
         </label>
-        <div class="col-sm-4">
+        <div class="col-sm-3">
             <InputText id="memberNumber" class="form-control" placeholder="Member Number"
                        @bind-Value="model.MemberNumber" />
         </div>
-        <div class="col-sm-6">
+        <div class="col-sm-7">
         </div>
     </div>
 
@@ -41,20 +41,20 @@
         <label for="password"p class="col-sm-2 col-form-label">
             Password
         </label>
-        <div class="col-sm-4">
+        <div class="col-sm-3">
             <input id="password" class="form-control" type="password" placeholder="Password"
                         @bind="model.Password" />
         </div>
-        <div class="col-sm-6">
+        <div class="col-sm-7">
         </div>
     </div>
 
     <div class="form-group mb-3 row">
         <div class="col-sm-2"></div>
-        <div class="col-sm-4">
+        <div class="col-sm-3">
             <button @onclick="LogInClick" class="btn btn-primary">Log In</button>
         </div>
-        <div class="col-sm-6">
+        <div class="col-sm-7">
         </div>
     </div>
     
