@@ -12,13 +12,15 @@
         <label for="unit" class="col-sm-2 col-form-label">
             Select Unit
         </label>
-        <div class="col-sm-2">
+        <div class="col-sm-4">
             <select id="unit" class="form-select" value="@model.UnitId" @onchange="UnitChange">
                 @foreach (var unit in model.Units)
                 {
                     <option value="@unit.Key">@unit.Value</option>
                 }
             </select>
+        </div>
+        <div class="col-sm-6">
         </div>
     </div>
 
@@ -28,52 +30,52 @@
             <input type="checkbox" id="checkall" @onchange="SelectAllChange" /><span> Select All</span>
         </div>
 
-        <div class="row">
-            <div class="col">
+        <div class="row header">
+            <div class="col-sm">
                 <strong>Select</strong>
             </div>
-            <div class="col">
+            <div class="col-sm">
                 <strong>First Name</strong>
             </div>
-            <div class="col">
+            <div class="col-sm">
                 <strong>Last Name</strong>
             </div>
-            <div class="col">
+            <div class="col-sm">
                 <strong>Member Number</strong>
             </div>
-            <div class="col">
+            <div class="col-sm">
                 <strong>Patrol</strong>
             </div>
-            <div class="col">
+            <div class="col-sm">
                 <strong>Role</strong>
             </div>
-            <div class="col">
+            <div class="col-sm">
                 <strong>Unit Council</strong>
             </div>
         </div>
 
         @foreach (var item in model?.Members)
         {
-            <div class="row">
-                <div class="col">
+            <div class="row striped">
+                <div class="col-sm">
                     <InputCheckbox @bind-Value="item.selected"></InputCheckbox>
                 </div>
-                <div class="col">
+                <div class="col-sm">
                     @item.first_name
                 </div>
-                <div class="col">
+                <div class="col-sm">
                     @item.last_name
                 </div>
-                <div class="col">
+                <div class="col-sm">
                     @item.member_number
                 </div>
-                <div class="col">
+                <div class="col-sm">
                     @item.patrol_name
                 </div>
-                <div class="col">
+                <div class="col-sm">
                     @item.patrol_duty
                 </div>
-                <div class="col align-content-center">
+                <div class="col-sm align-content-center">
                     @(
                         item.unit_council ? "Yes" : ""
                         )
@@ -82,10 +84,8 @@
         }
 
         <div class="mt-3 mb-3 row">
-            <div class="col-sm-3">
+            <div class="col-sm">
                 <button type="submit" name="button" @onclick="SIAReportPdfClick" class="btn btn-primary">SIA Report (pdf)</button>
-            </div>
-            <div class="col-sm-3">
                 <button type="submit" name="button" @onclick="SIAReportXlsxClick" class="btn btn-success">SIA Report (xlsx)</button>
             </div>
         </div>

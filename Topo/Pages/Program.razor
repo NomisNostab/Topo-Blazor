@@ -13,7 +13,7 @@
         <label for="unit" class="col-sm-2 col-form-label">
             Select Unit
         </label>
-        <div class="col-sm-2">
+        <div class="col-sm-3">
             <select id="unit" class="form-select" value="@model.CalendarId" @onchange="CalendarChange">
                 <option value="">Select unit</option>
                 @foreach (var calendar in model.Calendars)
@@ -23,18 +23,22 @@
             </select>
             <ValidationMessage For="@(() => model.CalendarId)"/>
         </div>
+        <div class="col-sm-7">
+        </div>
     </div>
 
     <div class="mt-3 mb-3 row">
         <label class="col-sm-2 col-form-label"> Search From Date</label>
-        <div class="col-sm-2">
+        <div class="col-sm-3">
             <InputDate @bind-Value="@model.CalendarSearchFromDate" class="form-control" />
         </div>
         <label class="col-sm-2 col-form-label"> Search To Date</label>
-        <div class="col-sm-2">
+        <div class="col-sm-3">
             <InputDate @bind-Value="@model.CalendarSearchToDate" class="form-control" />
         </div>
-        <label class="col-sm-4 col-form-label validation-message">@model.DateErrorMessage</label>
+        <div class="col-sm-2">
+        </div>
+        <label class="col-sm col-form-label validation-message">@model.DateErrorMessage</label>
     </div>
 
     <div class="mt-3 mb-3 row">
@@ -43,54 +47,54 @@
         <div class="col-sm-3">
             <button type="submit" name="button" class="btn btn-primary" @onclick="ShowUnitCalendarClick">Show Unit Calendar</button>
         </div>
+        <div class="col-sm-7">
+        </div>
     </div>
 
     @if (model.Events != null && model.Events.Any())
     {
-        <div class="row">
-            <div class="col-md-1">
+        <div class="row header">
+            <div class="col-sm">
                 <strong>Date</strong>
             </div>
-            <div class="col-md-4">
+            <div class="col-sm">
                 <strong>Program Name</strong>
             </div>
-            <div class="col-md-1">
+            <div class="col-sm">
                 <strong>Status</strong>
             </div>
-            <div class="col-md-2">
+            <div class="col-sm">
                 <strong>Challenge Area</strong>
             </div>
-            <div class="col-md-4">
+            <div class="col-sm-4">
             </div>
         </div>
 
         @foreach (var item in model?.Events)
         {
-            <div class="row">
-                <div class="col-md-1">
+            <div class="row striped">
+                <div class="col-sm">
                     @item.EventDate
                 </div>
-                <div class="col-md-4">
+                <div class="col-sm">
                     @item.EventName
                 </div>
-                <div class="col-md-1">
+                <div class="col-sm">
                     @item.EventStatus
                 </div>
-                <div class="col-md-2">
+                <div class="col-sm">
                     @item.ChallengeArea
                 </div>
-                <div class="col-md-4">
-                    <button @onclick="@(e => SignInSheetClick(item.Id))" class="btn btn-link">Sign in Sheet</button> |
+                <div class="col-sm-4">
+                    <button @onclick="@(e => SignInSheetClick(item.Id))" class="btn btn-link ">Sign in Sheet</button>|
                     <button @onclick="@(e => EventAttendanceClick(item.Id))" class="btn btn-link">Attendance</button>
                 </div>
             </div>
         }
 
         <div class="mt-3 mb-3 row">
-            <div class="col-sm-3">
+            <div class="col-sm">
                 <button type="submit" name="button" @onclick="AttendanceReportPdfClick" class="btn btn-primary">Attendance Report (pdf)</button> &nbsp;
-            </div>
-            <div class="col-sm-3">
                 <button type="submit" name="button" @onclick="AttendanceReportXlsxClick" class="btn btn-success">Attendance Report (xlsx)</button>
             </div>
         </div>

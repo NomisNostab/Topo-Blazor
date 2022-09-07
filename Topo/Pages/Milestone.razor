@@ -13,7 +13,7 @@
         <label for="unit" class="col-sm-2 col-form-label">
             Select Unit
         </label>
-        <div class="col-sm-2">
+        <div class="col-sm-3">
             <select id="unit" class="form-select" value="@model.UnitId" @onchange="UnitChange">
                 <option value="">Select unit</option>
                 @foreach (var unit in model.Units)
@@ -23,13 +23,13 @@
             </select>
             <ValidationMessage For="@(() => model.UnitId)" />
         </div>
+        <div class ="col-sm-7">
+        </div>
     </div>
 
     <div class="mt-3 mb-3 row">
-        <div class="col-sm-2">
+        <div class="col-sm">
             <button type="submit" name="button" @onclick="MilestoneReportPdfClick" class="btn btn-primary">OAS Worksheet (pdf)</button>
-        </div>
-        <div class="col-sm-2">
             <button type="submit" name="button" @onclick="MilestoneReportXlsxClick" class="btn btn-success">OAS Worksheet (xlsx)</button>
         </div>
     </div>
