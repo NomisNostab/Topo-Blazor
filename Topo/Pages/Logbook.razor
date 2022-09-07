@@ -1,12 +1,11 @@
-﻿@page "/members"
-@inherits Controller.MembersController
+﻿@page "/logbook"
+@inherits Controller.LogbookController
 
-<PageTitle>Topo / Members</PageTitle>
+<PageTitle>Topo / Logbook</PageTitle>
 
 <EditForm Model="@model">
-
     <div class="mt-3 mb-3 row">
-        <h2>Members</h2>
+        <h2>Logbook</h2>
     </div>
 
     <div class="form-group mb-3 row">
@@ -22,12 +21,25 @@
             </select>
         </div>
         <div class="col-sm-7">
+            <div class="form-check-inline">
+                <input type="checkbox" id="includeLeaders" class="form-check-input" @onchange="IncludeLeadersChange" />
+                <label for="includeLeaders" class="form-check-label">
+                    Include Leaders
+                </label>
+            </div>
         </div>
     </div>
 
     @if (model.Members != null && model.Members.Any())
     {
+        <div>
+            <input type="checkbox" id="checkall" @onchange="SelectAllChange" /><span> Select All</span>
+        </div>
+
         <div class="row header">
+            <div class="col-sm">
+                <strong>Select</strong>
+            </div>
             <div class="col-sm">
                 <strong>First Name</strong>
             </div>
@@ -52,6 +64,9 @@
         {
             <div class="row striped">
                 <div class="col-sm">
+                    <InputCheckbox @bind-Value="item.selected"></InputCheckbox>
+                </div>
+                <div class="col-sm">
                     @item.first_name
                 </div>
                 <div class="col-sm">
@@ -67,37 +82,19 @@
                     @item.patrol_duty
                 </div>
                 <div class="col-sm align-content-center">
-                    @(item.unit_council ? "Yes" : "")
+                    @(
+                        item.unit_council ? "Yes" : ""
+                        )
                 </div>
             </div>
         }
 
         <div class="mt-3 mb-3 row">
             <div class="col-sm">
-                <button type="submit" name="button" @onclick="PatrolListPdfClick" class="btn btn-primary">Generate Patrol list (pdf)</button>
-                <button type="submit" name="button" @onclick="PatrolListXlsxClick" class="btn btn-success">Generate Patrol list (xlsx)</button>
-                <div class="form-check-inline">
-                    <InputCheckbox id="includeLeaders" class="form-check-input"
-                               @bind-Value="model.IncludeLeaders" />
-                    <label for="unit" class="form-check-label">
-                        Include Leaders
-                    </label>
-                </div>
-            </div>
-        </div>
-        <div class="mt-3 mb-3 row">
-            <div class="col-sm">
-                <button type="submit" name="button" @onclick="MemberListPdfClick" class="btn btn-primary">Generate Member list (pdf)</button>
-                <button type="submit" name="button" @onclick="MemberListXlsxClick" class="btn btn-success">Generate Member list (xlsx)</button>
-            </div>
-        </div>
-        <div class="mt-3 mb-3 row">
-            <div class="col-sm">
-                <button type="submit" name="button" @onclick="PatrolSheetPdfClick" class="btn btn-primary">Generate Patrol sheets (pdf)</button>
-                <button type="submit" name="button" @onclick="PatrolSheetXlsxClick" class="btn btn-success">Generate Patrol sheets (xlsx)</button>
+                <button type="submit" name="button" @onclick="LogbookReportPdfClick" class="btn btn-primary">Loogbook (pdf)</button>
+                <button type="submit" name="button" @onclick="LogbookReportXlsxClick" class="btn btn-success">Logbook (xlsx)</button>
             </div>
         </div>
     }
 
 </EditForm>
-

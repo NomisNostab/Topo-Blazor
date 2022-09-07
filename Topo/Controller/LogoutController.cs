@@ -13,7 +13,7 @@ namespace Topo.Controller
         public NavigationManager NavigationManager { get; set; }
         protected override async Task OnInitializedAsync()
         {
-            _storageService.IsAuthenticated = false;
+            _storageService.Logout();
             NavigationManager.NavigateTo("index");
         }
     }

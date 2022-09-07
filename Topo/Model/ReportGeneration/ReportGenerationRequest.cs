@@ -10,7 +10,8 @@
         Attendance,
         OASWorksheet,
         SIA,
-        Milestone
+        Milestone,
+        Logbook
     }
 
     public enum OutputType

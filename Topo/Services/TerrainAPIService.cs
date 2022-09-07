@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Text;
+using Topo.Model.Logbook;
 using Topo.Model.Login;
 using Topo.Model.Members;
 using Topo.Model.Milestone;
@@ -25,6 +26,11 @@ namespace Topo.Services
         public Task<GetUnitAchievementsResultsModel> GetUnitOASAchievements(string unit, string stream, string branch, int stage);
         public Task<GetSIAResultsModel> GetSIAResultsForMember(string memberId);
         public Task<GetGroupLifeResultModel> GetGroupLifeForUnit(string unitId);
+        public Task RevokeAssumedProfiles();
+        public Task AssumeProfile(string memberId);
+        public Task<GetMemberLogbookMetricsResultModel> GetMemberLogbookMetrics(string memberId);
+        public Task<GetMemberLogbookSummaryResultModel> GetMemberLogbookSummary(string memberId);
+        public Task<GetMemberLogbookDetailResultModel> GetMemberLogbookDetail(string memberId, string logbookId);
     }
 
     public class TerrainAPIService : ITerrainAPIService
@@ -268,6 +274,54 @@ namespace Topo.Services
             var getGroupLifeResultModel = DeserializeObject<GetGroupLifeResultModel>(result);
 
             return getGroupLifeResultModel ?? new GetGroupLifeResultModel();
+        }
+
+        public async Task RevokeAssumedProfiles()
+        {
+            await RefreshTokenAsync();
+
+            var requestUri = $"{membersAddress}revoke-assumed-profiles";
+            var result = await SendRequest(HttpMethod.Post, requestUri);
+        }
+
+        public async Task AssumeProfile(string memberId)
+        {
+            await RefreshTokenAsync();
+
+            var requestUri = $"{membersAddress}members/{memberId}/assume-profiles";
+            var result = await SendRequest(HttpMethod.Post, requestUri);
+        }
+
+        public async Task<GetMemberLogbookMetricsResultModel> GetMemberLogbookMetrics(string memberId)
+        {
+            await RefreshTokenAsync();
+
+            var requestUri = $"{achievementsAddress}members/{memberId}/logbook-metrics";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getMemberLogbookMetrics = DeserializeObject<GetMemberLogbookMetricsResultModel>(result);
+
+            return getMemberLogbookMetrics ?? new GetMemberLogbookMetricsResultModel();
+        }
+        public async Task<GetMemberLogbookSummaryResultModel> GetMemberLogbookSummary(string memberId)
+        {
+            await RefreshTokenAsync();
+
+            var requestUri = $"{achievementsAddress}members/{memberId}/logbook";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getMemberLogbookSummary = DeserializeObject<GetMemberLogbookSummaryResultModel>(result);
+
+            return getMemberLogbookSummary ?? new GetMemberLogbookSummaryResultModel();
+        }
+
+        public async Task<GetMemberLogbookDetailResultModel> GetMemberLogbookDetail(string memberId, string logbookId)
+        {
+            await RefreshTokenAsync();
+
+            var requestUri = $"{achievementsAddress}members/{memberId}/logbook/{logbookId}";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getMemberLogbookDetail = DeserializeObject<GetMemberLogbookDetailResultModel>(result);
+
+            return getMemberLogbookDetail ?? new GetMemberLogbookDetailResultModel();
         }
 
         private async Task<string> SendRequest(HttpMethod httpMethod, string requestUri, string content = "", string xAmzTargetHeader = "")

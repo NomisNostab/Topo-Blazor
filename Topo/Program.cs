@@ -19,6 +19,7 @@ builder.Services.AddScoped<IProgramService, ProgramService>();
 builder.Services.AddScoped<IOASService, OASService>();
 builder.Services.AddScoped<ISIAService, SIAService>();
 builder.Services.AddScoped<IMilestoneService, MilestoneService>();
+builder.Services.AddScoped<ILogbookService, LogbookService>();
 
 builder.Services.AddScoped<SpinnerService>();
 builder.Services.AddScoped<DisplaySpinnerAutomaticallyHttpMessageHandler>();
