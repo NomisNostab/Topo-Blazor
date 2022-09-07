@@ -66,3 +66,15 @@ a, .btn-link {
 .row.striped:nth-child(odd) {
     background-color: rgba(0,0,0,.05);
 }
+
+.row.header:nth-child(odd) {
+    background-color: rgba(0,0,0,.1);
+}
+
+.navbar-logo-bottom {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    bottom: -34px;
+    z-index: 1;
+}
