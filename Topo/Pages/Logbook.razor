@@ -1,19 +1,18 @@
-﻿@page "/sia"
-@inherits Controller.SIAController
+﻿@page "/logbook"
+@inherits Controller.LogbookController
 
-<PageTitle>Topo / SIA</PageTitle>
+<PageTitle>Topo / Logbook</PageTitle>
 
 <EditForm Model="@model">
-
     <div class="mt-3 mb-3 row">
-        <h2>Special Interest Areas</h2>
+        <h2>Logbook</h2>
     </div>
 
     <div class="form-group mb-3 row">
         <label for="unit" class="col-sm-2 col-form-label">
             Select Unit
         </label>
-        <div class="col-sm-4">
+        <div class="col-sm-3">
             <select id="unit" class="form-select" value="@model.UnitId" @onchange="UnitChange">
                 @foreach (var unit in model.Units)
                 {
@@ -21,7 +20,13 @@
                 }
             </select>
         </div>
-        <div class="col-sm-6">
+        <div class="col-sm-7">
+            <div class="form-check-inline">
+                <input type="checkbox" id="includeLeaders" class="form-check-input" @onchange="IncludeLeadersChange" />
+                <label for="includeLeaders" class="form-check-label">
+                    Include Leaders
+                </label>
+            </div>
         </div>
     </div>
 
@@ -86,8 +91,8 @@
 
         <div class="mt-3 mb-3 row">
             <div class="col-sm">
-                <button type="submit" name="button" @onclick="SIAReportPdfClick" class="btn btn-primary">SIA Report (pdf)</button>
-                <button type="submit" name="button" @onclick="SIAReportXlsxClick" class="btn btn-success">SIA Report (xlsx)</button>
+                <button type="submit" name="button" @onclick="LogbookReportPdfClick" class="btn btn-primary">Loogbook (pdf)</button>
+                <button type="submit" name="button" @onclick="LogbookReportXlsxClick" class="btn btn-success">Logbook (xlsx)</button>
             </div>
         </div>
     }
