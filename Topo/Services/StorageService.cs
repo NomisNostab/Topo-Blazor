@@ -44,5 +44,12 @@ namespace Topo.Services
         public List<KeyValuePair<string, List<MemberListModel>>> CachedMembers { get; set; } = new List<KeyValuePair<string, List<MemberListModel>>>();
         public Dictionary<string, string> GetCalendarsResult { get; set; } = new Dictionary<string, string>();
         public List<OASTemplate> OASTemplates { get; set; } = new List<OASTemplate>();
+
+        public void Logout()
+        {
+            IsAuthenticated = false;
+            Units = new Dictionary<string, string>();
+            CachedMembers = new List<KeyValuePair<string, List<MemberListModel>>>();
+        }
     }
 }
