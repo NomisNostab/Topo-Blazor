@@ -12,7 +12,8 @@
         SIA,
         Milestone,
         Logbook,
-        Wallchart
+        Wallchart,
+        AdditionalAwards
     }
 
     public enum OutputType
