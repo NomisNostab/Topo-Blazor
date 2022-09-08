@@ -1,12 +1,12 @@
-﻿@page "/milestone"
-@inherits Controller.MilestoneController
+﻿@page "/wallchart"
+@inherits Controller.WallchartController
 
-<PageTitle>Topo / Milestone</PageTitle>
+<PageTitle>Topo / Wallchart</PageTitle>
 
 <EditForm Model="@model">
     <DataAnnotationsValidator />
     <div class="mt-3 mb-3 row">
-        <h2>Milestone</h2>
+        <h2>Wallchart</h2>
     </div>
 
     <div class="form-group mb-3 row">
@@ -23,14 +23,14 @@
             </select>
             <ValidationMessage For="@(() => model.UnitId)" />
         </div>
-        <div class ="col-sm-7">
+        <div class="col-sm-7">
         </div>
     </div>
 
     <div class="mt-3 mb-3 row">
         <div class="col-sm">
-            <button type="submit" name="button" @onclick="MilestoneReportPdfClick" class="btn btn-primary">OAS Worksheet (pdf)</button>
-            <button type="submit" name="button" @onclick="MilestoneReportXlsxClick" class="btn btn-success">OAS Worksheet (xlsx)</button>
+            <button type="submit" name="button" @onclick="WallchartReportPdfClick" class="btn btn-primary">Wallchart (pdf)</button>
+            <button type="submit" name="button" @onclick="WallchartReportXlsxClick" class="btn btn-success">Wallchart (xlsx)</button>
         </div>
     </div>
 

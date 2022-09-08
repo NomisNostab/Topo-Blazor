@@ -17,6 +17,7 @@ namespace Topo.Services
         public Task<byte[]> GetSIAReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
         public Task<byte[]> GetMilestoneReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
         public Task<byte[]> GetLogbookReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
+        public Task<byte[]> GetWallchartReport(string groupName, string section, string unitName, OutputType outputType, string serialisedWallchartItems);
     }
 
     public class ReportService : IReportService
@@ -170,6 +171,22 @@ namespace Topo.Services
                 UnitName = unitName,
                 OutputType = outputType,
                 ReportData = serialisedMilestoneSummaries
+            };
+
+            var report = await CallReportGeneratorFunction(reportGenerationRequest);
+            return report;
+        }
+
+        public async Task<byte[]> GetWallchartReport(string groupName, string section, string unitName, OutputType outputType, string serialisedWallchartItems)
+        {
+            var reportGenerationRequest = new ReportGenerationRequest()
+            {
+                ReportType = ReportType.Wallchart,
+                GroupName = groupName,
+                Section = section,
+                UnitName = unitName,
+                OutputType = outputType,
+                ReportData = serialisedWallchartItems
             };
 
             var report = await CallReportGeneratorFunction(reportGenerationRequest);
