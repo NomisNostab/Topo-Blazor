@@ -1,6 +1,8 @@
-﻿using Topo.Model.Login;
+﻿using Topo.Model.AdditionalAwards;
+using Topo.Model.Login;
 using Topo.Model.Members;
 using Topo.Model.OAS;
+using Topo.Model.Wallchart;
 
 namespace Topo.Services
 {
@@ -44,7 +46,8 @@ namespace Topo.Services
         public List<KeyValuePair<string, List<MemberListModel>>> CachedMembers { get; set; } = new List<KeyValuePair<string, List<MemberListModel>>>();
         public Dictionary<string, string> GetCalendarsResult { get; set; } = new Dictionary<string, string>();
         public List<OASTemplate> OASTemplates { get; set; } = new List<OASTemplate>();
-
+        public List<KeyValuePair<string, List<WallchartItemModel>>> CachedWallchartItems { get; set; } = new List<KeyValuePair<string, List<WallchartItemModel>>>();
+        public List<AdditionalAwardSpecificationListModel> AdditionalAwardSpecifications { get; set; } = new List<AdditionalAwardSpecificationListModel>();
         public void Logout()
         {
             IsAuthenticated = false;

@@ -11,7 +11,9 @@
         OASWorksheet,
         SIA,
         Milestone,
-        Logbook
+        Logbook,
+        Wallchart,
+        AdditionalAwards
     }
 
     public enum OutputType
