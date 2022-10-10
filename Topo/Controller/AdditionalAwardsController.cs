@@ -62,7 +62,7 @@ namespace Topo.Controller
         internal async Task AwardsReportPdfClick()
         {
             byte[] report = await AwardsReport(OutputType.PDF);
-            var fileName = $"SIA_Projects_{model.UnitName.Replace(' ', '_')}.pdf";
+            var fileName = $"Additional_Awards_{model.UnitName.Replace(' ', '_')}.pdf";
 
             // Send the data to JS to actually download the file
             await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, "application/pdf", report);
@@ -71,7 +71,7 @@ namespace Topo.Controller
         internal async Task AwardsReportXlsxClick()
         {
             byte[] report = await AwardsReport(OutputType.Excel);
-            var fileName = $"SIA_Projects_{model.UnitName.Replace(' ', '_')}.xlsx";
+            var fileName = $"Additional_Awards_{model.UnitName.Replace(' ', '_')}.xlsx";
 
             // Send the data to JS to actually download the file
             await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, "application/vnd.ms-excel", report);
