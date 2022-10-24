@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components;
 using System.Globalization;
+using Blazored.LocalStorage;
+using Syncfusion.Blazor;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -22,6 +24,7 @@ builder.Services.AddScoped<IMilestoneService, MilestoneService>();
 builder.Services.AddScoped<ILogbookService, LogbookService>();
 builder.Services.AddScoped<IWallchartService, WallchartService>();
 builder.Services.AddScoped<IAdditionalAwardService, AdditionalAwardService>();
+builder.Services.AddScoped<IApprovalsService, ApprovalsService>();
 
 builder.Services.AddScoped<SpinnerService>();
 builder.Services.AddScoped<DisplaySpinnerAutomaticallyHttpMessageHandler>();
@@ -35,6 +38,10 @@ builder.Services.AddScoped(s =>
         BaseAddress = new Uri(uriHelper.BaseUri)
     };
 });
+
+builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddSyncfusionBlazor();
+Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Mgo+DSMBMAY9C3t2VVhiQlFadVdJXGFWfVJpTGpQdk5xdV9DaVZUTWY/P1ZhSXxRdkJiUX9YdHZRRGheVkQ=");
 
 System.Globalization.CultureInfo cultureInfo = new System.Globalization.CultureInfo("en-AU");
 CultureInfo.DefaultThreadCurrentCulture = cultureInfo;

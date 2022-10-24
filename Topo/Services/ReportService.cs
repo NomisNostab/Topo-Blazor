@@ -19,6 +19,7 @@ namespace Topo.Services
         public Task<byte[]> GetLogbookReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
         public Task<byte[]> GetWallchartReport(string groupName, string section, string unitName, OutputType outputType, string serialisedWallchartItems);
         public Task<byte[]> GetAdditionalAwardsReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
+        public Task<byte[]> GetApprovalsReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData, DateTime fromDate, DateTime toDate, bool groupByMember);
     }
 
     public class ReportService : IReportService
@@ -220,6 +221,25 @@ namespace Topo.Services
                 UnitName = unitName,
                 OutputType = outputType,
                 ReportData = serialisedReportData
+            };
+
+            var report = await CallReportGeneratorFunction(reportGenerationRequest);
+            return report;
+        }
+
+        public async Task<byte[]> GetApprovalsReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData, DateTime fromDate, DateTime toDate, bool groupByMember)
+        {
+            var reportGenerationRequest = new ReportGenerationRequest()
+            {
+                ReportType = ReportType.Approvals,
+                GroupName = groupName,
+                Section = section,
+                UnitName = unitName,
+                OutputType = outputType,
+                ReportData = serialisedReportData,
+                FromDate = fromDate,
+                ToDate = toDate,
+                GroupByMember = groupByMember
             };
 
             var report = await CallReportGeneratorFunction(reportGenerationRequest);

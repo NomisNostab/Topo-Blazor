@@ -8,10 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Blazored.LocalStorage" Version="4.2.0" />
     <PackageReference Include="Faso.Blazor.SpinKit" Version="1.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.8" PrivateAssets="all" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Syncfusion.Blazor.Grid" Version="20.3.0.49" />
+    <PackageReference Include="Syncfusion.Blazor.Themes" Version="20.3.0.49" />
+    <PackageReference Include="Syncfusion.Licensing" Version="20.3.0.49" />
   </ItemGroup>
 
   <ItemGroup>

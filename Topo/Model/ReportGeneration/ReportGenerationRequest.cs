@@ -13,7 +13,8 @@
         Milestone,
         Logbook,
         Wallchart,
-        AdditionalAwards
+        AdditionalAwards,
+        Approvals
     }
 
     public enum OutputType
@@ -35,5 +36,6 @@
         public DateTime FromDate { get; set; }
         public DateTime ToDate { get; set; }
         public bool BreakByPatrol { get; set; }
+        public bool GroupByMember { get; set; }
     }
 }

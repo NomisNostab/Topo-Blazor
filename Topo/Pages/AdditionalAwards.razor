@@ -15,6 +15,7 @@
         </label>
         <div class="col-sm-3">
             <select id="unit" class="form-select" value="@model.UnitId" @onchange="UnitChange">
+                <option value="">Select unit</option>
                 @foreach (var unit in model.Units)
                 {
                     <option value="@unit.Key">@unit.Value</option>
