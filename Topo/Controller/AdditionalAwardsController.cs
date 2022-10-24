@@ -26,7 +26,7 @@ namespace Topo.Controller
         public IMembersService _membersService { get; set; }
 
         [Inject]
-        public IAdditionalAwardService _AdditionalAwardsService { get; set; }
+        public IAdditionalAwardService _additionalAwardsService { get; set; }
 
         public AdditionalAwardsPageViewModel model = new AdditionalAwardsPageViewModel();
 
@@ -99,7 +99,7 @@ namespace Topo.Controller
             var unitName = _storageService.UnitName ?? "";
             var section = _storageService.Section;
 
-            var reportData = await _AdditionalAwardsService.GenerateAdditionalAwardReportData(model.UnitId, memberKVP);
+            var reportData = await _additionalAwardsService.GenerateAdditionalAwardReportData(model.UnitId, memberKVP);
             var serialisedReportData = JsonConvert.SerializeObject(reportData);
 
             var report = await _reportService.GetAdditionalAwardsReport(groupName, section, unitName, outputType, serialisedReportData);
