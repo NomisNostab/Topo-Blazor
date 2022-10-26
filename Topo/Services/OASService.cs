@@ -1,12 +1,12 @@
 ﻿using System.Globalization;
+using System.IO;
 using Topo.Model.OAS;
 
 namespace Topo.Services
 {
     public interface IOASService
     {
-        public Dictionary<string, string> GetOASStreamList();
-        public Task<List<OASStageListModel>> GetOASStageList(string stream);
+        public Task<List<OASStageListModel>> GetOASStagesList();
         public Task<List<OASTemplate>> GetOASTemplate(string templateName);
         public Task<List<OASWorksheetAnswers>> GenerateOASWorksheetAnswers(string selectedUnitId, OASStageListModel selectedStage, bool hideCompletedMembers, List<OASTemplate> templateList);
         public Task<GetUnitAchievementsResultsModel> GetUnitAchievements(string unit, string stream, string branch, int stage);
@@ -25,7 +25,21 @@ namespace Topo.Services
             _membersService = membersService;
         }
 
-        public Dictionary<string, string> GetOASStreamList()
+        public async Task<List<OASStageListModel>> GetOASStagesList()
+        {
+            if (_storageService.OASStages.Any())
+                return _storageService.OASStages;
+            var oasStageList = new List<OASStageListModel>();
+            foreach (var stream in GetOASStreamList())
+            {
+                var stageList = await GetOASStageList(stream.Key);
+                oasStageList.AddRange(stageList);
+            }
+            _storageService.OASStages = oasStageList;
+            return oasStageList;
+        }
+
+        private Dictionary<string, string> GetOASStreamList()
         {
             var oasStreams = new Dictionary<string, string>()
             {
@@ -42,7 +56,7 @@ namespace Topo.Services
 
             return oasStreams;
         }
-        public async Task<List<OASStageListModel>> GetOASStageList(string stream)
+        private async Task<List<OASStageListModel>> GetOASStageList(string stream)
         {
             //var eventListModel = new EventListModel();
             var getEventResultModel = await _terrainAPIService.GetOASTreeAsync(stream);
