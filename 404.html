@@ -62,7 +62,14 @@
 
     // In your Javascript (external .js resource or <script> tag)
     function BindSelect2() {
-        $('.select2').select2({ placeholder: "Select one or more stages" });
+        $('.select2').select2({
+            placeholder: "Select one or more stages",
+            language: {
+                noResults: function (term) {
+                    return "Please wait while stages load.";
+                }
+            }
+        });
     };
 
     window.getSelectedValues = function (sel) {
