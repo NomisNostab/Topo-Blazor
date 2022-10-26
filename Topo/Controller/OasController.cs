@@ -46,13 +46,7 @@ namespace Topo.Controller
 
             model.Units = _storageService.Units;
 
-            var oasStageList = new List<OASStageListModel>();
-            foreach (var stream in _oasService.GetOASStreamList())
-            {
-                var stageList = await _oasService.GetOASStageList(stream.Key);
-                oasStageList.AddRange(stageList);
-            }
-            model.Stages = oasStageList;
+            model.Stages = await _oasService.GetOASStagesList();
         }
 
         internal async Task UnitChange(ChangeEventArgs e)
