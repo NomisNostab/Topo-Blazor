@@ -46,6 +46,7 @@ namespace Topo.Services
         public List<KeyValuePair<string, List<MemberListModel>>> CachedMembers { get; set; } = new List<KeyValuePair<string, List<MemberListModel>>>();
         public Dictionary<string, string> GetCalendarsResult { get; set; } = new Dictionary<string, string>();
         public List<OASTemplate> OASTemplates { get; set; } = new List<OASTemplate>();
+        public List<OASStageListModel> OASStages { get; set; } = new List<OASStageListModel>();
         public List<KeyValuePair<string, List<WallchartItemModel>>> CachedWallchartItems { get; set; } = new List<KeyValuePair<string, List<WallchartItemModel>>>();
         public List<AdditionalAwardSpecificationListModel> AdditionalAwardSpecifications { get; set; } = new List<AdditionalAwardSpecificationListModel>();
         public void Logout()
