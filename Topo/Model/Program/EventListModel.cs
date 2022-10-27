@@ -24,6 +24,7 @@ namespace Topo.Model.Program
 
         [Display(Name = "Status")]
         public string EventStatus { get; set; } = string.Empty;
+        public bool IsUnitEvent { get; set; }
     }
 
     public class EventAttendance

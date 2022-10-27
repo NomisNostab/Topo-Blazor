@@ -61,8 +61,17 @@ namespace Topo.Controller
                 _storageService.UnitId = model.CalendarId;
                 await _programService.SetCalendar(model.CalendarId);
                 var events = await _programService.GetEventsForDates(model.CalendarSearchFromDate, model.CalendarSearchToDate);
-                model.Events = events;
                 await _programService.ResetCalendar();
+                if (model.IncludeGroupEvents)
+                {
+                    var groupCalendars = await _programService.GetGroupCalendar();
+                    var groupCalendarId = groupCalendars.FirstOrDefault().Key;
+                    await _programService.SetCalendar(groupCalendarId);
+                    var groupEvents = await _programService.GetEventsForDates(model.CalendarSearchFromDate, model.CalendarSearchToDate);
+                    await _programService.ResetCalendar();
+                    events = events.Concat(groupEvents).OrderBy(e => e.StartDateTime).ToList();
+                }
+                model.Events = events;
             }
         }
 

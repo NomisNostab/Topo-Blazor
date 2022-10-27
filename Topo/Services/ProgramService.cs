@@ -7,6 +7,7 @@ namespace Topo.Services
     public interface IProgramService
     {
         public Task<Dictionary<string, string>> GetCalendars();
+        public Task<Dictionary<string, string>> GetGroupCalendar();
         public Task SetCalendar(string calendarId);
         public Task ResetCalendar();
         public Task<List<EventListModel>> GetEventsForDates(DateTime fromDate, DateTime toDate);
@@ -51,6 +52,18 @@ namespace Topo.Services
             return new Dictionary<string, string>();
         }
 
+        public async Task<Dictionary<string, string>> GetGroupCalendar()
+        {
+            getCalendarsResultModel = await _terrainAPIService.GetCalendarsAsync(GetUser());
+            if (getCalendarsResultModel != null && getCalendarsResultModel.own_calendars != null)
+            {
+                var calendars = getCalendarsResultModel.own_calendars.Where(c => c.type == "group")
+                    .ToDictionary(x => x.id, x => x.title);
+                return calendars;
+            }
+            return new Dictionary<string, string>();
+        }
+
         public async Task SetCalendar(string calendarId)
         {
             //Deep copy calendar to allow reset
@@ -88,7 +101,8 @@ namespace Topo.Services
                     StartDateTime = e.start_datetime,
                     EndDateTime = e.end_datetime,
                     ChallengeArea = myTI.ToTitleCase(e.challenge_area.Replace("_", " ")),
-                    EventStatus = myTI.ToTitleCase(e.status)
+                    EventStatus = myTI.ToTitleCase(e.status),
+                    IsUnitEvent = e.invitee_type == "unit"
                 })
                 .ToList();
                 return events;
