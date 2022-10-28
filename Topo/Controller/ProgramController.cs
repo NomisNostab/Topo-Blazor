@@ -29,6 +29,7 @@ namespace Topo.Controller
         public IMembersService _membersService { get; set; }
 
         public ProgramPageViewModel model = new ProgramPageViewModel();
+        private string groupCalendarId = string.Empty;
 
         protected override async Task OnInitializedAsync()
         {
@@ -39,6 +40,8 @@ namespace Topo.Controller
             model.CalendarSearchFromDate = DateTime.Now;
             model.CalendarSearchToDate = DateTime.Now.AddMonths(4);
             model.DateErrorMessage = "";
+            var groupCalendars = await _programService.GetGroupCalendar();
+            groupCalendarId = groupCalendars.FirstOrDefault().Key;
         }
 
         internal void CalendarChange(ChangeEventArgs e)
@@ -64,8 +67,6 @@ namespace Topo.Controller
                 await _programService.ResetCalendar();
                 if (model.IncludeGroupEvents)
                 {
-                    var groupCalendars = await _programService.GetGroupCalendar();
-                    var groupCalendarId = groupCalendars.FirstOrDefault().Key;
                     await _programService.SetCalendar(groupCalendarId);
                     var groupEvents = await _programService.GetEventsForDates(model.CalendarSearchFromDate, model.CalendarSearchToDate);
                     await _programService.ResetCalendar();
@@ -132,7 +133,7 @@ namespace Topo.Controller
             var unitName = _storageService.UnitName ?? "Unit Name";
             var section = _storageService.Section;
 
-            var attendanceReportData = await _programService.GenerateAttendanceReportData(model.CalendarSearchFromDate, model.CalendarSearchToDate, model.CalendarId);
+            var attendanceReportData = await _programService.GenerateAttendanceReportData(model.CalendarSearchFromDate, model.CalendarSearchToDate, model.CalendarId, model.IncludeGroupEvents ? groupCalendarId : "");
             var serialisedAttendanceReportData = JsonConvert.SerializeObject(attendanceReportData);
             var report = await _reportService.GetAttendanceReport(groupName, section, unitName, outputType, serialisedAttendanceReportData, model.CalendarSearchFromDate, model.CalendarSearchToDate);
 

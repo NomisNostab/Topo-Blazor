@@ -74,7 +74,7 @@
                 <strong>Challenge Area</strong>
             </div>
             <div class="col-sm-1">
-                <strong>Event Type</strong>
+                <strong>Event</strong>
             </div>
             <div class="col-sm-3">
             </div>
@@ -100,10 +100,7 @@
                 </div>
                 <div class="col-sm-3">
                     <button @onclick="@(e => SignInSheetClick(item.Id))" class="btn btn-link ">Sign in Sheet</button>
-                    @if (item.IsUnitEvent)
-                    {
-                        <button @onclick="@(e => EventAttendanceClick(item.Id))" class="btn btn-link">Attendance</button>
-                    }
+                    <button @onclick="@(e => EventAttendanceClick(item.Id))" class="btn btn-link">Attendance</button>
                 </div>
             </div>
         }
