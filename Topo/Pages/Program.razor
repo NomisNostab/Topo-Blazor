@@ -47,46 +47,59 @@
         <div class="col-sm-3">
             <button type="submit" name="button" class="btn btn-primary" @onclick="ShowUnitCalendarClick">Show Unit Calendar</button>
         </div>
-        <div class="col-sm-7">
+        <div class="form-check-inline col-sm-4">
+            <InputCheckbox id="includeLeaders" class="form-check-input"
+                           @bind-Value="model.IncludeGroupEvents" />
+            <label for="unit" class="form-check-label">
+                Include Group Events
+            </label>
+        </div>
+        <div class="col-sm-3">
         </div>
     </div>
 
     @if (model.Events != null && model.Events.Any())
     {
         <div class="row header">
-            <div class="col-sm">
+            <div class="col-sm-1">
                 <strong>Date</strong>
             </div>
-            <div class="col-sm">
+            <div class="col-sm-3">
                 <strong>Program Name</strong>
             </div>
-            <div class="col-sm">
+            <div class="col-sm-2">
                 <strong>Status</strong>
             </div>
-            <div class="col-sm">
+            <div class="col-sm-2">
                 <strong>Challenge Area</strong>
             </div>
-            <div class="col-sm-4">
+            <div class="col-sm-1">
+                <strong>Event</strong>
+            </div>
+            <div class="col-sm-3">
             </div>
         </div>
 
         @foreach (var item in model?.Events)
         {
             <div class="row striped">
-                <div class="col-sm">
+                <div class="col-sm-1">
                     @item.EventDate
                 </div>
-                <div class="col-sm">
+                <div class="col-sm-3">
                     @item.EventName
                 </div>
-                <div class="col-sm">
+                <div class="col-sm-2">
                     @item.EventStatus
                 </div>
-                <div class="col-sm">
+                <div class="col-sm-2">
                     @item.ChallengeArea
                 </div>
-                <div class="col-sm-4">
-                    <button @onclick="@(e => SignInSheetClick(item.Id))" class="btn btn-link ">Sign in Sheet</button>|
+                <div class="col-sm-1">
+                    @(item.IsUnitEvent ? "Unit" : "Group")
+                </div>
+                <div class="col-sm-3">
+                    <button @onclick="@(e => SignInSheetClick(item.Id))" class="btn btn-link ">Sign in Sheet</button>
                     <button @onclick="@(e => EventAttendanceClick(item.Id))" class="btn btn-link">Attendance</button>
                 </div>
             </div>

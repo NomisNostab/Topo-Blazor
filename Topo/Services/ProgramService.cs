@@ -7,11 +7,12 @@ namespace Topo.Services
     public interface IProgramService
     {
         public Task<Dictionary<string, string>> GetCalendars();
+        public Task<Dictionary<string, string>> GetGroupCalendar();
         public Task SetCalendar(string calendarId);
         public Task ResetCalendar();
         public Task<List<EventListModel>> GetEventsForDates(DateTime fromDate, DateTime toDate);
         public Task<EventListModel> GetAttendanceForEvent(string eventId);
-        public Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string selectedCalendar);
+        public Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string selectedCalendar, string groupCalendar);
     }
 
     public class ProgramService : IProgramService
@@ -45,6 +46,18 @@ namespace Topo.Services
             if (getCalendarsResultModel != null && getCalendarsResultModel.own_calendars != null)
             {
                 var calendars = getCalendarsResultModel.own_calendars.Where(c => c.type == "unit")
+                    .ToDictionary(x => x.id, x => x.title);
+                return calendars;
+            }
+            return new Dictionary<string, string>();
+        }
+
+        public async Task<Dictionary<string, string>> GetGroupCalendar()
+        {
+            getCalendarsResultModel = await _terrainAPIService.GetCalendarsAsync(GetUser());
+            if (getCalendarsResultModel != null && getCalendarsResultModel.own_calendars != null)
+            {
+                var calendars = getCalendarsResultModel.own_calendars.Where(c => c.type == "group")
                     .ToDictionary(x => x.id, x => x.title);
                 return calendars;
             }
@@ -88,7 +101,8 @@ namespace Topo.Services
                     StartDateTime = e.start_datetime,
                     EndDateTime = e.end_datetime,
                     ChallengeArea = myTI.ToTitleCase(e.challenge_area.Replace("_", " ")),
-                    EventStatus = myTI.ToTitleCase(e.status)
+                    EventStatus = myTI.ToTitleCase(e.status),
+                    IsUnitEvent = e.invitee_type == "unit"
                 })
                 .ToList();
                 return events;
@@ -115,11 +129,13 @@ namespace Topo.Services
                 });
             }
 
+            eventListModel.Id = eventId;
+            eventListModel.EventName = getEventResultModel?.title ?? "Event not found";
+            eventListModel.StartDateTime = getEventResultModel?.start_datetime ?? DateTime.Now;
+            eventListModel.attendees = eventAttendance;
+
             if (getEventResultModel != null && getEventResultModel.attendance != null && getEventResultModel.attendance.attendee_members != null && getEventResultModel.attendance.attendee_members.Any())
             {
-                eventListModel.Id = eventId;
-                eventListModel.EventName = getEventResultModel.title;
-                eventListModel.StartDateTime = getEventResultModel.start_datetime;
                 foreach (var attended in getEventResultModel.attendance.attendee_members)
                 {
                     if (eventAttendance.Any(a => a.member_number == attended.member_number))
@@ -134,9 +150,6 @@ namespace Topo.Services
             // for older events participant_members seems to be used, not attendee_members
             if (getEventResultModel != null && getEventResultModel.attendance != null && getEventResultModel.attendance.participant_members != null && getEventResultModel.attendance.participant_members.Any())
             {
-                eventListModel.Id = eventId;
-                eventListModel.EventName = getEventResultModel.title;
-                eventListModel.StartDateTime = getEventResultModel.start_datetime;
                 foreach (var attended in getEventResultModel.attendance.participant_members)
                 {
                     if (eventAttendance.Any(a => a.member_number == attended.member_number))
@@ -148,10 +161,10 @@ namespace Topo.Services
                 return eventListModel;
             }
 
-            return new EventListModel();
+            return eventListModel;
         }
 
-        public async Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string selectedCalendar)
+        public async Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string selectedCalendar, string groupCalendar)
         {
             var attendanceReport = new AttendanceReportModel();
             var attendanceReportItems = new List<AttendanceReportItemModel>();
@@ -160,6 +173,13 @@ namespace Topo.Services
             //
             var programEvents = await GetEventsForDates(fromDate, toDate);
             await ResetCalendar();
+            if (!string.IsNullOrEmpty(groupCalendar))
+            {
+                await SetCalendar(groupCalendar);
+                var groupProgramEvents = await GetEventsForDates(fromDate, toDate);
+                await ResetCalendar();
+                programEvents = programEvents.Concat(groupProgramEvents).ToList();
+            }
             foreach (var programEvent in programEvents.OrderBy(pe => pe.StartDateTime))
             {
                 var eventListModel = await GetAttendanceForEvent(programEvent.Id);
