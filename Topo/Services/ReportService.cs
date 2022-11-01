@@ -13,7 +13,7 @@ namespace Topo.Services
         public Task<byte[]> GetSignInSheetReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberList, string eventName);
         public Task<byte[]> GetEventAttendanceReport(string groupName, string section, string unitName, OutputType outputType, string serialisedEventListModel);
         public Task<byte[]> GetAttendanceReport(string groupName, string section, string unitName, OutputType outputType, string serialisedAttendanceReportData, DateTime fromDate, DateTime toDate);
-        public Task<byte[]> GetOASWorksheetReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberAnswers, bool breakByPatrol);
+        public Task<byte[]> GetOASWorksheetReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberAnswers, bool breakByPatrol, bool formatLikeTerrain);
         public Task<byte[]> GetSIAReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
         public Task<byte[]> GetMilestoneReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
         public Task<byte[]> GetLogbookReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
@@ -130,7 +130,7 @@ namespace Topo.Services
             return report;
         }
 
-        public async Task<byte[]> GetOASWorksheetReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberAnswers, bool breakByPatrol)
+        public async Task<byte[]> GetOASWorksheetReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberAnswers, bool breakByPatrol, bool formatLikeTerrain)
         {
             var reportGenerationRequest = new ReportGenerationRequest()
             {
@@ -140,7 +140,8 @@ namespace Topo.Services
                 UnitName = unitName,
                 OutputType = outputType,
                 ReportData = serialisedSortedMemberAnswers,
-                BreakByPatrol = breakByPatrol
+                BreakByPatrol = breakByPatrol,
+                FormatLikeTerrain = formatLikeTerrain
             };
 
             var report = await CallReportGeneratorFunction(reportGenerationRequest);

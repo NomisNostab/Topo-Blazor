@@ -78,7 +78,7 @@ namespace Topo.Controller
 
         public async Task SignInSheetClick(string eventId)
         {
-            var eventName = model.Events?.Where(e => e.Id == eventId).FirstOrDefault()?.EventName ?? "";
+            var eventName = model.Events?.Where(e => e.Id == eventId).FirstOrDefault()?.EventDisplay ?? "";
             var groupName = _storageService.GroupName ?? "Group Name";
             var unitName = _storageService.UnitName ?? "Unit Name";
             var section = _storageService.Section;
