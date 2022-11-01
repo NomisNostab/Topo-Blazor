@@ -18,7 +18,8 @@ namespace Topo.Model.OAS
         public bool HideCompletedMembers { get; set; }
 
         [Display(Name = "Break by Patrol")]
-        public bool BreakByPatrol { get; set; }
+        public bool BreakByPatrol { get; set; } = false;
         public string StagesErrorMessage { get; set; } = "";
+        public bool FormatLikeTerrain { get; set; } = false;
     }
 }

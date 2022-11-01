@@ -100,7 +100,7 @@ namespace Topo.Controller
 
             var serialisedSortedMemberAnswers = JsonConvert.SerializeObject(sortedAnswers);
 
-            var report = await _reportService.GetOASWorksheetReport(groupName, section, unitName, outputType, serialisedSortedMemberAnswers, model.BreakByPatrol);
+            var report = await _reportService.GetOASWorksheetReport(groupName, section, unitName, outputType, serialisedSortedMemberAnswers, model.BreakByPatrol, model.FormatLikeTerrain);
             return report;
         }
 
