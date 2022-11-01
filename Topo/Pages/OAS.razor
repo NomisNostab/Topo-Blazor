@@ -47,22 +47,39 @@
     </div>
 
     <div class="mt-3 mb-3 row">
-        <div class="col-sm">
-            <button type="submit" name="button" @onclick="OASWorksheetPdfClick" class="btn btn-primary">OAS Worksheet (pdf)</button>
-            <button type="submit" name="button" @onclick="OASWorksheetXlsxClick" class="btn btn-success">OAS Worksheet (xlsx)</button>
-            <div class="form-check-inline">
-                <InputCheckbox id="hideCompletedMembers" class="form-check-input"
-                               @bind-Value="model.HideCompletedMembers" />
-                <label for="unit" class="form-check-label">
-                    Hide Completed Members
-                </label>
-                <InputCheckbox id="breakByPatrol" class="form-check-input"
-                               @bind-Value="model.BreakByPatrol" />
-                <label for="unit" class="form-check-label">
-                    Break by Patrol
-                </label>
-            </div>
+        <div class="col-sm-3">
+            <InputCheckbox id="hideCompletedMembers" class="form-check-input"
+                           @bind-Value="model.HideCompletedMembers" />
+            <label class="form-check-label" for="hideCompletedMembers">
+                Hide Completed Members
+            </label>
+        </div>
+        <div class="col-sm-3">
+            <InputCheckbox id="breakByPatrol" class="form-check-input"
+                           @bind-Value="model.BreakByPatrol" />
+            <label class="form-check-label" for="breakByPatrol">
+                Break by Patrol
+            </label>
+        </div>
+        <div class="col-sm-3">
+            <InputCheckbox id="formatLikeTerrain" class="form-check-input"
+                           @bind-Value="model.FormatLikeTerrain" />
+            <label class="form-check-label" for="formatLikeTerrain">
+                Format like Terrain
+            </label>
+        </div>
+        <div class="col-sm-3">
         </div>
     </div>
+
+    <div class="mt-3 mb-3 row">
+        <div class="col-sm-2">
+            <button type="submit" name="button" @onclick="OASWorksheetPdfClick" class="btn btn-primary">OAS Worksheet (pdf)</button>
+        </div>
+        <div class="col-sm-2">
+            <button type="submit" name="button" @onclick="OASWorksheetXlsxClick" class="btn btn-success">OAS Worksheet (xlsx)</button>
+        </div>
+    </div>
+
 
 </EditForm>
