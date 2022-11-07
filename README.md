@@ -14,3 +14,6 @@ All new development will be done against the Topo-Blazor project, not this one.
 ### Browser
 To run Topo just go to https://nomisnostab.github.io/Topo-Blazor/ and it will download and start, be patient while it downloads.
 
+## Documentation
+
+Please view the [wiki](https://github.com/NomisNostab/Topo-Blazor/wiki) on how to use Topo.
