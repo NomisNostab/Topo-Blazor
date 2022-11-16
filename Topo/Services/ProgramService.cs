@@ -102,7 +102,8 @@ namespace Topo.Services
                     EndDateTime = e.end_datetime,
                     ChallengeArea = myTI.ToTitleCase(e.challenge_area.Replace("_", " ")),
                     EventStatus = myTI.ToTitleCase(e.status),
-                    IsUnitEvent = e.invitee_type == "unit"
+                    IsUnitEvent = e.invitee_type == "unit",
+                    EventDisplay = $"{e.title} {e.start_datetime.ToShortDateString()}"
                 })
                 .ToList();
                 return events;
@@ -125,13 +126,15 @@ namespace Topo.Services
                     member_number = member.member_number,
                     patrol_name = member.patrol_name,
                     isAdultMember = member.isAdultLeader == 1,
-                    attended = false
+                    attended = false,
+                    pal = ""
                 });
             }
 
             eventListModel.Id = eventId;
             eventListModel.EventName = getEventResultModel?.title ?? "Event not found";
             eventListModel.StartDateTime = getEventResultModel?.start_datetime ?? DateTime.Now;
+            eventListModel.EventDisplay = $"{eventListModel.EventName} {eventListModel.EventDate}";
             eventListModel.attendees = eventAttendance;
 
             if (getEventResultModel != null && getEventResultModel.attendance != null && getEventResultModel.attendance.attendee_members != null && getEventResultModel.attendance.attendee_members.Any())
@@ -141,6 +144,27 @@ namespace Topo.Services
                     if (eventAttendance.Any(a => a.member_number == attended.member_number))
                     {
                         eventAttendance.Where(a => a.member_number == attended.member_number).Single().attended = true;
+                    }
+                }
+                foreach (var participated in getEventResultModel.attendance.participant_members)
+                {
+                    if (eventAttendance.Any(a => a.member_number == participated.member_number))
+                    {
+                        eventAttendance.Where(a => a.member_number == participated.member_number).Single().pal = "P";
+                    }
+                }
+                foreach (var assisted in getEventResultModel.attendance.assistant_members)
+                {
+                    if (eventAttendance.Any(a => a.member_number == assisted.member_number))
+                    {
+                        eventAttendance.Where(a => a.member_number == assisted.member_number).Single().pal = "A";
+                    }
+                }
+                foreach (var lead in getEventResultModel.attendance.leader_members)
+                {
+                    if (eventAttendance.Any(a => a.member_number == lead.member_number))
+                    {
+                        eventAttendance.Where(a => a.member_number == lead.member_number).Single().pal = "L";
                     }
                 }
                 eventListModel.attendees = eventAttendance;
@@ -155,6 +179,7 @@ namespace Topo.Services
                     if (eventAttendance.Any(a => a.member_number == attended.member_number))
                     {
                         eventAttendance.Where(a => a.member_number == attended.member_number).Single().attended = true;
+                        eventAttendance.Where(a => a.member_number == attended.member_number).Single().pal = "P";
                     }
                 }
                 eventListModel.attendees = eventAttendance;
@@ -170,7 +195,7 @@ namespace Topo.Services
             var attendanceReportItems = new List<AttendanceReportItemModel>();
             await SetCalendar(selectedCalendar);
             var members = await _memberService.GetMembersAsync(_storageService.UnitId);
-            //
+
             var programEvents = await GetEventsForDates(fromDate, toDate);
             await ResetCalendar();
             if (!string.IsNullOrEmpty(groupCalendar))
@@ -187,17 +212,19 @@ namespace Topo.Services
                 foreach (var member in members)
                 {
                     var attended = programEvent.attendees.Where(a => a.member_number == member.member_number).SingleOrDefault()?.attended ?? false;
+                    var pal = programEvent.attendees.Where(a => a.member_number == member.member_number).SingleOrDefault()?.pal ?? "";
                     attendanceReportItems.Add(new AttendanceReportItemModel
                     {
                         MemberId = member.id,
                         MemberName = $"{member.first_name} {member.last_name}",
                         EventName = programEvent.EventName,
-                        EventNameDisplay = programEvent.EventDisplay,
                         EventChallengeArea = programEvent.ChallengeArea,
                         EventStartDate = programEvent.StartDateTime,
+                        EventNameDisplay = $"{programEvent.EventName} {programEvent.EventDate}",
                         Attended = attended ? 1 : 0,
                         IsAdultMember = member.isAdultLeader,
-                        EventStatus = programEvent.EventStatus
+                        EventStatus = programEvent.EventStatus,
+                        Pal = pal
                     });
                 }
             }

@@ -15,7 +15,7 @@ namespace Topo.Model.Program
 
         [Display(Name = "Challenge Area")]
         public string ChallengeArea { get; set; } = string.Empty;
-        public string EventDisplay => $"{EventName} {StartDateTime.ToShortDateString()}";
+        public string EventDisplay { get; set; } = string.Empty;
 
         [Display(Name = "Date")]
         public string EventDate => StartDateTime.ToShortDateString();
@@ -36,5 +36,6 @@ namespace Topo.Model.Program
         public string patrol_name { get; set; } = "";
         public bool isAdultMember { get; set; }
         public bool attended { get; set; }
+        public string pal { get; set; } = string.Empty;
     }
 }
