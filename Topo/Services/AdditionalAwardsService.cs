@@ -12,17 +12,15 @@ namespace Topo.Services
     {
         private readonly StorageService _storageService;
         private readonly ITerrainAPIService _terrainAPIService;
-        private readonly ILogger<ISIAService> _logger;
         private readonly IReportService _reportService;
         //private readonly IApprovalsService _approvalsService;
 
         public AdditionalAwardService(ITerrainAPIService terrainAPIService,
-            StorageService storageService, ILogger<ISIAService> logger,
+            StorageService storageService,
             IReportService reportService) //, IApprovalsService approvalsService)
         {
             _terrainAPIService = terrainAPIService;
             _storageService = storageService;
-            _logger = logger;
             _reportService = reportService;
             //_approvalsService = approvalsService;
         }
