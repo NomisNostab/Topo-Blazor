@@ -57,11 +57,13 @@ namespace Topo.Services
             "1u4uajve0lin0ki5n6b61ovva7",
             "21m9o832lp5krto1e8ioo6ldg2"
         };
+        private readonly ILogger<TerrainAPIService> _logger;
 
-        public TerrainAPIService(HttpClient httpClient, StorageService storageService)
+        public TerrainAPIService(HttpClient httpClient, StorageService storageService, ILogger<TerrainAPIService> logger)
         {
             _httpClient = httpClient;
             _storageService = storageService;
+            _logger = logger;
         }
 
         public async Task<AuthenticationResultModel?> LoginAsync(string? branch, string? username, string? password)
@@ -404,9 +406,8 @@ namespace Topo.Services
             var result = responseContent.Result;
             if (string.IsNullOrEmpty(xAmzTargetHeader)) // Dont log authorisation requests
             {
-                // TODO Logging
-                //_logger.LogInformation($"Request: {requestUri}");
-                //_logger.LogInformation($"Response: {result}");
+                _logger.LogInformation($"Request: {requestUri}");
+                _logger.LogInformation($"Response: {result}");
             }
             return result;
         }
@@ -419,10 +420,9 @@ namespace Topo.Services
             }
             catch (Exception ex)
             {
-                // TODO Logging
-                //_logger.LogError($"Error deserialising: {typeof(T)}");
-                //_logger.LogError($"String being processed: {result}");
-                //_logger.LogError($"Exception message: {ex.Message}");
+                _logger.LogError($"Error deserialising: {typeof(T)}");
+                _logger.LogError($"String being processed: {result}");
+                _logger.LogError($"Exception message: {ex.Message}");
             }
             return JsonConvert.DeserializeObject<T>("");
         }

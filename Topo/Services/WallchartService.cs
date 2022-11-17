@@ -11,15 +11,13 @@ namespace Topo.Services
     {
         private readonly StorageService _storageService;
         private readonly ITerrainAPIService _terrainAPIService;
-        private readonly ILogger<IWallchartService> _logger;
         //private readonly IApprovalsService _approvalService;
         private List<ApprovalsListModel> approvals = new List<ApprovalsListModel>();
 
-        public WallchartService(StorageService storageService, ITerrainAPIService terrainAPIService, ILogger<IWallchartService> logger) //, IApprovalsService approvalService)
+        public WallchartService(StorageService storageService, ITerrainAPIService terrainAPIService) //, IApprovalsService approvalService)
         {
             _storageService = storageService;
             _terrainAPIService = terrainAPIService;
-            _logger = logger;
             //_approvalService = approvalService;
         }
 
