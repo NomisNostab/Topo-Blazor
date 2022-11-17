@@ -87,7 +87,7 @@ namespace Topo.Controller
             var serialisedSortedMemberList = JsonConvert.SerializeObject(members.OrderBy(m => m.first_name).ThenBy(m => m.last_name));
             var report = await _reportService.GetSignInSheetReport(groupName, section, unitName, OutputType.PDF, serialisedSortedMemberList, eventName);
 
-            var fileName = $"SignInSheet_{unitName.Replace(' ', '_')}.pdf";
+            var fileName = $"SignInSheet_{unitName.Replace(' ', '_')}_{eventName.Replace(' ', '_')}.pdf";
 
             // Send the data to JS to actually download the file
             await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, "application/pdf", report);
@@ -103,7 +103,7 @@ namespace Topo.Controller
             var serialisedEventListModel = JsonConvert.SerializeObject(eventListModel);
             var report = await _reportService.GetEventAttendanceReport(groupName, section, unitName, OutputType.Excel, serialisedEventListModel);
 
-            var fileName = $"Attendance_{unitName.Replace(' ', '_')}.xlsx";
+            var fileName = $"Attendance_{unitName.Replace(' ', '_')}_{eventListModel.EventDisplay.Replace(' ', '_')}.xlsx";
 
             // Send the data to JS to actually download the file
             await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, "application/vnd.ms-excel", report);
