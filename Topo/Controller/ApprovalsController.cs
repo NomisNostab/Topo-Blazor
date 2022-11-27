@@ -46,6 +46,13 @@ namespace Topo.Controller
             model.Units = _storageService.Units;
             model.ApprovalSearchFromDate = DateTime.Now.AddMonths(-2);
             model.ApprovalSearchToDate = DateTime.Now;
+            if (_storageService.UnitId != null)
+            {
+                model.UnitId = _storageService.UnitId;
+                if (_storageService.Units != null)
+                    _storageService.UnitName = _storageService.Units.Where(u => u.Key == model.UnitId).FirstOrDefault().Value;
+                model.UnitName = _storageService.UnitName;
+            }
         }
 
         internal async Task UnitChange(ChangeEventArgs e)
