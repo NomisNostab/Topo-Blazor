@@ -1,8 +1,10 @@
 ﻿using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using System.Globalization;
 using Topo.Model.Approvals;
+using Topo.Model.ReportGeneration;
 
 namespace Topo.Services
 {
@@ -11,6 +13,8 @@ namespace Topo.Services
         public Task<List<ApprovalsListModel>> GetApprovalListItems(string unitId);
         public Task<List<ApprovalsListModel>> ReadApprovalListFromLocalStorage(string unitId);
         public Task UpdateApproval(string unitId, ApprovalsListModel approval);
+        public Task<string> DownloadApprovalList(string unitId);
+        public Task UploadApprovals(IBrowserFile approvalsFile, string unitId);
     }
     public class ApprovalsService : IApprovalsService
     {
@@ -187,5 +191,24 @@ namespace Topo.Services
             await WriteApprovalsListToLocalStarage(savedApprovalItems.OrderBy(a => a.submission_date).ToList(), unitId);
         }
 
+        public async Task<string> DownloadApprovalList(string unitId)
+        {
+            var savedApprovalItems = await ReadApprovalListFromLocalStorage(unitId); 
+            return JsonConvert.SerializeObject(savedApprovalItems);
+        }
+
+        public async Task UploadApprovals(IBrowserFile approvalsFile, string unitId)
+        {
+            try
+            {
+                var json = await new StreamReader(approvalsFile.OpenReadStream()).ReadToEndAsync();
+                List<ApprovalsListModel>? list = JsonConvert.DeserializeObject<List<ApprovalsListModel>>(json);
+                await WriteApprovalsListToLocalStarage(list?.OrderBy(a => a.submission_date).ToList() ?? new List<ApprovalsListModel>(), unitId);
+            }
+            catch
+            {
+                return;
+            }
+        }
     }
 }
