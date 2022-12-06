@@ -109,13 +109,25 @@ namespace Topo.Controller
         internal async Task<byte[]> ApprovalsReport(OutputType outputType = OutputType.PDF)
         {
             var filterSetings = GridInstance.FilterSettings;
-            string[] filterColumnValues = new string[0];
-            string filterOperator = "";
+            string[] nameFilterColumnValues = new string[0];
+            string nameFilterOperator = "";
+            string[] statusFilterColumnValues = new string[0];
+            string statusFilterOperator = "";
             string groupCols = "";
             if (filterSetings != null && filterSetings.Columns != null)
             {
-                filterColumnValues = filterSetings.Columns.Select(x => x.Value.ToString()).ToArray();
-                filterOperator = filterSetings.Columns.FirstOrDefault().Operator.ToString();
+                var nameFilterSettings = filterSetings.Columns.Where(x => x.Field == "member_display_name");
+                if (nameFilterSettings != null)
+                {
+                    nameFilterColumnValues = nameFilterSettings.Select(x => x.Value.ToString() ?? "").ToArray();
+                    nameFilterOperator = nameFilterSettings.FirstOrDefault()?.Operator.ToString() ?? "";
+                }
+                var statusFilterSettings = filterSetings.Columns.Where(x => x.Field == "submission_status");
+                if (statusFilterSettings != null)
+                {
+                    statusFilterColumnValues = statusFilterSettings.Select(x => x.Value.ToString() ?? "").ToArray();
+                    statusFilterOperator = statusFilterSettings.FirstOrDefault()?.Operator.ToString() ?? "";
+                }
             }
             var groupSettings = GridInstance.GroupSettings;
             if (groupSettings != null && groupSettings.Columns != null)
@@ -124,10 +136,14 @@ namespace Topo.Controller
             }
 
             var selectedApprovals = new List<ApprovalsListModel>();
-            if (filterOperator.ToLower() == "equal")
-                selectedApprovals = model.Approvals.Where(t2 => filterColumnValues.Count(m => m == t2.member_display_name) != 0).ToList();
+            if (nameFilterOperator.ToLower() == "equal")
+                selectedApprovals = model.Approvals.Where(t2 => nameFilterColumnValues.Count(m => m == t2.member_display_name) != 0).ToList();
             else
-                selectedApprovals = model.Approvals.Where(t2 => filterColumnValues.Count(m => m == t2.member_display_name) == 0).ToList();
+                selectedApprovals = model.Approvals.Where(t2 => nameFilterColumnValues.Count(m => m == t2.member_display_name) == 0).ToList();
+            if (statusFilterOperator.ToLower() == "equal")
+                selectedApprovals = selectedApprovals.Where(t2 => statusFilterColumnValues.Count(m => m == t2.submission_status) != 0).ToList();
+            else
+                selectedApprovals = selectedApprovals.Where(t2 => statusFilterColumnValues.Count(m => m == t2.submission_status) == 0).ToList();
 
             var groupByMember = (groupCols ?? "achievement_name") == "member_display_name";
             var groupName = _storageService.GroupName ?? "";
