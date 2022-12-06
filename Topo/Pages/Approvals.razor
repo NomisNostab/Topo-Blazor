@@ -64,7 +64,10 @@
         <div class="col-sm-3">
             <button type="submit" name="button" class="btn btn-primary" @onclick="RefreshApprovalsClick">Refresh list</button>
         </div>
-        <div class="col-sm-7">
+        <div class="col-sm-3">
+            <a href="approvalsbackup" class="btn btn-primary">Backup/Restore</a>
+        </div>
+        <div class="col-sm-4">
         </div>
     </div>
 
@@ -80,7 +83,7 @@
             <GridColumn Field="achievement_name" HeaderText="Achievement" AllowEditing="false" AllowFiltering="false"></GridColumn>
             <GridColumn Field="submission_type" HeaderText="Type" AllowEditing="false" AllowFiltering="false" AllowGrouping="false"></GridColumn>
             <GridColumn Field="submission_outcome" HeaderText="Outcome" AllowEditing="false" AllowFiltering="false" AllowGrouping="false"></GridColumn>
-            <GridColumn Field="submission_status" HeaderText="Status" AllowEditing="false" AllowFiltering="false" AllowGrouping="false"></GridColumn>
+            <GridColumn Field="submission_status" HeaderText="Status" AllowEditing="false" AllowFiltering="true" AllowGrouping="false"></GridColumn>
             <GridColumn Field="awarded_date" HeaderText="Awarded" Format="dd/MM/yyyy" EditType="EditType.DatePickerEdit" Type="ColumnType.Date" AllowEditing="false" AllowFiltering="false" AllowGrouping="false"></GridColumn>
             <GridColumn Field="presented_date" HeaderText="Presented" Format="dd/MM/yyyy" EditType="EditType.DatePickerEdit" Type="ColumnType.Date" AllowEditing="true" AllowFiltering="false" AllowGrouping="false" EditorSettings="@DateEditParams"></GridColumn>
         </GridColumns>

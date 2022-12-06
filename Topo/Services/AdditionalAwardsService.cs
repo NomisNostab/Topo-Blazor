@@ -12,17 +12,15 @@ namespace Topo.Services
     {
         private readonly StorageService _storageService;
         private readonly ITerrainAPIService _terrainAPIService;
-        private readonly ILogger<ISIAService> _logger;
         private readonly IReportService _reportService;
         //private readonly IApprovalsService _approvalsService;
 
         public AdditionalAwardService(ITerrainAPIService terrainAPIService,
-            StorageService storageService, ILogger<ISIAService> logger,
+            StorageService storageService,
             IReportService reportService) //, IApprovalsService approvalsService)
         {
             _terrainAPIService = terrainAPIService;
             _storageService = storageService;
-            _logger = logger;
             _reportService = reportService;
             //_approvalsService = approvalsService;
         }
@@ -48,21 +46,28 @@ namespace Topo.Services
             var additionalAwardsList = new List<AdditionalAwardListModel>();
             var lastMemberProcessed = "";
             var memberName = "";
-            foreach (var result in unitAchievementsResult.results)
+            foreach(var memberKVP in selectedMembers)
             {
-                var memberKVP = selectedMembers.Where(m => m.Key == result.member_id).FirstOrDefault();
-                if (memberKVP.Key != null)
+                await _terrainAPIService.RevokeAssumedProfiles();
+                await _terrainAPIService.AssumeProfile(memberKVP.Key);
+                var getMemberLogbookMetrics = await _terrainAPIService.GetMemberLogbookMetrics(memberKVP.Key);
+                var totalNightsCamped = getMemberLogbookMetrics.results.Where(r => r.name == "total_nights_camped").FirstOrDefault()?.value ?? 0;
+                var totalKmsHiked = (getMemberLogbookMetrics.results.Where(r => r.name == "total_distance_hiked").FirstOrDefault()?.value ?? 0) / 1000.0f;
+                memberName = $"{memberKVP.Value} ({totalNightsCamped} Nights, {totalKmsHiked} KMs)";
+                lastMemberProcessed = memberKVP.Key;
+
+                additionalAwardsList.Add(new AdditionalAwardListModel
                 {
-                    if (memberKVP.Key != lastMemberProcessed)
-                    {
-                        await _terrainAPIService.RevokeAssumedProfiles();
-                        await _terrainAPIService.AssumeProfile(memberKVP.Key);
-                        var getMemberLogbookMetrics = await _terrainAPIService.GetMemberLogbookMetrics(memberKVP.Key);
-                        var totalNightsCamped = getMemberLogbookMetrics.results.Where(r => r.name == "total_nights_camped").FirstOrDefault()?.value ?? 0;
-                        var totalKmsHiked = (getMemberLogbookMetrics.results.Where(r => r.name == "total_distance_hiked").FirstOrDefault()?.value ?? 0) / 1000.0f;
-                        memberName = $"{memberKVP.Value} ({totalNightsCamped} Nights, {totalKmsHiked} KMs)";
-                        lastMemberProcessed = memberKVP.Key;
-                    }
+                    MemberName = memberName,
+                    AwardId = "",
+                    AwardName = "",
+                    AwardSortIndex = 0,
+                    AwardDate = null,
+                    PresentedDate = null
+                });
+
+                foreach (var result in unitAchievementsResult.results.Where(r => r.member_id == memberKVP.Key))
+                {
                     var awardSpecification = awardSpecificationsList.Where(a => a.id == result.achievement_meta.additional_award_id).FirstOrDefault();
                     var awardStatus = result.status;
                     var awardStatusDate = result.status_updated;
@@ -86,12 +91,12 @@ namespace Topo.Services
                         AwardDate = awardStatusDate,
                         PresentedDate = awardPresentedDate ?? awardStatusDate //null
                     });
-                }
+               }
             }
+
             await _terrainAPIService.RevokeAssumedProfiles();
             var sortedAdditionalAwardsList = additionalAwardsList.OrderBy(a => a.MemberName).ThenBy(a => a.AwardSortIndex).ToList();
             var distinctAwards = sortedAdditionalAwardsList.OrderBy(x => x.AwardSortIndex).Select(x => x.AwardId).Distinct().ToList();
-            // awardSpecificationsList, sortedAdditionalAwardsList, distinctAwards
 
             var reportData = new AdditionalAwardsReportDataModel();
             reportData.AwardSpecificationsList = awardSpecificationsList;

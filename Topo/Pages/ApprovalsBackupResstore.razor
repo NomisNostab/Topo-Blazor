@@ -1,0 +1,44 @@
+﻿@page "/approvalsbackup"
+@inherits Controller.ApprovalsBackupController
+
+<PageTitle>Topo / Approvals Backup Restore</PageTitle>
+
+<EditForm Model="@model">
+    <DataAnnotationsValidator />
+    <div class="mt-3 mb-3 row">
+        <h2>Approvals Backup Restore</h2>
+    </div>
+
+    <div class="form-group mb-3 row">
+        <label for="unit" class="col-sm-2 col-form-label">
+            Select Unit
+        </label>
+        <div class="col-sm-3">
+            <select id="unit" class="form-select" value="@model.SelectedUnitId" @onchange="UnitChange">
+                <option value="">Select unit</option>
+                @foreach (var unit in model.Units)
+                {
+                    <option value="@unit.Key">@unit.Value</option>
+                }
+            </select>
+            <ValidationMessage For="@(() => model.SelectedUnitId)" />
+        </div>
+        <div class="col-sm-7">
+        </div>
+    </div>
+
+    <div class="mt-3 mb-3 row">
+        <div class="col-sm-2">
+            <button type="submit" name="button" @onclick="DownloadApprovalsClick" class="btn btn-warning">Download Approvals</button>
+        </div>
+        <div class="col-sm-3">
+            <InputFile OnChange="@LoadFiles" accept=".json" />
+        </div>
+        <div class="col-sm-2">
+            <button type="submit" name="button" @onclick="UploadApprovalsClick" class="btn btn-danger">Upload Approvals</button>
+        </div>
+        <div class="col-sm-5">
+        </div>
+    </div>
+
+</EditForm>
