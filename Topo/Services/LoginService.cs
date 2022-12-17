@@ -44,16 +44,28 @@ namespace Topo.Services
         public async Task GetProfilesAsync()
         {
             var getProfilesResultModel = await _terrainAPIService.GetProfilesAsync();
+            var profilesWithUnits = getProfilesResultModel.profiles.Where(p => p.unit != null).ToArray();
+            getProfilesResultModel.profiles = profilesWithUnits;
             if (_storageService != null)
                 _storageService.GetProfilesResult = getProfilesResultModel;
         }
 
         public Dictionary<string, string> GetUnits()
         {
-            return _storageService.GetProfilesResult?.profiles?
-                .Where(p => p.member.name == _storageService.MemberName)
-                .Select(p => p.unit)
-                .ToDictionary(p => p?.id.ToString() ?? "", p => p?.name ?? "");
+            var groupCount = _storageService.GetProfilesResult?.profiles.Select(p => p.group.name).Distinct().Count();
+            if (groupCount == 1)
+            {
+                return _storageService.GetProfilesResult?.profiles?
+                    .Where(p => p.member.name == _storageService.MemberName)
+                    .Select(p => p.unit)
+                    .ToDictionary(p => p?.id?.ToString() ?? "", p => p?.name ?? "");
+            }
+            else
+            {
+                return _storageService.GetProfilesResult?.profiles?
+                    .Where(p => p.member.name == _storageService.MemberName)
+                    .ToDictionary(p => p.unit?.id?.ToString() ?? "", p => $"{p.unit?.name} ({p.group.name})");
+            }
         }
 
 
