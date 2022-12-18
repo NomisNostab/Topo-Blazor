@@ -1,6 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Xml.Linq;
-using Topo.Controller;
 
 namespace Topo.Model.Program
 {
