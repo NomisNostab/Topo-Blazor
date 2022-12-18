@@ -38,6 +38,7 @@ namespace Topo.Services
         public Task<GetUnitAchievementsResultModel> GetUnitAdditionalAwardAchievements(string unitId);
         public Task<GetApprovalsResultModel> GetUnitApprovals(string unitId, string status);
         public Task<GetMemberAchievementResultModel> GetMemberAchievementResult(string member_id, string achievement_id, string achievement_type);
+        public Task<GetMilestoneResultModel> GetMilestoneResultsForMember(string memberId);
     }
 
     public class TerrainAPIService : ITerrainAPIService
@@ -387,6 +388,17 @@ namespace Topo.Services
             var getMemberAchievementResultModel = DeserializeObject<GetMemberAchievementResultModel>(result);
 
             return getMemberAchievementResultModel ?? new GetMemberAchievementResultModel();
+        }
+
+        public async Task<GetMilestoneResultModel> GetMilestoneResultsForMember(string memberId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{achievementsAddress}members/{memberId}/achievements?type=milestone";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getSIAResultsModel = DeserializeObject<GetMilestoneResultModel>(result);
+
+            return getSIAResultsModel ?? new GetMilestoneResultModel();
         }
 
         private async Task<string> SendRequest(HttpMethod httpMethod, string requestUri, string content = "", string xAmzTargetHeader = "")
