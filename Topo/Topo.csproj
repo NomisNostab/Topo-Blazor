@@ -19,6 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Model\Model.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Update="wwwroot\G12-Map-icon-16.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
