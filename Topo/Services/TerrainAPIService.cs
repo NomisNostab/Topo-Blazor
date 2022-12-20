@@ -9,6 +9,7 @@ using Topo.Model.Program;
 using Topo.Model.SIA;
 using Topo.Model.AdditionalAwards;
 using Topo.Model.Approvals;
+using Topo.Model.PersonalProgress;
 
 namespace Topo.Services
 {
@@ -39,6 +40,10 @@ namespace Topo.Services
         public Task<GetApprovalsResultModel> GetUnitApprovals(string unitId, string status);
         public Task<GetMemberAchievementResultModel> GetMemberAchievementResult(string member_id, string achievement_id, string achievement_type);
         public Task<GetMilestoneResultModel> GetMilestoneResultsForMember(string memberId);
+        public Task<GetIntroductionResultsModel> GetIntroductionToScoutingResultsForMember(string memberId);
+        public Task<GetIntroductionResultsModel> GetIntroductionToSectionResultsForMember(string memberId);
+        public Task<GetAdventurousJourneyResultsModel> GetAdventurousJourneyResultsForMember(string memberId);
+        public Task<GetAdventurousJourneyResultsModel> GetCourseReflectionResultsForMember(string memberId);
     }
 
     public class TerrainAPIService : ITerrainAPIService
@@ -396,9 +401,64 @@ namespace Topo.Services
 
             string requestUri = $"{achievementsAddress}members/{memberId}/achievements?type=milestone";
             var result = await SendRequest(HttpMethod.Get, requestUri);
-            var getSIAResultsModel = DeserializeObject<GetMilestoneResultModel>(result);
+            var getMilestoneResultModel = DeserializeObject<GetMilestoneResultModel>(result);
 
-            return getSIAResultsModel ?? new GetMilestoneResultModel();
+            return getMilestoneResultModel ?? new GetMilestoneResultModel();
+        }
+
+        public async Task<GetIntroductionResultsModel> GetIntroductionToScoutingResultsForMember(string memberId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{achievementsAddress}members/{memberId}/achievements?type=intro_scouting";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getIntroductionResultsModel = DeserializeObject<GetIntroductionResultsModel>(result);
+
+            return getIntroductionResultsModel ?? new GetIntroductionResultsModel();
+        }
+
+        public async Task<GetIntroductionResultsModel> GetIntroductionToSectionResultsForMember(string memberId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{achievementsAddress}members/{memberId}/achievements?type=intro_section";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getIntroductionResultsModel = DeserializeObject<GetIntroductionResultsModel>(result);
+
+            return getIntroductionResultsModel ?? new GetIntroductionResultsModel();
+        }
+
+        public async Task<GetUnitAchievementsResultsModel> GetOASResultsForMember(string memberId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{achievementsAddress}members/{memberId}/achievements?type=outdoor_adventure_skill";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getUnitAchievementsResultsModel = DeserializeObject<GetUnitAchievementsResultsModel>(result);
+
+            return getUnitAchievementsResultsModel ?? new GetUnitAchievementsResultsModel();
+        }
+
+        public async Task<GetAdventurousJourneyResultsModel> GetAdventurousJourneyResultsForMember(string memberId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{achievementsAddress}members/{memberId}/achievements?type=adventurous_journey";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getAdventurousJourneyResultsModel = DeserializeObject<GetAdventurousJourneyResultsModel>(result);
+
+            return getAdventurousJourneyResultsModel ?? new GetAdventurousJourneyResultsModel();
+        }
+
+        public async Task<GetAdventurousJourneyResultsModel> GetCourseReflectionResultsForMember(string memberId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{achievementsAddress}members/{memberId}/achievements?type=course_reflection";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getAdventurousJourneyResultsModel = DeserializeObject<GetAdventurousJourneyResultsModel>(result);
+
+            return getAdventurousJourneyResultsModel ?? new GetAdventurousJourneyResultsModel();
         }
 
         private async Task<string> SendRequest(HttpMethod httpMethod, string requestUri, string content = "", string xAmzTargetHeader = "")
