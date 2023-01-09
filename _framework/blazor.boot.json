@@ -25,6 +25,7 @@
       "Microsoft.Extensions.Primitives.dll": "sha256-YColTWA58whC+8aBjv1O7HgsyYrbHTba601EkNDWAlo=",
       "Microsoft.JSInterop.dll": "sha256-MPABCJCv0fQNW79F8zqOHT+ka6CvMMg5INi54vmvzlE=",
       "Microsoft.JSInterop.WebAssembly.dll": "sha256-JnYE3PacT+0TrHdA2lIvLkQwSgtLQlRYc+tzxGVgpOM=",
+      "Model.dll": "sha256-+YQB1YvzawTgTIxJgWL1\/xFWb3\/dEeo\/NQWDRLCw2zc=",
       "netstandard.dll": "sha256-9crI7VkBuN4rOqWm2h6qEGsPxpEPWNVnervLUIjTvtQ=",
       "Newtonsoft.Json.dll": "sha256-cs8pHUurDt0IqbB8YXPh560au3q3J\/1wRL9jBddRVmE=",
       "Syncfusion.Blazor.Buttons.dll": "sha256-5wuGoBX09xcV7YHzb67QBGECgQdKY4YbBOO2RlGS5xQ=",
@@ -94,7 +95,7 @@
       "System.Threading.Thread.dll": "sha256-uDLyoR14rKWqGkYRTL3W7ZF44kgVglzw0zJE6pYI3Yw=",
       "System.Web.HttpUtility.dll": "sha256-ipkgeEaJOEVsk1F5kc+5D4vcQNHHdrx1Xa9dRtQjJRw=",
       "System.Xml.ReaderWriter.dll": "sha256-KtpgYaiYRplaHxhEtszqWlqGlyD5zoU4BZFXfli3fK0=",
-      "Topo.dll": "sha256-ZFLuQuJfnmQHwU8he5CrTyl7YdNptblTYIp0e9kW8YY="
+      "Topo.dll": "sha256-Y9qPsPpUgs\/AjT7zJ00IKQgR+AVYqKGaQBMujmb7rZo="
     },
     "extensions": null,
     "lazyAssembly": null,
