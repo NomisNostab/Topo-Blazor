@@ -17,6 +17,20 @@ else
         <h2>Welcome @indexPageViewModel.FullName</h2>
     </div>
     <div class="mb-3 row">
+        <label for="unit" class="col-sm-2 col-form-label">
+            Select Group to access:
+        </label>
+        <div class="col-sm-3">
+            <select id="unit" class="form-select" value="@indexPageViewModel.GroupId" @onchange="GroupChange">
+                <option value="">Select group</option>
+                @foreach (var group in indexPageViewModel.Groups)
+                {
+                    <option value="@group.Key">@group.Value</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="mb-3 row">
         <p>
             Use Members to see the members of your units, print patrol lists and patrol corner sheets.
         </p>

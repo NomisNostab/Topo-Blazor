@@ -36,12 +36,13 @@ namespace Topo.Controller
             if (!_storageService.IsAuthenticated)
                 NavigationManager.NavigateTo("index");
 
-            model.Calendars = await _programService.GetCalendars();
+            model.GroupName = _storageService.GroupNameDisplay;
+            await _programService.GetCalendars();
+            model.Calendars = _storageService.Units;
             model.CalendarSearchFromDate = DateTime.Now;
             model.CalendarSearchToDate = DateTime.Now.AddMonths(4);
             model.DateErrorMessage = "";
-            var groupCalendars = await _programService.GetGroupCalendar();
-            groupCalendarId = groupCalendars.FirstOrDefault().Key;
+            groupCalendarId = _storageService.GroupId ?? "";
         }
 
         internal void CalendarChange(ChangeEventArgs e)

@@ -27,12 +27,13 @@ namespace Topo.Controller
 
         public MembersPageViewModel model = new MembersPageViewModel();
 
-        protected override async Task OnInitializedAsync()
+        protected override void OnInitialized()
         {
             if (!_storageService.IsAuthenticated)
                 NavigationManager.NavigateTo("index");
 
             model.Units = _storageService.Units;
+            model.GroupName = _storageService.GroupNameDisplay;
         }
 
         internal async Task UnitChange(ChangeEventArgs e)

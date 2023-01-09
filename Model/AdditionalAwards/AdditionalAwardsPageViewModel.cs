@@ -8,5 +8,6 @@ namespace Topo.Model.AdditionalAwards
         public string UnitId { get; set; } = string.Empty;
         public string UnitName { get; set; } = string.Empty;
         public List<MemberListModel> Members { get; set; } = new List<MemberListModel>();
+        public string GroupName { get; set; } = string.Empty;
     }
 }
