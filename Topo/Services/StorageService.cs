@@ -29,8 +29,27 @@ namespace Topo.Services
         public GetUserResultModel? GetUserResult { get; set; } = null;
         public GetProfilesResultModel? GetProfilesResult { get; set; }
         public string? MemberName { get; set; }
+        public Dictionary<string, string> Groups { get; set; } = new Dictionary<string, string>();
+        public string? GroupId { get; set; }
         public string? GroupName { get; set; }
-        public Dictionary<string, string> Units { get; set; } = new Dictionary<string, string>();
+        public string GroupNameDisplay
+        {
+            get
+            {
+                return string.IsNullOrEmpty(GroupName) ? "(No Group Selected)" : $"({GroupName})";
+            }
+        }
+        public Dictionary<string, string> Units
+        {
+            get
+            {
+                return GetProfilesResult?.profiles?
+                    .Where(p => p.group.name == GroupName)
+                    .Where(p => p.member.name == MemberName)
+                    .Select(p => p.unit)
+                    .ToDictionary(p => p?.id?.ToString() ?? "", p => p?.name ?? "");
+            }
+        }
         public string UnitId { get; set; } = "";
         public string UnitName { get; set; } = "";
         public string Section
@@ -52,7 +71,7 @@ namespace Topo.Services
         public void Logout()
         {
             IsAuthenticated = false;
-            Units = new Dictionary<string, string>();
+            GroupName = "";
             CachedMembers = new List<KeyValuePair<string, List<MemberListModel>>>();
         }
     }

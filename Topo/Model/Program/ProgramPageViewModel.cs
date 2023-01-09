@@ -19,6 +19,7 @@ namespace Topo.Model.Program
         public DateTime CalendarSearchToDate { get; set; } = DateTime.Now;
         public string DateErrorMessage { get; set; } = "";
         public bool IncludeGroupEvents { get; set; } = true;
+        public string GroupName { get; set; } = string.Empty;
     }
 
 }

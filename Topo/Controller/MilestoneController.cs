@@ -30,11 +30,12 @@ namespace Topo.Controller
 
         public MilestonePageViewModel model = new MilestonePageViewModel();
 
-        protected override async Task OnInitializedAsync()
+        protected override void OnInitialized()
         {
             if (!_storageService.IsAuthenticated)
                 NavigationManager.NavigateTo("index");
 
+            model.GroupName = _storageService.GroupNameDisplay;
             model.Units = _storageService.Units;
         }
 

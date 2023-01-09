@@ -13,5 +13,6 @@ namespace Topo.Model.Approvals
         public string DateErrorMessage { get; set; } = string.Empty;
         public bool ToBePresented { get; set; }
         public bool IsPresented { get; set; }
+        public string GroupName { get; set; } = string.Empty;
     }
 }

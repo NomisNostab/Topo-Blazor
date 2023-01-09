@@ -35,6 +35,7 @@ namespace Topo.Controller
             if (!_storageService.IsAuthenticated)
                 NavigationManager.NavigateTo("index");
 
+            model.GroupName = _storageService.GroupNameDisplay;
             model.Units = _storageService.Units;
         }
 
