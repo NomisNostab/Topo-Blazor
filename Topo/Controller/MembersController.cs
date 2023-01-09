@@ -72,12 +72,12 @@ namespace Topo.Controller
             var unitName = _storageService.UnitName ?? "Unit Name";
             var section = _storageService.Section;
 
-            model.Members = await _membersService.GetMembersAsync(model.UnitId);
+            var allMembers = await _membersService.GetMembersAsync(model.UnitId);
             var sortedPatrolList = new List<MemberListModel>();
             if (includeLeaders)
-                sortedPatrolList = model.Members.OrderBy(m => m.patrol_name).ToList();
+                sortedPatrolList = allMembers.OrderBy(m => m.patrol_name).ToList();
             else
-                sortedPatrolList = model.Members.Where(m => m.isAdultLeader == 0).OrderBy(m => m.patrol_name).ToList();
+                sortedPatrolList = allMembers.Where(m => m.isAdultLeader == 0).OrderBy(m => m.patrol_name).ToList();
             var serialisedSortedMemberList = JsonConvert.SerializeObject(sortedPatrolList);
 
             var report = await _reportService.GetPatrolListReport(groupName, section, unitName, outputType, serialisedSortedMemberList, includeLeaders);
