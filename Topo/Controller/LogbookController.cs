@@ -30,11 +30,12 @@ namespace Topo.Controller
 
         public LogbookPageViewModel model = new LogbookPageViewModel();
 
-        protected override async Task OnInitializedAsync()
+        protected override void OnInitialized()
         {
             if (!_storageService.IsAuthenticated)
                 NavigationManager.NavigateTo("index");
 
+            model.GroupName = _storageService.GroupNameDisplay;
             model.Units = _storageService.Units;
         }
 

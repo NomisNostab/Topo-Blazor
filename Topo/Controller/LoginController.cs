@@ -29,7 +29,9 @@ namespace Topo.Controller
                     _storageService.MemberName = _storageService.GetProfilesResult.profiles[0].member?.name ?? "";
                     _storageService.GroupName = _storageService.GetProfilesResult.profiles[0].group?.name ?? "";
                 }
-                _storageService.Units = _loginService.GetUnits();
+                _storageService.Groups = _loginService.GetGroups();
+                _storageService.GroupId = _storageService.Groups.Count == 1 ? _storageService.Groups.FirstOrDefault().Key : "";
+                _storageService.GroupName = _storageService.Groups.Count == 1 ? _storageService.Groups.FirstOrDefault().Value : "";
 
                 NavigationManager.NavigateTo("index");
             }

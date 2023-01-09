@@ -38,11 +38,12 @@ namespace Topo.Controller
         };
 
         public SfGrid<ApprovalsListModel> GridInstance { get; set; }
-        protected override async Task OnInitializedAsync()
+        protected override void OnInitialized()
         {
             if (!_storageService.IsAuthenticated)
                 NavigationManager.NavigateTo("index");
 
+            model.GroupName = _storageService.GroupNameDisplay;
             model.Units = _storageService.Units;
             model.ApprovalSearchFromDate = DateTime.Now.AddMonths(-2);
             model.ApprovalSearchToDate = DateTime.Now;

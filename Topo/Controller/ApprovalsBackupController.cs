@@ -30,7 +30,7 @@ namespace Topo.Controller
 
         public BackupRestorePageViewModel model = new BackupRestorePageViewModel();
 
-        protected override async Task OnInitializedAsync()
+        protected override void OnInitialized()
         {
             if (!_storageService.IsAuthenticated)
                 NavigationManager.NavigateTo("index");
@@ -43,6 +43,7 @@ namespace Topo.Controller
                     _storageService.UnitName = _storageService.Units.Where(u => u.Key == model.SelectedUnitId).FirstOrDefault().Value;
                 model.SelectedUnitName = _storageService.UnitName;
             }
+            model.GroupName = _storageService.GroupNameDisplay;
         }
 
         internal async Task UnitChange(ChangeEventArgs e)

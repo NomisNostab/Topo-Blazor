@@ -7,7 +7,7 @@ namespace Topo.Services
         public Task<AuthenticationResultModel?> LoginAsync(string? branch, string? username, string? password);
         public Task GetUserAsync();
         public Task GetProfilesAsync();
-        public Dictionary<string, string> GetUnits();
+        public Dictionary<string, string> GetGroups();
     }
     public class LoginService : ILoginService
     {
@@ -40,7 +40,6 @@ namespace Topo.Services
             _storageService.GetUserResult = getUserResultModel;
         }
 
-
         public async Task GetProfilesAsync()
         {
             var getProfilesResultModel = await _terrainAPIService.GetProfilesAsync();
@@ -50,24 +49,13 @@ namespace Topo.Services
                 _storageService.GetProfilesResult = getProfilesResultModel;
         }
 
-        public Dictionary<string, string> GetUnits()
+        public Dictionary<string, string> GetGroups()
         {
-            var groupCount = _storageService.GetProfilesResult?.profiles.Select(p => p.group.name).Distinct().Count();
-            if (groupCount == 1)
-            {
-                return _storageService.GetProfilesResult?.profiles?
-                    .Where(p => p.member.name == _storageService.MemberName)
-                    .Select(p => p.unit)
-                    .ToDictionary(p => p?.id?.ToString() ?? "", p => p?.name ?? "");
-            }
-            else
-            {
-                return _storageService.GetProfilesResult?.profiles?
-                    .Where(p => p.member.name == _storageService.MemberName)
-                    .ToDictionary(p => p.unit?.id?.ToString() ?? "", p => $"{p.unit?.name} ({p.group.name})");
-            }
+            var groups = _storageService.GetProfilesResult?.profiles?.Select(p => p.group).ToList();
+            groups = groups.DistinctBy(g => new {g.id}).ToList();
+            return groups
+                .ToDictionary(p => p.id, p => p.name);
         }
-
 
     }
 }
