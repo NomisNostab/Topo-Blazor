@@ -21,5 +21,6 @@ namespace Topo.Model.OAS
         public bool BreakByPatrol { get; set; } = false;
         public string StagesErrorMessage { get; set; } = "";
         public bool FormatLikeTerrain { get; set; } = false;
+        public string GroupName { get; set; } = string.Empty;
     }
 }

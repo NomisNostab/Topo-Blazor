@@ -9,5 +9,6 @@ namespace Topo.Model.Logbook
         public string UnitName { get; set; } = string.Empty;
         public List<MemberListModel> Members { get; set; } = new List<MemberListModel>();
         public bool IncludeLeaders { get; set; } = false;
+        public string GroupName { get; set; } = string.Empty;
     }
 }

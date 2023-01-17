@@ -9,5 +9,6 @@ namespace Topo.Model.Wallchart
         [Required(ErrorMessage = "Select unit")]
         public string UnitId { get; set; } = string.Empty;
         public string UnitName { get; set; } = string.Empty;
+        public string GroupName { get; set; } = string.Empty;
     }
 }
