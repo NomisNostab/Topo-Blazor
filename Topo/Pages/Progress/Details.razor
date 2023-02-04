@@ -1,0 +1,505 @@
+﻿@page "/progress/details/{MemberId}"
+@inherits Controller.ProgressDetailsController
+
+<PageTitle>Topo / Progress Details</PageTitle>
+
+<EditForm Model="@model">
+
+    <div class="mt-3 mb-3 row">
+        <h2>Progress Deatils for @model.Member.first_name @model.Member.last_name</h2>
+    </div>
+
+    <div class="card mt-3 mb-3">
+        <div class="card-header">
+            <span>Member</span>
+        </div>
+        <div class="card-body">
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Number:</label>
+                <label class="col-sm-2 col-form-label">@model.Member.member_number</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-3 mb-3">
+        <div class="card-header">
+            <span>Introductions</span>
+        </div>
+        <div class="card-body">
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Intro to Scouting:</label>
+                <label class="col-sm-2 col-form-label">@model.IntroToScoutingDate</label>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Intro to Section:</label>
+                <label class="col-sm-2 col-form-label">@model.IntroToSectionDate</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-3 mb-3">
+        <div class="card-header">
+            <span>Milestones</span>
+        </div>
+        <div class="card-body">
+            @foreach (var milestone in model?.Milestones)
+            {
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <div class="col-sm">
+                            <span>Milestone @milestone.Milestone:</span>
+                            @if (@milestone.Awarded == DateTime.MinValue)
+                            {
+                                <span> In Progress</span>
+                            }
+                            else
+                            {
+                                <span> Awarded @milestone.Awarded.ToString("dd/MM/yy")</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-2">
+                                <span>Community:</span>
+                            </div>
+                            <div class="col-sm-10">
+                                <div class="row">
+                                    @foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "community"))
+                                    {
+                                        <div class="col-sm-2">
+                                            @milestoneEvent.EventName
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-2">
+                                <span>Creative:</span>
+                            </div>
+                            <div class="col-sm-10">
+                                <div class="row">
+                                    @foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "creative"))
+                                    {
+                                        <div class="col-sm-2">
+                                            @milestoneEvent.EventName
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-2">
+                                <span>Outdoors:</span>
+                            </div>
+                            <div class="col-sm-10">
+                                <div class="row">
+                                    @foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "outdoors"))
+                                    {
+                                        <div class="col-sm-2">
+                                            @milestoneEvent.EventName
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-2">
+                                <span>Personal Growth:</span>
+                            </div>
+                            <div class="col-sm-10">
+                                <div class="row">
+                                    @foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "personal_growth"))
+                                    {
+                                        <div class="col-sm-2">
+                                            @milestoneEvent.EventName
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-2">
+                                <span>Assist:</span>
+                            </div>
+                            <div class="col-sm-10">
+                                <div class="row">
+                                    @foreach (var milestoneEvent in milestone.AssistLogs)
+                                    {
+                                        <div class="col-sm-2">
+                                            @milestoneEvent.EventName
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-2">
+                                <span>Lead:</span>
+                            </div>
+                            <div class="col-sm-10">
+                                <div class="row">
+                                    @foreach (var milestoneEvent in milestone.LeadLogs)
+                                    {
+                                        <div class="col-sm-2">
+                                            @milestoneEvent.EventName
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card mt-3 mb-3">
+        <div class="card-header">
+            <span>Outdoor Adventure Skills</span>
+        </div>
+        <div class="card-body">
+            <div class="row header">
+                <div class="col-sm-2">
+                </div>
+                <div class="col-sm-1">
+                    <strong>Stage 1</strong>
+                </div>
+                <div class="col-sm-1">
+                    <strong>Stage 2</strong>
+                </div>
+                <div class="col-sm-1">
+                    <strong>Stage 3</strong>
+                </div>
+                <div class="col-sm-1">
+                    <strong>Stage 4</strong>
+                </div>
+                <div class="col-sm-1">
+                    <strong>Stage 5</strong>
+                </div>
+                <div class="col-sm-1">
+                    <strong>Stage 6</strong>
+                </div>
+                <div class="col-sm-1">
+                    <strong>Stage 7</strong>
+                </div>
+                <div class="col-sm-1">
+                    <strong>Stage 8</strong>
+                </div>
+                <div class="col-sm-1">
+                    <strong>Stage 9</strong>
+                </div>
+            </div>
+            <div class="row striped">
+                <div class="col-sm-2">
+                    <span> Bushcraft:</span>
+                </div>
+                @for (int i = 1; i <= 9; i++)
+                {
+                    <div class="col-sm-1">
+                        @if (model.OASSummaries.Where(o => o.Stream == "bushcraft" && o.Stage == i).FirstOrDefault() == null)
+                        {
+                            <span></span>
+                        }
+                        else if (model.OASSummaries.Where(o => o.Stream == "bushcraft" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded == DateTime.MinValue)
+                        {
+                            <span>Started</span>
+                        }
+                        else
+                        {
+                            <span>@model.OASSummaries.Where(o => o.Stream == "bushcraft" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded.ToString("dd/MM/yy")</span>
+                        }
+                    </div>
+                }
+            </div>
+            <div class="row striped">
+                <div class="col-sm-2">
+                    <span>Bushwalking:</span>
+                </div>
+                @for (int i = 1; i <= 9; i++)
+                {
+                    <div class="col-sm-1">
+                        @if (model.OASSummaries.Where(o => o.Stream == "bushwalking" && o.Stage == i).FirstOrDefault() == null)
+                        {
+                            <span></span>
+                        }
+                        else if (model.OASSummaries.Where(o => o.Stream == "bushwalking" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded == DateTime.MinValue)
+                        {
+                            <span>Started</span>
+                        }
+                        else
+                        {
+                            <span>@model.OASSummaries.Where(o => o.Stream == "bushwalking" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded.ToString("dd/MM/yy")</span>
+                        }
+                    </div>
+                }
+            </div>
+            <div class="row striped">
+                <div class="col-sm-2">
+                    <span>Camping:</span>
+                </div>
+                @for (int i = 1; i <= 9; i++)
+                {
+                    <div class="col-sm-1">
+                        @if (model.OASSummaries.Where(o => o.Stream == "camping" && o.Stage == i).FirstOrDefault() == null)
+                        {
+                            <span></span>
+                        }
+                        else if (model.OASSummaries.Where(o => o.Stream == "camping" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded == DateTime.MinValue)
+                        {
+                            <span>Started</span>
+                        }
+                        else
+                        {
+                            <span>@model.OASSummaries.Where(o => o.Stream == "camping" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded.ToString("dd/MM/yy")</span>
+                        }
+                    </div>
+                }
+            </div>
+            <div class="row striped">
+                <div class="col-sm-2">
+                    <span>Alpine:</span>
+                </div>
+                @for (int i = 1; i <= 9; i++)
+                {
+                    <div class="col-sm-1">
+                        @if (model.OASSummaries.Where(o => o.Stream == "alpine" && o.Stage == i).FirstOrDefault() == null)
+                        {
+                            <span></span>
+                        }
+                        else if (model.OASSummaries.Where(o => o.Stream == "alpine" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded == DateTime.MinValue)
+                        {
+                            <span>Started</span>
+                        }
+                        else
+                        {
+                            <span>@model.OASSummaries.Where(o => o.Stream == "alpine" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded.ToString("dd/MM/yy")</span>
+                        }
+                    </div>
+                }
+            </div>
+            <div class="row striped">
+                <div class="col-sm-2">
+                    <span>Cycling:</span>
+                </div>
+                @for (int i = 1; i <= 9; i++)
+                {
+                    <div class="col-sm-1">
+                        @if (model.OASSummaries.Where(o => o.Stream == "cycling" && o.Stage == i).FirstOrDefault() == null)
+                        {
+                            <span></span>
+                        }
+                        else if (model.OASSummaries.Where(o => o.Stream == "cycling" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded == DateTime.MinValue)
+                        {
+                            <span>Started</span>
+                        }
+                        else
+                        {
+                            <span>@model.OASSummaries.Where(o => o.Stream == "cycling" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded.ToString("dd/MM/yy")</span>
+                        }
+                    </div>
+                }
+            </div>
+            <div class="row striped">
+                <div class="col-sm-2">
+                    <span>Vertical:</span>
+                </div>
+                @for (int i = 1; i <= 9; i++)
+                {
+                    <div class="col-sm-1">
+                        @if (model.OASSummaries.Where(o => o.Stream == "vertical" && o.Stage == i).FirstOrDefault() == null)
+                        {
+                            <span></span>
+                        }
+                        else if (model.OASSummaries.Where(o => o.Stream == "vertical" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded == DateTime.MinValue)
+                        {
+                            <span>Started</span>
+                        }
+                        else
+                        {
+                            <span>@model.OASSummaries.Where(o => o.Stream == "vertical" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded.ToString("dd/MM/yy")</span>
+                        }
+                    </div>
+                }
+            </div>
+            <div class="row striped">
+                <div class="col-sm-2">
+                    <span>Aquatics:</span>
+                </div>
+                @for (int i = 1; i <= 9; i++)
+                {
+                    <div class="col-sm-1">
+                        @if (model.OASSummaries.Where(o => o.Stream == "aquatics" && o.Stage == i).FirstOrDefault() == null)
+                        {
+                            <span></span>
+                        }
+                        else if (model.OASSummaries.Where(o => o.Stream == "aquatics" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded == DateTime.MinValue)
+                        {
+                            <span>Started</span>
+                        }
+                        else
+                        {
+                            <span>@model.OASSummaries.Where(o => o.Stream == "aquatics" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded.ToString("dd/MM/yy")</span>
+                        }
+                    </div>
+                }
+            </div>
+            <div class="row striped">
+                <div class="col-sm-2">
+                    <span>Boating:</span>
+                </div>
+                @for (int i = 1; i <= 9; i++)
+                {
+                    <div class="col-sm-1">
+                        @if (model.OASSummaries.Where(o => o.Stream == "boating" && o.Stage == i).FirstOrDefault() == null)
+                        {
+                            <span></span>
+                        }
+                        else if (model.OASSummaries.Where(o => o.Stream == "boating" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded == DateTime.MinValue)
+                        {
+                            <span>Started</span>
+                        }
+                        else
+                        {
+                            <span>@model.OASSummaries.Where(o => o.Stream == "boating" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded.ToString("dd/MM/yy")</span>
+                        }
+                    </div>
+                }
+            </div>
+            <div class="row striped">
+                <div class="col-sm-2">
+                    <span>Paddling:</span>
+                </div>
+                @for (int i = 1; i <= 9; i++)
+                {
+                    <div class="col-sm-1">
+                        @if (model.OASSummaries.Where(o => o.Stream == "paddling" && o.Stage == i).FirstOrDefault() == null)
+                        {
+                            <span></span>
+                        }
+                        else if (model.OASSummaries.Where(o => o.Stream == "paddling" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded == DateTime.MinValue)
+                        {
+                            <span>Started</span>
+                        }
+                        else
+                        {
+                            <span>@model.OASSummaries.Where(o => o.Stream == "paddling" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded.ToString("dd/MM/yy")</span>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-3 mb-3">
+        <div class="card-header">
+            <span>Statistics</span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-sm-2">
+                    <span>Progressions:</span>
+                </div>
+                <div class="col-sm-1">
+                    <span>@model.Stats.OasProgressions</span>
+                </div>
+                <div class="col-sm-2">
+                    <span>KMs Hiked:</span>
+                </div>
+                <div class="col-sm-1">
+                    <span>@model.Stats.KmsHiked</span>
+                </div>
+                <div class="col-sm-2">
+                    <span>Nights Camped:</span>
+                </div>
+                <div class="col-sm-1">
+                    <span>@model.Stats.NightsCamped</span>
+                </div>
+                <div class="col-sm-3">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-3 mb-3">
+        <div class="card-header">
+            <span>Special Interest Areas</span>
+        </div>
+        <div class="card-body">
+            <div class="row header">
+                <div class="col-sm-2">
+                    <strong>Area</strong>
+                </div>
+                <div class="col-sm-7">
+                    <strong>Project</strong>
+                </div>
+                <div class="col-sm-2">
+                    <strong>Status</strong>
+                </div>
+                <div class="col-sm-1">
+                    <strong>Date</strong>
+                </div>
+            </div>
+            <div class="row striped">
+                @foreach (var siaSummary in model.SIASummaries.OrderByDescending(s => s.Status).ThenBy(s => s.Area))
+                {
+                    <div class="col-sm-2">
+                        <span>@siaSummary.Area</span>
+                    </div>
+                    <div class="col-sm-7">
+                        <span>@siaSummary.Project</span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span>@siaSummary.Status</span>
+                    </div>
+                    <div class="col-sm-1">
+                        <span>@siaSummary.Awarded.ToString("dd/MM/yy")</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-3 mb-3">
+        <div class="card-header">
+            <span>Peak Award @model.PeakAward.Awarded</span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-sm-3">
+                    <span>Personal Development Course:</span>
+                </div>
+                <div class="col-sm-2">
+                    <span>@model.PeakAward.PersonalDevelopmentCourse</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-3">
+                    <span>Adventurous Journey:</span>
+                </div>
+                <div class="col-sm-2">
+                    <span>@model.PeakAward.AdventurousJourney</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-3">
+                    <span>Personal Reflection:</span>
+                </div>
+                <div class="col-sm-2">
+                    <span>@model.PeakAward.PersonalReflection</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3 mb-3 row">
+        <div class="col-sm-3">
+            <a href="progress/progress" class="btn btn-primary">Back</a>
+        </div>
+        <div class="col-sm-9">
+        </div>
+    </div>
+
+</EditForm>

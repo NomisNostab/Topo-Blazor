@@ -76,7 +76,7 @@ namespace Topo.Controller
             if (!string.IsNullOrEmpty(model.SelectedUnitName) && model.approvalsFile != null && model.approvalsFile.Size > 0)
             {
                 _approvalsService.UploadApprovals(model.approvalsFile, model.SelectedUnitId);
-                NavigationManager.NavigateTo("approvals");
+                NavigationManager.NavigateTo("approvals/approvals");
             }
         }
     }

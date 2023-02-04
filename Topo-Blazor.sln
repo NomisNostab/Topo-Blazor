@@ -5,7 +5,7 @@ VisualStudioVersion = 17.3.32804.467
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Topo", "Topo\Topo.csproj", "{975D725C-75AA-4914-A65E-172DFC49BEBA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Model", "Model\Model.csproj", "{9E020FBD-0E48-42B0-92BA-50114944548E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Model", "Model\Model.csproj", "{9E020FBD-0E48-42B0-92BA-50114944548E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TopoReportFunction", "TopoReportFunction\TopoReportFunction.csproj", "{C564D990-EDEA-46F7-A6B4-BAAC62D813E7}"
 EndProject
