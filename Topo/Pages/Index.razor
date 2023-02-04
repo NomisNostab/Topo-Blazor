@@ -3,62 +3,64 @@
 @inherits Controller.IndexController
 
 <PageTitle>Topo / Home</PageTitle>
-
-@if (!indexPageViewModel.IsAuthenticated)
-{
-    <div class="mt-3 mb-3 row">
-        <h2>Topo, helping you navigate the Terrain</h2>
-        <h3>Please login</h3>
-    </div>
-}
-else
-{
-    <div class="mt-3 mb-3 row">
-        <h2>Welcome @indexPageViewModel.FullName</h2>
-    </div>
-    <div class="mb-3 row">
-        <label for="unit" class="col-sm-2 col-form-label">
-            Select Group to access:
-        </label>
-        <div class="col-sm-3">
-            <select id="unit" class="form-select" value="@indexPageViewModel.GroupId" @onchange="GroupChange">
-                <option value="">Select group</option>
-                @foreach (var group in indexPageViewModel.Groups)
-                {
-                    <option value="@group.Key">@group.Value</option>
-                }
-            </select>
+<EditForm Model="@indexPageViewModel">
+    @if (!indexPageViewModel.IsAuthenticated)
+    {
+        <div class="mt-3 mb-3 row">
+            <h2>Topo, helping you navigate the Terrain</h2>
+            <h3>Please login</h3>
         </div>
-    </div>
-    <div class="mb-3 row">
-        <p>
-            Use Members to see the members of your units, print patrol lists and patrol corner sheets.
-        </p>
-        <p>
-            Use Program to see the calendar of your units, print sign in sheets and print attendance lists.
-        </p>
-        <p>
-            Use OAS to print OAS Stage reports.
-        </p>
-        <p>
-            Use SIA to print SIA Status report.
-        </p>
-        <p>
-            Use Milestone to print Milestone Summary report.
-        </p>
-        <p>
-            Use Logbook to print Logbook Summary report.
-        </p>
-        <p>
-            Use Wallchart to print Wallchart report.
-        </p>
-        <p>
-            Use Awards to print Additional Awards report.
-        </p>
-        <p>
-            Use Approvals to print Approvals report.
-        </p>
-    </div>
-}
+    }
+    else
+    {
+        <div class="mt-3 mb-3 row">
+            <h2>Welcome @indexPageViewModel.FullName</h2>
+        </div>
+        <div class="mb-3 row">
+            <label for="unit" class="col-sm-2 col-form-label">
+                Select Group to access:
+            </label>
+            <div class="col-sm-3">
+                <select id="unit" class="form-select" value="@indexPageViewModel.GroupId" @onchange="GroupChange">
+                    <option value="">Select group</option>
+                    @foreach (var group in indexPageViewModel.Groups)
+                    {
+                        <option value="@group.Key">@group.Value</option>
+                    }
+                </select>
+                <label class="col-form-label validation-message">@indexPageViewModel.GroupErrorMessage</label>
+            </div>
+        </div>
+        <div class="mb-3 row">
+            <p>
+                Use Members to see the members of your units, print patrol lists and patrol corner sheets.
+            </p>
+            <p>
+                Use Program to see the calendar of your units, print sign in sheets and print attendance lists.
+            </p>
+            <p>
+                Use OAS to print OAS Stage reports.
+            </p>
+            <p>
+                Use SIA to print SIA Status report.
+            </p>
+            <p>
+                Use Milestone to print Milestone Summary report.
+            </p>
+            <p>
+                Use Logbook to print Logbook Summary report.
+            </p>
+            <p>
+                Use Wallchart to print Wallchart report.
+            </p>
+            <p>
+                Use Awards to print Additional Awards report.
+            </p>
+            <p>
+                Use Approvals to print Approvals report.
+            </p>
+        </div>
+    }
+</EditForm>
 
 

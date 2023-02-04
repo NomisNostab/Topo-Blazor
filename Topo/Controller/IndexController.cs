@@ -18,6 +18,7 @@ namespace Topo.Controller
             indexPageViewModel.FullName = _storageService.MemberName ?? "";
             indexPageViewModel.Groups = _storageService.Groups;
             indexPageViewModel.GroupId = _storageService.GroupId ?? "";
+            indexPageViewModel.GroupErrorMessage = string.IsNullOrEmpty(_storageService.GroupId) ? "Please select a group to access" : "";
         }
 
         internal void GroupChange(ChangeEventArgs e)
@@ -26,6 +27,7 @@ namespace Topo.Controller
             _storageService.GroupId = groupId;
             _storageService.GroupName = _storageService.Groups.Where(u => u.Key == groupId).FirstOrDefault().Value;
             indexPageViewModel.GroupId = groupId;
+            indexPageViewModel.GroupErrorMessage = string.IsNullOrEmpty(_storageService.GroupId) ? "Please select a group to access" : "";
         }
 
     }
