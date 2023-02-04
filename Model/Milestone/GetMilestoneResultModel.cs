@@ -63,6 +63,7 @@
     {
         public Awarded_By awarded_by { get; set; } = new Awarded_By();
         public Event_Count event_count { get; set; } = new Event_Count();
+        public string date_awarded { get; set; } = string.Empty;
     }
 
     public class Awarded_By

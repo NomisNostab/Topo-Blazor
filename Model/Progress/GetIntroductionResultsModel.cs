@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Topo.Model.PersonalProgress
+namespace Topo.Model.Progress
 
 {
     public class GetIntroductionResultsModel

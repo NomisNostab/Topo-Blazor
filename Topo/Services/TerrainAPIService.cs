@@ -9,7 +9,7 @@ using Topo.Model.Program;
 using Topo.Model.SIA;
 using Topo.Model.AdditionalAwards;
 using Topo.Model.Approvals;
-using Topo.Model.PersonalProgress;
+using Topo.Model.Progress;
 
 namespace Topo.Services
 {
@@ -42,8 +42,11 @@ namespace Topo.Services
         public Task<GetMilestoneResultModel> GetMilestoneResultsForMember(string memberId);
         public Task<GetIntroductionResultsModel> GetIntroductionToScoutingResultsForMember(string memberId);
         public Task<GetIntroductionResultsModel> GetIntroductionToSectionResultsForMember(string memberId);
-        public Task<GetAdventurousJourneyResultsModel> GetAdventurousJourneyResultsForMember(string memberId);
-        public Task<GetAdventurousJourneyResultsModel> GetCourseReflectionResultsForMember(string memberId);
+        public Task<GetUnitAchievementsResultsModel> GetOASResultsForMember(string memberId);
+        public Task<GetPeakAwardsResultsModel> GetAdventurousJourneyResultsForMember(string memberId);
+        public Task<GetPeakAwardsResultsModel> GetCourseReflectionResultsForMember(string memberId);
+        public Task<GetPeakAwardsResultsModel> GetPersonalReflectionResultsForMember(string memberId);
+        public Task<GetPeakAwardsResultsModel> GetPeakAwardResultsForMember(string memberId);
     }
 
     public class TerrainAPIService : ITerrainAPIService
@@ -434,31 +437,54 @@ namespace Topo.Services
 
             string requestUri = $"{achievementsAddress}members/{memberId}/achievements?type=outdoor_adventure_skill";
             var result = await SendRequest(HttpMethod.Get, requestUri);
+            result = RemoveFileUploaderFromContent(result);
             var getUnitAchievementsResultsModel = DeserializeObject<GetUnitAchievementsResultsModel>(result);
 
             return getUnitAchievementsResultsModel ?? new GetUnitAchievementsResultsModel();
         }
 
-        public async Task<GetAdventurousJourneyResultsModel> GetAdventurousJourneyResultsForMember(string memberId)
+        public async Task<GetPeakAwardsResultsModel> GetAdventurousJourneyResultsForMember(string memberId)
         {
             await RefreshTokenAsync();
 
             string requestUri = $"{achievementsAddress}members/{memberId}/achievements?type=adventurous_journey";
             var result = await SendRequest(HttpMethod.Get, requestUri);
-            var getAdventurousJourneyResultsModel = DeserializeObject<GetAdventurousJourneyResultsModel>(result);
+            var getAdventurousJourneyResultsModel = DeserializeObject<GetPeakAwardsResultsModel>(result);
 
-            return getAdventurousJourneyResultsModel ?? new GetAdventurousJourneyResultsModel();
+            return getAdventurousJourneyResultsModel ?? new GetPeakAwardsResultsModel();
         }
 
-        public async Task<GetAdventurousJourneyResultsModel> GetCourseReflectionResultsForMember(string memberId)
+        public async Task<GetPeakAwardsResultsModel> GetCourseReflectionResultsForMember(string memberId)
         {
             await RefreshTokenAsync();
 
             string requestUri = $"{achievementsAddress}members/{memberId}/achievements?type=course_reflection";
             var result = await SendRequest(HttpMethod.Get, requestUri);
-            var getAdventurousJourneyResultsModel = DeserializeObject<GetAdventurousJourneyResultsModel>(result);
+            var getCourseReflectionResultsModel = DeserializeObject<GetPeakAwardsResultsModel>(result);
 
-            return getAdventurousJourneyResultsModel ?? new GetAdventurousJourneyResultsModel();
+            return getCourseReflectionResultsModel ?? new GetPeakAwardsResultsModel();
+        }
+
+        public async Task<GetPeakAwardsResultsModel> GetPersonalReflectionResultsForMember(string memberId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{achievementsAddress}members/{memberId}/achievements?type=personal_reflection";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getPersonalReflectionResultsModel = DeserializeObject<GetPeakAwardsResultsModel>(result);
+
+            return getPersonalReflectionResultsModel ?? new GetPeakAwardsResultsModel();
+        }
+
+        public async Task<GetPeakAwardsResultsModel> GetPeakAwardResultsForMember(string memberId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{achievementsAddress}members/{memberId}/achievements?type=peak_award";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getPeakAwardResultsModel = DeserializeObject<GetPeakAwardsResultsModel>(result);
+
+            return getPeakAwardResultsModel ?? new GetPeakAwardsResultsModel();
         }
 
         private async Task<string> SendRequest(HttpMethod httpMethod, string requestUri, string content = "", string xAmzTargetHeader = "")
@@ -497,6 +523,27 @@ namespace Topo.Services
                 _logger.LogError($"Exception message: {ex.Message}");
             }
             return JsonConvert.DeserializeObject<T>("");
+        }
+
+        private string RemoveFileUploaderFromContent(string responseContentResult)
+        {
+            // Remove uploaded files from response before deserialising
+            responseContentResult = responseContentResult.Replace("\"file_uploader\": [],", "");
+            responseContentResult = responseContentResult.Replace("\"file_uploader\": []", "");
+            var fileUploaderStart = responseContentResult.IndexOf("\"file_uploader\":");
+            while (fileUploaderStart > 0)
+            {
+                var padding = 1;
+                var fileUploaderEnd = responseContentResult.IndexOf("]", fileUploaderStart);
+                var fileUploaderEndNextChar = responseContentResult.Substring(fileUploaderEnd, 2);
+                if (fileUploaderEndNextChar == "],")
+                    padding = 2;
+                var fileUploader = responseContentResult.Substring(fileUploaderStart, fileUploaderEnd - fileUploaderStart + padding);
+                responseContentResult = responseContentResult.Replace(fileUploader, "");
+                fileUploaderStart = responseContentResult.IndexOf("\"file_uploader\":", fileUploaderStart);
+            }
+
+            return responseContentResult;
         }
     }
 }

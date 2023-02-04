@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Topo.Model.PersonalProgress
+namespace Topo.Model.Progress
 {
-    public class GetAdventurousJourneyResultsModel
+    public class GetPeakAwardsResultsModel
     {
-        public AdventurousJourneyResult[] results { get; set; } = new AdventurousJourneyResult[0];
+        public PeakAwardResult[] results { get; set; } = new PeakAwardResult[0];
     }
 
-    public class AdventurousJourneyResult
+    public class PeakAwardResult
     {
         public string id { get; set; } = string.Empty;
         public string member_id { get; set; } = string.Empty;
