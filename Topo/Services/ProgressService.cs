@@ -120,11 +120,24 @@ namespace Topo.Services
                 }
                 var milestoneSummary = new MilestoneSummary();
                 milestoneSummary.Milestone = milestoneResult.achievement_meta.stage;
+                switch (milestoneResult.status)
+                {
+                    case "awarded":
+                        milestoneSummary.Awarded = string.IsNullOrEmpty(milestoneResult.imported.date_awarded)
+                            ? milestoneResult.status_updated
+                            : ConvertStringToDate(milestoneResult.imported.date_awarded, "yyyy-MM-dd");
+                        milestoneSummary.Status = "Awarded";
+                        break;
+                    case "not_required":
+                        milestoneSummary.Status = "Not Required";
+                        break;
+                    case "in_progress":
+                    default:
+                        milestoneSummary.Status = "In Progress";
+                        break;
+                }
                 if (milestoneResult.status == "awarded")
                 {
-                    milestoneSummary.Awarded = string.IsNullOrEmpty(milestoneResult.imported.date_awarded)
-                        ? milestoneResult.status_updated
-                        : ConvertStringToDate(milestoneResult.imported.date_awarded, "yyyy-MM-dd");
                 }
 
                 // Add dummy imported entries
@@ -148,7 +161,7 @@ namespace Topo.Services
                             case 1:
                                 challengeArea = "creative";
                                 importedParticipantCount = (int)milestoneResult.imported.event_count.participant.creative;
-                                assistCount = (int)milestoneResult.imported.event_count.assistant.creative;
+                                importedAssistCount = (int)milestoneResult.imported.event_count.assistant.creative;
                                 importedLeadCount = (int)milestoneResult.imported.event_count.leader.creative;
                                 break;
                             case 2:

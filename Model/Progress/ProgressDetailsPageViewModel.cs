@@ -25,6 +25,7 @@ namespace Topo.Model.Progress
     public class MilestoneSummary
     {
         public int Milestone { get; set; }
+        public string Status { get; set; } = string.Empty;
         public DateTime Awarded { get; set; }
         public List<MilestoneLog> ParticipateLogs { get; set; } = new List<MilestoneLog>();
         public List<MilestoneLog> AssistLogs { get; set; } = new List<MilestoneLog>();
