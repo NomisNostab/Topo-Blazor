@@ -51,11 +51,11 @@
                             <span>Milestone @milestone.Milestone:</span>
                             @if (@milestone.Awarded == DateTime.MinValue)
                             {
-                                <span> In Progress</span>
+                                <span>&nbsp;@milestone.Status</span>
                             }
                             else
                             {
-                                <span> Awarded @milestone.Awarded.ToString("dd/MM/yy")</span>
+                                <span>&nbsp;@milestone.Status&nbsp;@milestone.Awarded.ToString("dd/MM/yy")</span>
                             }
                         </div>
                     </div>
