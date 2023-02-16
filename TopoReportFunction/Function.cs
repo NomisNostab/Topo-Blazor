@@ -16,6 +16,7 @@ using Topo.Model.Wallchart;
 using Topo.Model.AdditionalAwards;
 using Topo.Services;
 using Topo.Model.Approvals;
+using Topo.Model.Progress;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -88,6 +89,9 @@ public class Function
                         break;
                     case ReportType.Approvals:
                         workbook = GenerateApprovalsWorkbook(reportGenerationRequest);
+                        break;
+                    case ReportType.PersonalProgress:
+                        workbook = GenerateProgressWorkbook(reportGenerationRequest);
                         break;
                 }
 
@@ -268,6 +272,17 @@ public class Function
         {
             var workbook = reportService.GenerateAdditionalAwardsWorkbook(reportData.AwardSpecificationsList, reportData.SortedAdditionalAwardsList, reportData.DistinctAwards, reportGenerationRequest.GroupName, reportGenerationRequest.Section
                 , reportGenerationRequest.UnitName);
+            return workbook;
+        }
+        return reportService.CreateWorkbookWithSheets(1);
+    }
+
+    private IWorkbook GenerateProgressWorkbook(ReportGenerationRequest reportGenerationRequest)
+    {
+        var reportData = JsonConvert.DeserializeObject<ProgressDetailsPageViewModel>(reportGenerationRequest.ReportData);
+        if (reportData != null)
+        {
+            var workbook = reportService.GenerateProgressWorkbook(reportData, reportGenerationRequest.GroupName, reportGenerationRequest.Section, reportGenerationRequest.UnitName);
             return workbook;
         }
         return reportService.CreateWorkbookWithSheets(1);
