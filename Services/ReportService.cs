@@ -10,6 +10,7 @@ using Topo.Model.Milestone;
 using Topo.Model.OAS;
 using Topo.Model.SIA;
 using Topo.Model.Wallchart;
+using Topo.Model.Progress;
 
 namespace Topo.Services
 {
@@ -28,6 +29,7 @@ namespace Topo.Services
         public IWorkbook GenerateLogbookWorkbook(List<MemberLogbookReportViewModel> logbookEntries, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateWallchartWorkbook(List<WallchartItemModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateApprovalsWorkbook(List<ApprovalsListModel> selectedApprovals, string groupName, string section, string unitName, DateTime approvalSearchFromDate, DateTime approvalSearchToDate, bool groupByMember, bool forPdfOutput);
+        public IWorkbook GenerateProgressWorkbook(ProgressDetailsPageViewModel progressEntries, string groupName, string section, string unitName);
         public IWorkbook CreateWorkbookWithSheets(int sheetsToCreate);
     }
     public class ReportService : IReportService
@@ -1770,8 +1772,6 @@ namespace Topo.Services
             var workbook = CreateWorkbookWithLogo(groupName, section, 8);
             IWorksheet sheet = workbook.Worksheets[0];
             int rowNumber = 1;
-            int averageStartRow = 0;
-            int averageEndRow = 0;
 
             IStyle headingStyle = workbook.Styles["headingStyle"];
 
@@ -1839,6 +1839,403 @@ namespace Topo.Services
             sheet.PageSetup.FooterMargin = 0;
 
             return workbook;
+        }
+
+
+        public IWorkbook GenerateProgressWorkbook(ProgressDetailsPageViewModel progressEntries, string groupName, string section, string unitName)
+        {
+            var workbook = CreateWorkbookWithLogo(groupName, section, 7);
+            IWorksheet sheet = workbook.Worksheets[0];
+            int rowNumber = 1;
+            int cellNumber = 1;
+
+            IStyle headingStyle = workbook.Styles["headingStyle"];
+
+            // Add Unit name
+            rowNumber++;
+            var unit = sheet.Range[rowNumber, 2];
+            unit.Text = unitName;
+            unit.CellStyle = headingStyle;
+            sheet.Range[rowNumber, 2, rowNumber, 7].Merge();
+            sheet.SetRowHeight(rowNumber, 40);
+
+            // Add Title
+            rowNumber++;
+            var title = sheet.Range[rowNumber, 2];
+            title.Text = $"Progress Details for {progressEntries.Member.first_name} {progressEntries.Member.last_name}";
+            title.CellStyle = headingStyle;
+            sheet.Range[rowNumber, 2, rowNumber, 7].Merge();
+            sheet.SetRowHeight(rowNumber, 30);
+
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Member Number:";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 2].Text = progressEntries.Member.member_number;
+
+            rowNumber++;
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Intro to Scouting:";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 2].Text = progressEntries.IntroToScoutingDate;
+
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Intro to Section:";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 2].Text = progressEntries.IntroToSectionDate;
+
+            // Milestones
+            rowNumber++;
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Milestones";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+
+            foreach (var milestone in progressEntries.Milestones)
+            {
+                rowNumber++;
+                rowNumber++;
+                var statusAndDate = milestone.Awarded == DateTime.MinValue ? milestone.Status : milestone.Status + " " + milestone.Awarded.ToString("dd/MM/yy");
+                sheet.Range[rowNumber, 1].Text = $"Milestone {milestone.Milestone}: {statusAndDate}";
+                sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+                sheet.Range[rowNumber, 1, rowNumber, 2].Merge();
+                rowNumber++;
+                sheet.Range[rowNumber, 1].Text = "Community:";
+                sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+                cellNumber = 1;
+                foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "community"))
+                {
+                    cellNumber++;
+                    sheet.Range[rowNumber, cellNumber].Text = milestoneEvent.EventName;
+                    sheet.Range[rowNumber + 1, cellNumber].DateTime = milestoneEvent.EventDate;
+                    sheet.Range[rowNumber + 1, cellNumber].HorizontalAlignment = ExcelHAlign.HAlignLeft;
+                }
+                rowNumber++;
+                rowNumber++;
+                sheet.Range[rowNumber, 1].Text = "Creative:";
+                sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+                cellNumber = 1;
+                foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "creative"))
+                {
+                    cellNumber++;
+                    sheet.Range[rowNumber, cellNumber].Text = milestoneEvent.EventName;
+                    sheet.Range[rowNumber + 1, cellNumber].DateTime = milestoneEvent.EventDate;
+                    sheet.Range[rowNumber + 1, cellNumber].HorizontalAlignment = ExcelHAlign.HAlignLeft;
+                }
+                rowNumber++;
+                rowNumber++;
+                sheet.Range[rowNumber, 1].Text = "Outdoors:";
+                sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+                cellNumber = 1;
+                foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "outdoors"))
+                {
+                    cellNumber++;
+                    sheet.Range[rowNumber, cellNumber].Text = milestoneEvent.EventName;
+                    sheet.Range[rowNumber + 1, cellNumber].DateTime = milestoneEvent.EventDate;
+                    sheet.Range[rowNumber + 1, cellNumber].HorizontalAlignment = ExcelHAlign.HAlignLeft;
+                }
+                rowNumber++;
+                rowNumber++;
+                sheet.Range[rowNumber, 1].Text = "Personal Growth:";
+                sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+                cellNumber = 1;
+                foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "personal_growth"))
+                {
+                    cellNumber++;
+                    sheet.Range[rowNumber, cellNumber].Text = milestoneEvent.EventName;
+                    sheet.Range[rowNumber + 1, cellNumber].DateTime = milestoneEvent.EventDate;
+                    sheet.Range[rowNumber + 1, cellNumber].HorizontalAlignment = ExcelHAlign.HAlignLeft;
+                }
+                rowNumber++;
+                rowNumber++;
+                sheet.Range[rowNumber, 1].Text = "Assist:";
+                sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+                cellNumber = 1;
+                foreach (var milestoneEvent in milestone.AssistLogs)
+                {
+                    cellNumber++;
+                    sheet.Range[rowNumber, cellNumber].Text = milestoneEvent.EventName;
+                    sheet.Range[rowNumber + 1, cellNumber].DateTime = milestoneEvent.EventDate;
+                    sheet.Range[rowNumber + 1, cellNumber].HorizontalAlignment = ExcelHAlign.HAlignLeft;
+                }
+                rowNumber++;
+                rowNumber++;
+                sheet.Range[rowNumber, 1].Text = "Lead:";
+                sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+                cellNumber = 1;
+                foreach (var milestoneEvent in milestone.LeadLogs)
+                {
+                    cellNumber++;
+                    sheet.Range[rowNumber, cellNumber].Text = milestoneEvent.EventName;
+                    sheet.Range[rowNumber + 1, cellNumber].DateTime = milestoneEvent.EventDate;
+                    sheet.Range[rowNumber + 1, cellNumber].HorizontalAlignment = ExcelHAlign.HAlignLeft;
+                }
+                rowNumber++;
+            }
+
+            sheet.Range[4, 1, rowNumber, 7].AutofitColumns();
+
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
+            sheet.PageSetup.BottomMargin = 0.25;
+            sheet.PageSetup.TopMargin = 0.25;
+            sheet.PageSetup.LeftMargin = 0.25;
+            sheet.PageSetup.RightMargin = 0.25;
+            sheet.PageSetup.HeaderMargin = 0;
+            sheet.PageSetup.FooterMargin = 0;
+            sheet.PageSetup.IsFitToPage = true;
+
+            sheet = workbook.Worksheets.Create("Sheet2");
+            rowNumber = 0;
+
+            // Outdoor Adventure Skills
+            rowNumber++;
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Outdoor Adventure Skills";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+
+            rowNumber++;
+            rowNumber++;
+            for (int i = 1; i < 10; i++)
+            {
+                sheet.Range[rowNumber, i + 1].Text = $"Stage {i}";
+                sheet.Range[rowNumber, i + 1].CellStyle.Font.Bold = true;
+            }
+
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Bushcraft:";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+            for (int i = 1; i < 10; i++)
+            {
+                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "bushcraft" && o.Stage == i).FirstOrDefault();
+                var oasText = "";
+                if (oas != null)
+                {
+                    if (oas.Awarded == DateTime.MinValue)
+                        oasText = "Started";
+                    else
+                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                }
+                sheet.Range[rowNumber, i + 1].Text = oasText;
+            }
+
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Bushwalking:";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+            for (int i = 1; i < 10; i++)
+            {
+                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "bushwalking" && o.Stage == i).FirstOrDefault();
+                var oasText = "";
+                if (oas != null)
+                {
+                    if (oas.Awarded == DateTime.MinValue)
+                        oasText = "Started";
+                    else
+                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                }
+                sheet.Range[rowNumber, i + 1].Text = oasText;
+            }
+
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Camping:";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+            for (int i = 1; i < 10; i++)
+            {
+                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "camping" && o.Stage == i).FirstOrDefault();
+                var oasText = "";
+                if (oas != null)
+                {
+                    if (oas.Awarded == DateTime.MinValue)
+                        oasText = "Started";
+                    else
+                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                }
+                sheet.Range[rowNumber, i + 1].Text = oasText;
+            }
+
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Alpine:";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+            for (int i = 1; i < 10; i++)
+            {
+                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "apline" && o.Stage == i).FirstOrDefault();
+                var oasText = "";
+                if (oas != null)
+                {
+                    if (oas.Awarded == DateTime.MinValue)
+                        oasText = "Started";
+                    else
+                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                }
+                sheet.Range[rowNumber, i + 1].Text = oasText;
+            }
+
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Cycling:";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+            for (int i = 1; i < 10; i++)
+            {
+                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "cycling" && o.Stage == i).FirstOrDefault();
+                var oasText = "";
+                if (oas != null)
+                {
+                    if (oas.Awarded == DateTime.MinValue)
+                        oasText = "Started";
+                    else
+                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                }
+                sheet.Range[rowNumber, i + 1].Text = oasText;
+            }
+
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Vertical:";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+            for (int i = 1; i < 10; i++)
+            {
+                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "vertical" && o.Stage == i).FirstOrDefault();
+                var oasText = "";
+                if (oas != null)
+                {
+                    if (oas.Awarded == DateTime.MinValue)
+                        oasText = "Started";
+                    else
+                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                }
+                sheet.Range[rowNumber, i + 1].Text = oasText;
+            }
+
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Aquatics:";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+            for (int i = 1; i < 10; i++)
+            {
+                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "aquatics" && o.Stage == i).FirstOrDefault();
+                var oasText = "";
+                if (oas != null)
+                {
+                    if (oas.Awarded == DateTime.MinValue)
+                        oasText = "Started";
+                    else
+                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                }
+                sheet.Range[rowNumber, i + 1].Text = oasText;
+            }
+
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Boating:";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+            for (int i = 1; i < 10; i++)
+            {
+                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "boating" && o.Stage == i).FirstOrDefault();
+                var oasText = "";
+                if (oas != null)
+                {
+                    if (oas.Awarded == DateTime.MinValue)
+                        oasText = "Started";
+                    else
+                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                }
+                sheet.Range[rowNumber, i + 1].Text = oasText;
+            }
+
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Paddling:";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+            for (int i = 1; i < 10; i++)
+            {
+                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "paddling" && o.Stage == i).FirstOrDefault();
+                var oasText = "";
+                if (oas != null)
+                {
+                    if (oas.Awarded == DateTime.MinValue)
+                        oasText = "Started";
+                    else
+                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                }
+                sheet.Range[rowNumber, i + 1].Text = oasText;
+            }
+
+            // Statistics
+            rowNumber++;
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Statistics";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+
+            rowNumber++;
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Progressions:";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 2].Text = progressEntries.Stats.OasProgressions.ToString();
+            sheet.Range[rowNumber, 3].Text = "KMs Hiked:";
+            sheet.Range[rowNumber, 3].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 4].Text = progressEntries.Stats.KmsHiked.ToString();
+            sheet.Range[rowNumber, 5].Text = "Nights Camped:";
+            sheet.Range[rowNumber, 5].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 6].Text = progressEntries.Stats.NightsCamped.ToString();
+
+            // Special Interest Areas
+            rowNumber++;
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Special Interest Areas";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+
+            rowNumber++;
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Area";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 2].Text = "Project";
+            sheet.Range[rowNumber, 2].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 2, rowNumber, 8].Merge(); 
+            sheet.Range[rowNumber, 9].Text = "Status";
+            sheet.Range[rowNumber, 9].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 10].Text = "Date";
+            sheet.Range[rowNumber, 10].CellStyle.Font.Bold = true;
+            foreach (var siaSummary in progressEntries.SIASummaries.OrderByDescending(s => s.Status).ThenBy(s => s.Area))
+            {
+                rowNumber++;
+                sheet.Range[rowNumber, 1].Text = siaSummary.Area;
+                sheet.Range[rowNumber, 2].Text = siaSummary.Project;
+                sheet.Range[rowNumber, 2, rowNumber, 8].Merge();
+                sheet.Range[rowNumber, 9].Text = siaSummary.Status;
+                sheet.Range[rowNumber, 10].DateTime = siaSummary.Awarded;
+                sheet.Range[rowNumber, 10].NumberFormat = "dd/MM/yy";
+            }
+
+            // Peak Award
+            rowNumber++;
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Peak Award";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+
+            rowNumber++;
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Personal Development Course:";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 2].Text = progressEntries.PeakAward.PersonalDevelopmentCourse;
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Adventurous Journey:";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 2].Text = progressEntries.PeakAward.AdventurousJourney;
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Personal Reflection:";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 2].Text = progressEntries.PeakAward.PersonalReflection;
+
+
+
+            sheet.Range[1, 1, rowNumber, 10].AutofitColumns();
+
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
+            sheet.PageSetup.BottomMargin = 0.25;
+            sheet.PageSetup.TopMargin = 0.25;
+            sheet.PageSetup.LeftMargin = 0.25;
+            sheet.PageSetup.RightMargin = 0.25;
+            sheet.PageSetup.HeaderMargin = 0;
+            sheet.PageSetup.FooterMargin = 0;
+            sheet.PageSetup.FitToPagesTall = 1;
+            sheet.PageSetup.FitToPagesWide = 1;
+
+            return workbook;
+
         }
 
         private int UnitMaxAge(string unit)

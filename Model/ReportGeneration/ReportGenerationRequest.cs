@@ -14,7 +14,8 @@
         Logbook,
         Wallchart,
         AdditionalAwards,
-        Approvals
+        Approvals,
+        PersonalProgress
     }
 
     public enum OutputType

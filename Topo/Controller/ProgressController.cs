@@ -58,9 +58,5 @@ namespace Topo.Controller
             model.UnitName = _storageService.UnitName;
         }
 
-        public async Task ProgressDetailsClick(string eventId)
-        {
-
-        }
     }
 }
