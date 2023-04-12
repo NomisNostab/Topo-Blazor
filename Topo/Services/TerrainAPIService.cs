@@ -502,10 +502,7 @@ namespace Topo.Services
             var response = await _httpClient.SendAsync(httpRequest);
             var responseContent = response.Content.ReadAsStringAsync();
             var result = responseContent.Result;
-            if (!string.IsNullOrEmpty(xAmzTargetHeader)) // Don't log authorisation requests
-            {
-                _logger.LogInformation($"Request: {requestUri}");
-            }
+            _logger.LogInformation($"Request: {requestUri}");
             _logger.LogInformation($"Response: {result}");
             return result;
         }
