@@ -220,7 +220,7 @@ namespace Topo.Services
                 foreach (var groupedLog in groupedLogs)
                 {
 
-                    foreach (var milestoneEvent in groupedLog.Take(participantCount))
+                    foreach (var milestoneEvent in groupedLog.OrderBy(gl => gl.event_start_datetime).Take(participantCount))
                         milestoneSummary.ParticipateLogs.Add(
                             new MilestoneLog
                             {
@@ -231,7 +231,7 @@ namespace Topo.Services
                 }
 
                 var assistEvents = milestoneResult.event_log.Where(e => e.credit_type == "assistant").ToList();
-                foreach (var assistEvent in assistEvents.Take(assistCount))
+                foreach (var assistEvent in assistEvents.OrderBy(ae => ae.event_start_datetime).Take(assistCount))
                 {
                     milestoneSummary.AssistLogs.Add(
                         new MilestoneLog
@@ -243,7 +243,7 @@ namespace Topo.Services
                 }
 
                 var leadEvents = milestoneResult.event_log.Where(e => e.credit_type == "leader").ToList();
-                foreach (var leadEvent in leadEvents.Take(leadCount))
+                foreach (var leadEvent in leadEvents.OrderBy(le => le.event_start_datetime).Take(leadCount))
                 {
                     milestoneSummary.LeadLogs.Add(
                         new MilestoneLog
