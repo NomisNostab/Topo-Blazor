@@ -1910,10 +1910,10 @@ namespace Topo.Services
                 }
                 rowNumber++;
                 rowNumber++;
-                sheet.Range[rowNumber, 1].Text = "Creative:";
+                sheet.Range[rowNumber, 1].Text = "Outdoors:";
                 sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
                 cellNumber = 1;
-                foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "creative"))
+                foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "outdoors"))
                 {
                     cellNumber++;
                     sheet.Range[rowNumber, cellNumber].Text = milestoneEvent.EventName;
@@ -1922,10 +1922,10 @@ namespace Topo.Services
                 }
                 rowNumber++;
                 rowNumber++;
-                sheet.Range[rowNumber, 1].Text = "Outdoors:";
+                sheet.Range[rowNumber, 1].Text = "Creative:";
                 sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
                 cellNumber = 1;
-                foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "outdoors"))
+                foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "creative"))
                 {
                     cellNumber++;
                     sheet.Range[rowNumber, cellNumber].Text = milestoneEvent.EventName;

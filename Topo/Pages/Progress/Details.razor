@@ -77,11 +77,11 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-2">
-                                <span>Creative:</span>
+                                <span>Outdoors:</span>
                             </div>
                             <div class="col-sm-10">
                                 <div class="row">
-                                    @foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "creative"))
+                                    @foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "outdoors"))
                                     {
                                         <div class="col-sm-2">
                                             <span>@milestoneEvent.EventName</span><span><br />@milestoneEvent.EventDate.ToString("dd/MM/yy")</span>
@@ -92,11 +92,11 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-2">
-                                <span>Outdoors:</span>
+                                <span>Creative:</span>
                             </div>
                             <div class="col-sm-10">
                                 <div class="row">
-                                    @foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "outdoors"))
+                                    @foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "creative"))
                                     {
                                         <div class="col-sm-2">
                                             <span>@milestoneEvent.EventName</span><span><br />@milestoneEvent.EventDate.ToString("dd/MM/yy")</span>
