@@ -325,16 +325,24 @@ namespace Topo.Services
             var peakAward = new PeakAward();
 
             var courseReflectionResultModel = await _terrainAPIService.GetCourseReflectionResultsForMember(memberid);
-            peakAward.PersonalDevelopmentCourse = courseReflectionResultModel.results.Where(r => r.status == "awarded").FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.PersonalDevelopmentCourse = courseReflectionResultModel.results
+                .Where(r => r.status == "awarded" && r.section == _storageService.Section)
+                .FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
 
             var adventurousJourneyResultModel = await _terrainAPIService.GetAdventurousJourneyResultsForMember(memberid);
-            peakAward.AdventurousJourney = adventurousJourneyResultModel.results.Where(r => r.status == "awarded").FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.AdventurousJourney = adventurousJourneyResultModel.results
+                .Where(r => r.status == "awarded" && r.section == _storageService.Section)
+                .FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
 
             var personalReflectionResultModel = await _terrainAPIService.GetPersonalReflectionResultsForMember(memberid);
-            peakAward.PersonalReflection = personalReflectionResultModel.results.Where(r => r.status == "awarded").FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.PersonalReflection = personalReflectionResultModel.results
+                .Where(r => r.status == "awarded" && r.section == _storageService.Section)
+                .FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
 
             var peakAwardResultModel = await _terrainAPIService.GetPeakAwardResultsForMember(memberid);
-            peakAward.Awarded = peakAwardResultModel.results.Where(r => r.status == "awarded").FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.Awarded = peakAwardResultModel.results
+                .Where(r => r.status == "awarded" && r.section == _storageService.Section)
+                .FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
 
             return peakAward;
         }
