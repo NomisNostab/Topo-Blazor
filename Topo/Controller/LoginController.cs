@@ -20,6 +20,7 @@ namespace Topo.Controller
         internal async Task LogInClick ()
         {
             var authenticationResult = await _loginService.LoginAsync(model.Branch, model.MemberNumber, model.Password);
+            model.LoginErrorMessage = "";
             if (authenticationResult != null && authenticationResult.AuthenticationSuccessResultModel.AuthenticationResult != null)
             {
                 await _loginService.GetUserAsync();
@@ -35,7 +36,10 @@ namespace Topo.Controller
 
                 NavigationManager.NavigateTo("index");
             }
-
+            if (authenticationResult != null && authenticationResult.AuthenticationErrorResultModel != null)
+            {
+                model.LoginErrorMessage = authenticationResult.AuthenticationErrorResultModel.message;
+            }
         }
     }
 }

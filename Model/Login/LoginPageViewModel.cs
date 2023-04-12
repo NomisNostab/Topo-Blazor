@@ -22,5 +22,6 @@ namespace Topo.Model.Login
         [Display(Name = "Member Number")]
         public string MemberNumber { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
+        public string LoginErrorMessage { get; set; } = string.Empty;
     }
 }
