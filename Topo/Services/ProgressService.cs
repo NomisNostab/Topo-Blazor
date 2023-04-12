@@ -280,7 +280,8 @@ namespace Topo.Services
                 {
                     Stream = oasResult.achievement_meta.stream,
                     Stage = oasResult.achievement_meta.stage,
-                    Awarded = awardedDate
+                    Awarded = awardedDate,
+                    Section = oasResult.section.ToLower().Substring(0,1)
                 });
             }
 

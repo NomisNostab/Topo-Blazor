@@ -2012,7 +2012,7 @@ namespace Topo.Services
                     if (oas.Awarded == DateTime.MinValue)
                         oasText = "Started";
                     else
-                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
                 }
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
@@ -2029,7 +2029,7 @@ namespace Topo.Services
                     if (oas.Awarded == DateTime.MinValue)
                         oasText = "Started";
                     else
-                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
                 }
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
@@ -2046,7 +2046,7 @@ namespace Topo.Services
                     if (oas.Awarded == DateTime.MinValue)
                         oasText = "Started";
                     else
-                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
                 }
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
@@ -2063,7 +2063,7 @@ namespace Topo.Services
                     if (oas.Awarded == DateTime.MinValue)
                         oasText = "Started";
                     else
-                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
                 }
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
@@ -2080,7 +2080,7 @@ namespace Topo.Services
                     if (oas.Awarded == DateTime.MinValue)
                         oasText = "Started";
                     else
-                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
                 }
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
@@ -2097,7 +2097,7 @@ namespace Topo.Services
                     if (oas.Awarded == DateTime.MinValue)
                         oasText = "Started";
                     else
-                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
                 }
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
@@ -2114,7 +2114,7 @@ namespace Topo.Services
                     if (oas.Awarded == DateTime.MinValue)
                         oasText = "Started";
                     else
-                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
                 }
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
@@ -2131,7 +2131,7 @@ namespace Topo.Services
                     if (oas.Awarded == DateTime.MinValue)
                         oasText = "Started";
                     else
-                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
                 }
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
@@ -2148,7 +2148,7 @@ namespace Topo.Services
                     if (oas.Awarded == DateTime.MinValue)
                         oasText = "Started";
                     else
-                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
                 }
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }

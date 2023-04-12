@@ -44,7 +44,7 @@ namespace Topo.Model.Progress
         public string Stream { get; set; } = string.Empty;
         public int Stage { get; set; }
         public DateTime Awarded { get; set; }
-
+        public string Section { get; set; } = string.Empty;
     }
 
     public class Stats
