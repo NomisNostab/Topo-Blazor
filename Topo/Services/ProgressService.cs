@@ -254,6 +254,30 @@ namespace Topo.Services
                         });
                 }
 
+                var eventCount = milestoneSummary.ParticipateLogs.Count + milestoneSummary.AssistLogs.Count + milestoneSummary.LeadLogs.Count;
+                switch (milestoneResult.achievement_meta.stage)
+                {
+                    case 1:
+                        if (eventCount == 27  && milestoneSummary.Status == "In Progress")
+                        {
+                            milestoneSummary.Status = "Awaiting Review";
+                        }
+                        break;
+                    case 2:
+                        if (eventCount == 25 && milestoneSummary.Status == "In Progress")
+                        {
+                            milestoneSummary.Status = "Awaiting Review";
+                        }
+                        break;
+                    case 3:
+                        if (eventCount == 24 && milestoneSummary.Status == "In Progress")
+                        {
+                            milestoneSummary.Status = "Awaiting Review";
+                        }
+                        break;
+                }
+
+
                 milestoneSummaries.Add(milestoneSummary);
             }
 
