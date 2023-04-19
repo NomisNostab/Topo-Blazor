@@ -77,11 +77,11 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-2">
-                                <span>Creative:</span>
+                                <span>Outdoors:</span>
                             </div>
                             <div class="col-sm-10">
                                 <div class="row">
-                                    @foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "creative"))
+                                    @foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "outdoors"))
                                     {
                                         <div class="col-sm-2">
                                             <span>@milestoneEvent.EventName</span><span><br />@milestoneEvent.EventDate.ToString("dd/MM/yy")</span>
@@ -92,11 +92,11 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-2">
-                                <span>Outdoors:</span>
+                                <span>Creative:</span>
                             </div>
                             <div class="col-sm-10">
                                 <div class="row">
-                                    @foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "outdoors"))
+                                    @foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "creative"))
                                     {
                                         <div class="col-sm-2">
                                             <span>@milestoneEvent.EventName</span><span><br />@milestoneEvent.EventDate.ToString("dd/MM/yy")</span>
@@ -209,7 +209,8 @@
                         }
                         else
                         {
-                            <span>@model.OASSummaries.Where(o => o.Stream == "bushcraft" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded.ToString("dd/MM/yy")</span>
+                            var summary = model.OASSummaries.Where(o => o.Stream == "bushcraft" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
+                            <span>@summary.Awarded.ToString("dd/MM/yy") @summary.Section</span>
                         }
                     </div>
                 }
@@ -231,7 +232,8 @@
                         }
                         else
                         {
-                            <span>@model.OASSummaries.Where(o => o.Stream == "bushwalking" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded.ToString("dd/MM/yy")</span>
+                            var summary = model.OASSummaries.Where(o => o.Stream == "bushwalking" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
+                            <span>@summary.Awarded.ToString("dd/MM/yy") @summary.Section</span>
                         }
                     </div>
                 }
@@ -253,7 +255,8 @@
                         }
                         else
                         {
-                            <span>@model.OASSummaries.Where(o => o.Stream == "camping" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded.ToString("dd/MM/yy")</span>
+                            var summary = @model.OASSummaries.Where(o => o.Stream == "camping" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
+                            <span>@summary.Awarded.ToString("dd/MM/yy") @summary.Section</span>
                         }
                     </div>
                 }
@@ -275,7 +278,8 @@
                         }
                         else
                         {
-                            <span>@model.OASSummaries.Where(o => o.Stream == "alpine" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded.ToString("dd/MM/yy")</span>
+                            var summary = @model.OASSummaries.Where(o => o.Stream == "alpine" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
+                            <span>@summary.Awarded.ToString("dd/MM/yy") @summary.Section</span>
                         }
                     </div>
                 }
@@ -297,7 +301,8 @@
                         }
                         else
                         {
-                            <span>@model.OASSummaries.Where(o => o.Stream == "cycling" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded.ToString("dd/MM/yy")</span>
+                            var summary = @model.OASSummaries.Where(o => o.Stream == "cycling" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
+                            <span>@summary.Awarded.ToString("dd/MM/yy") @summary.Section</span>
                         }
                     </div>
                 }
@@ -319,7 +324,8 @@
                         }
                         else
                         {
-                            <span>@model.OASSummaries.Where(o => o.Stream == "vertical" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded.ToString("dd/MM/yy")</span>
+                            var summary = @model.OASSummaries.Where(o => o.Stream == "vertical" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
+                            <span>@summary.Awarded.ToString("dd/MM/yy") @summary.Section</span>
                         }
                     </div>
                 }
@@ -341,7 +347,8 @@
                         }
                         else
                         {
-                            <span>@model.OASSummaries.Where(o => o.Stream == "aquatics" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded.ToString("dd/MM/yy")</span>
+                            var summary = @model.OASSummaries.Where(o => o.Stream == "aquatics" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
+                            <span>@summary.Awarded.ToString("dd/MM/yy") @summary.Section</span>
                         }
                     </div>
                 }
@@ -363,7 +370,8 @@
                         }
                         else
                         {
-                            <span>@model.OASSummaries.Where(o => o.Stream == "boating" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded.ToString("dd/MM/yy")</span>
+                            var summary = @model.OASSummaries.Where(o => o.Stream == "boating" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
+                            <span>@summary.Awarded.ToString("dd/MM/yy") @summary.Section</span>
                         }
                     </div>
                 }
@@ -385,7 +393,8 @@
                         }
                         else
                         {
-                            <span>@model.OASSummaries.Where(o => o.Stream == "paddling" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault().Awarded.ToString("dd/MM/yy")</span>
+                            var summary = @model.OASSummaries.Where(o => o.Stream == "paddling" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
+                            <span>@summary.Awarded.ToString("dd/MM/yy") @summary.Section</span>
                         }
                     </div>
                 }

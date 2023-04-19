@@ -220,7 +220,7 @@ namespace Topo.Services
                 foreach (var groupedLog in groupedLogs)
                 {
 
-                    foreach (var milestoneEvent in groupedLog.Take(participantCount))
+                    foreach (var milestoneEvent in groupedLog.OrderBy(gl => gl.event_start_datetime).Take(participantCount))
                         milestoneSummary.ParticipateLogs.Add(
                             new MilestoneLog
                             {
@@ -231,7 +231,7 @@ namespace Topo.Services
                 }
 
                 var assistEvents = milestoneResult.event_log.Where(e => e.credit_type == "assistant").ToList();
-                foreach (var assistEvent in assistEvents.Take(assistCount))
+                foreach (var assistEvent in assistEvents.OrderBy(ae => ae.event_start_datetime).Take(assistCount))
                 {
                     milestoneSummary.AssistLogs.Add(
                         new MilestoneLog
@@ -243,7 +243,7 @@ namespace Topo.Services
                 }
 
                 var leadEvents = milestoneResult.event_log.Where(e => e.credit_type == "leader").ToList();
-                foreach (var leadEvent in leadEvents.Take(leadCount))
+                foreach (var leadEvent in leadEvents.OrderBy(le => le.event_start_datetime).Take(leadCount))
                 {
                     milestoneSummary.LeadLogs.Add(
                         new MilestoneLog
@@ -253,6 +253,30 @@ namespace Topo.Services
                             EventDate = leadEvent.event_start_datetime
                         });
                 }
+
+                var eventCount = milestoneSummary.ParticipateLogs.Count + milestoneSummary.AssistLogs.Count + milestoneSummary.LeadLogs.Count;
+                switch (milestoneResult.achievement_meta.stage)
+                {
+                    case 1:
+                        if (eventCount == 27  && milestoneSummary.Status == "In Progress")
+                        {
+                            milestoneSummary.Status = "Awaiting Review";
+                        }
+                        break;
+                    case 2:
+                        if (eventCount == 25 && milestoneSummary.Status == "In Progress")
+                        {
+                            milestoneSummary.Status = "Awaiting Review";
+                        }
+                        break;
+                    case 3:
+                        if (eventCount == 24 && milestoneSummary.Status == "In Progress")
+                        {
+                            milestoneSummary.Status = "Awaiting Review";
+                        }
+                        break;
+                }
+
 
                 milestoneSummaries.Add(milestoneSummary);
             }
@@ -280,7 +304,8 @@ namespace Topo.Services
                 {
                     Stream = oasResult.achievement_meta.stream,
                     Stage = oasResult.achievement_meta.stage,
-                    Awarded = awardedDate
+                    Awarded = awardedDate,
+                    Section = oasResult.section.ToLower().Substring(0,1)
                 });
             }
 
@@ -325,16 +350,24 @@ namespace Topo.Services
             var peakAward = new PeakAward();
 
             var courseReflectionResultModel = await _terrainAPIService.GetCourseReflectionResultsForMember(memberid);
-            peakAward.PersonalDevelopmentCourse = courseReflectionResultModel.results.Where(r => r.status == "awarded").FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.PersonalDevelopmentCourse = courseReflectionResultModel.results
+                .Where(r => r.status == "awarded" && r.section == _storageService.Section)
+                .FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
 
             var adventurousJourneyResultModel = await _terrainAPIService.GetAdventurousJourneyResultsForMember(memberid);
-            peakAward.AdventurousJourney = adventurousJourneyResultModel.results.Where(r => r.status == "awarded").FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.AdventurousJourney = adventurousJourneyResultModel.results
+                .Where(r => r.status == "awarded" && r.section == _storageService.Section)
+                .FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
 
             var personalReflectionResultModel = await _terrainAPIService.GetPersonalReflectionResultsForMember(memberid);
-            peakAward.PersonalReflection = personalReflectionResultModel.results.Where(r => r.status == "awarded").FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.PersonalReflection = personalReflectionResultModel.results
+                .Where(r => r.status == "awarded" && r.section == _storageService.Section)
+                .FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
 
             var peakAwardResultModel = await _terrainAPIService.GetPeakAwardResultsForMember(memberid);
-            peakAward.Awarded = peakAwardResultModel.results.Where(r => r.status == "awarded").FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.Awarded = peakAwardResultModel.results
+                .Where(r => r.status == "awarded" && r.section == _storageService.Section)
+                .FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
 
             return peakAward;
         }
