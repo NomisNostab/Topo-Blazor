@@ -12,6 +12,8 @@
         public string MemberId { get; set; } = string.Empty;
         public string MemberName { get; set; } = string.Empty;
         public string MemberNameAndRate { get; set; } = string.Empty;
+        public string MemberFirstName { get; set; } = string.Empty;
+        public string MemberLastName { get; set; } = string.Empty;
         public string EventName { get; set; } = string.Empty;
         public string EventNameDisplay { get; set; } = string.Empty;
         public string EventChallengeArea { get; set; } = string.Empty;

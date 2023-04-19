@@ -220,6 +220,8 @@ namespace Topo.Services
                     {
                         MemberId = member.id,
                         MemberName = $"{member.first_name} {member.last_name}",
+                        MemberFirstName = member.first_name,
+                        MemberLastName = member.last_name,
                         EventName = programEvent.EventName,
                         EventChallengeArea = programEvent.ChallengeArea,
                         EventStartDate = programEvent.StartDateTime,
