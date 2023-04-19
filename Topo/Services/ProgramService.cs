@@ -1,6 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System.Globalization;
 using Topo.Model.Program;
+using System;
 
 namespace Topo.Services
 {
@@ -81,19 +83,33 @@ namespace Topo.Services
             var getEventsResultModel = await _terrainAPIService.GetEventsAsync(GetUser(), fromDate.AddDays(-1), toDate);
             if (getEventsResultModel != null && getEventsResultModel.results != null)
             {
-                var events = getEventsResultModel.results.Select(e => new EventListModel()
+                var eventList = new List<EventListModel>();
+                foreach (var eventResult in getEventsResultModel.results)
                 {
-                    Id = e.id,
-                    EventName = e.title,
-                    StartDateTime = e.start_datetime,
-                    EndDateTime = e.end_datetime,
-                    ChallengeArea = myTI.ToTitleCase(e.challenge_area.Replace("_", " ")),
-                    EventStatus = myTI.ToTitleCase(e.status),
-                    IsUnitEvent = e.invitee_type == "unit",
-                    EventDisplay = $"{e.title} {e.start_datetime.ToShortDateString()}"
-                })
-                .ToList();
-                return events;
+                    var getEventResultModel = await _terrainAPIService.GetEventAsync(eventResult.id);
+                    var leads = getEventResultModel.attendance.leader_members.Select(a => string.Concat(a.first_name, " ", a.last_name.AsSpan(0, 1)));
+                    var leadNames = string.Join(", ", leads);
+                    var assists = getEventResultModel.attendance.assistant_members.Select(a => string.Concat(a.first_name, " ", a.last_name.AsSpan(0, 1)));
+                    var assistNames = string.Join(", ", assists);
+                    var organiserName = $"{getEventResultModel?.organiser?.first_name ?? ""} {getEventResultModel?.organiser?.last_name.Substring(0, 1) ?? ""}";
+                    eventList.Add(new EventListModel()
+                    {
+                        Id = eventResult.id,
+                        EventName = eventResult.title,
+                        StartDateTime = eventResult.start_datetime,
+                        EndDateTime = eventResult.end_datetime,
+                        ChallengeArea = myTI.ToTitleCase(eventResult.challenge_area.Replace("_", " ").Replace("personal ", "")),
+                        EventStatus = myTI.ToTitleCase(eventResult.status),
+                        IsUnitEvent = eventResult.invitee_type == "unit",
+                        EventDisplay = $"{eventResult.title} {eventResult.start_datetime.ToShortDateString()}",
+                        Organiser = organiserName,
+                        Lead = leadNames,
+                        Assist = assistNames,
+                        Location = getEventResultModel?.location ?? ""
+                    });
+
+                }
+                return eventList;
             }
             return new List<EventListModel>();
         }
@@ -204,6 +220,8 @@ namespace Topo.Services
                     {
                         MemberId = member.id,
                         MemberName = $"{member.first_name} {member.last_name}",
+                        MemberFirstName = member.first_name,
+                        MemberLastName = member.last_name,
                         EventName = programEvent.EventName,
                         EventChallengeArea = programEvent.ChallengeArea,
                         EventStartDate = programEvent.StartDateTime,

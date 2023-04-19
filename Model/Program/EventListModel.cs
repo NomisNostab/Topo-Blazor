@@ -17,14 +17,20 @@ namespace Topo.Model.Program
         public string ChallengeArea { get; set; } = string.Empty;
         public string EventDisplay { get; set; } = string.Empty;
 
-        [Display(Name = "Date")]
-        public string EventDate => StartDateTime.ToShortDateString();
+        [Display(Name = "Date Time")]
+        public string EventDate => StartDateTime.Date == EndDateTime.Date 
+            ? $"{StartDateTime.ToString("dd/MM/yy HH:mm")} - {EndDateTime.ToString("HH:mm")}"
+            : $"{StartDateTime.ToString("dd/MM/yy HH:mm")} - {EndDateTime.ToString("HH:mm")} +{EndDateTime.DayOfYear - StartDateTime.DayOfYear}";
 
         public List<EventAttendance> attendees = new List<EventAttendance>();
 
         [Display(Name = "Status")]
         public string EventStatus { get; set; } = string.Empty;
         public bool IsUnitEvent { get; set; }
+        public string Organiser { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+        public string Lead { get; set; } = string.Empty;
+        public string Assist { get; set; } = string.Empty;
     }
 
     public class EventAttendance
