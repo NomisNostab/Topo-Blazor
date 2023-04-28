@@ -315,6 +315,10 @@ namespace Topo.Services
 
         public async Task AssumeProfile(string memberId)
         {
+            var profile = _storageService.GetProfilesResult.profiles.FirstOrDefault();
+            if (!profile.group.roles.Any(x => x == "group-leader"))
+                return;
+
             await RefreshTokenAsync();
 
             var requestUri = $"{membersAddress}members/{memberId}/assume-profiles";
