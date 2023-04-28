@@ -93,6 +93,9 @@ public class Function
                     case ReportType.PersonalProgress:
                         workbook = GenerateProgressWorkbook(reportGenerationRequest);
                         break;
+                    case ReportType.TermProgram:
+                        workbook = GenerateTermProgramWorkbook(reportGenerationRequest);
+                        break;
                 }
 
                 if (workbook != null)
@@ -296,6 +299,19 @@ public class Function
             var workbook = reportService.GenerateApprovalsWorkbook(reportData, reportGenerationRequest.GroupName, reportGenerationRequest.Section
                 , reportGenerationRequest.UnitName, reportGenerationRequest.FromDate, reportGenerationRequest.ToDate, reportGenerationRequest.GroupByMember
                 , reportGenerationRequest.OutputType == OutputType.PDF);
+            return workbook;
+        }
+        return reportService.CreateWorkbookWithSheets(1);
+    }
+
+    private IWorkbook GenerateTermProgramWorkbook(ReportGenerationRequest reportGenerationRequest)
+    {
+        var reportData = JsonConvert.DeserializeObject<List<EventListModel>>(reportGenerationRequest.ReportData);
+        if (reportData != null)
+        {
+            var workbook = reportService.GenerateTermProgramWorkbook(reportData, reportGenerationRequest.GroupName, reportGenerationRequest.Section
+                , reportGenerationRequest.UnitName
+                , reportGenerationRequest.OutputType == OutputType.Excel);
             return workbook;
         }
         return reportService.CreateWorkbookWithSheets(1);

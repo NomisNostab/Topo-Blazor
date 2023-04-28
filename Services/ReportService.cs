@@ -11,6 +11,7 @@ using Topo.Model.OAS;
 using Topo.Model.SIA;
 using Topo.Model.Wallchart;
 using Topo.Model.Progress;
+using Syncfusion.EJ2.Spreadsheet;
 
 namespace Topo.Services
 {
@@ -30,6 +31,7 @@ namespace Topo.Services
         public IWorkbook GenerateWallchartWorkbook(List<WallchartItemModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateApprovalsWorkbook(List<ApprovalsListModel> selectedApprovals, string groupName, string section, string unitName, DateTime approvalSearchFromDate, DateTime approvalSearchToDate, bool groupByMember, bool forPdfOutput);
         public IWorkbook GenerateProgressWorkbook(ProgressDetailsPageViewModel progressEntries, string groupName, string section, string unitName);
+        public IWorkbook GenerateTermProgramWorkbook(List<EventListModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook CreateWorkbookWithSheets(int sheetsToCreate);
     }
     public class ReportService : IReportService
@@ -2265,6 +2267,182 @@ namespace Topo.Services
 
             return workbook;
 
+        }
+
+        public IWorkbook GenerateTermProgramWorkbook(List<EventListModel> eventEntries, string groupName, string section, string unitName, bool forPdfOutput)
+        {
+            var workbook = CreateWorkbookWithLogo(groupName, section, 10);
+            IWorksheet sheet = workbook.Worksheets[0];
+            int rowNumber = 1;
+            int columnNumber = 0;
+
+            IStyle headingStyle = workbook.Styles["headingStyle"];
+
+            // Add Unit name
+            rowNumber++;
+            var unit = sheet.Range[rowNumber, 2];
+            unit.Text = unitName;
+            unit.CellStyle = headingStyle;
+            sheet.Range[rowNumber, 2, rowNumber, 10].Merge();
+            sheet.SetRowHeight(rowNumber, 25);
+
+            // Add Title
+            rowNumber++;
+            var title = sheet.Range[rowNumber, 2];
+            title.Text = $"Program Term x {DateTime.Now.Year}";
+            title.CellStyle = headingStyle;
+            sheet.Range[rowNumber, 2, rowNumber, 10].Merge();
+            sheet.SetRowHeight(rowNumber, 25);
+
+            //Headings
+            rowNumber++;
+            rowNumber++;
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Start";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "End";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Date";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Week";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Start and Finish";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Meet at";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Activity";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Organiser";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Lead";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Assist";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Duty Patrol";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Uniform";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Operoo/E1";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Challenge";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            sheet.Range[rowNumber, 1, rowNumber, columnNumber].CellStyle.Font.Italic = true;
+            sheet.Range[rowNumber, 1, rowNumber, columnNumber].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 1, rowNumber, columnNumber].CellStyle.ColorIndex = ExcelKnownColors.Grey_40_percent;
+
+            //Events
+            var currentMonth = 0;
+            foreach (var eventEntry in eventEntries)
+            {
+                if (currentMonth != eventEntry.StartDateTime.Month)
+                {
+                    rowNumber++;
+                    currentMonth = eventEntry.StartDateTime.Month;
+                    sheet.Range[rowNumber, 1].Text = eventEntry.StartDateTime.ToString("MMMM");
+                    sheet.Range[rowNumber, 1, rowNumber, columnNumber].CellStyle.Font.Bold = true;
+                    sheet.Range[rowNumber, 1, rowNumber, columnNumber].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                    sheet.Range[rowNumber, 1, rowNumber, columnNumber].BorderAround();
+                }
+                rowNumber++;
+                columnNumber = 1;
+                sheet.Range[rowNumber, columnNumber].DateTime = eventEntry.StartDateTime;
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                sheet.Range[rowNumber, columnNumber].NumberFormat = "dd/MM/yy HH:mm";
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].DateTime = eventEntry.EndDateTime;
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                sheet.Range[rowNumber, columnNumber].NumberFormat = "dd/MM/yy HH:mm";
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = formatEventDate(eventEntry.StartDateTime, eventEntry.EndDateTime);
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = "";
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = formatEventTime(eventEntry.StartDateTime, eventEntry.EndDateTime);
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = eventEntry.Location;
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = eventEntry.EventName;
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = eventEntry.Organiser;
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = eventEntry.Lead;
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = eventEntry.Assist;
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = "";
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = "Y";
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = "";
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = eventEntry.ChallengeArea;
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+
+                sheet.Range[rowNumber, 1, rowNumber, columnNumber].CellStyle.Font.Bold = true;
+                if (eventEntry.StartDateTime.Date != eventEntry.EndDateTime.Date 
+                    || eventEntry.StartDateTime.DayOfWeek == DayOfWeek.Saturday 
+                    || eventEntry.StartDateTime.DayOfWeek == DayOfWeek.Sunday)
+                    sheet.Range[rowNumber, 1, rowNumber, columnNumber].CellStyle.Font.Color = ExcelKnownColors.Red;
+            }
+
+            sheet.Range[1, 1, rowNumber, columnNumber].AutofitColumns();
+
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
+            sheet.PageSetup.BottomMargin = 0.25;
+            sheet.PageSetup.TopMargin = 0.25;
+            sheet.PageSetup.LeftMargin = 0.25;
+            sheet.PageSetup.RightMargin = 0.25;
+            sheet.PageSetup.HeaderMargin = 0;
+            sheet.PageSetup.FooterMargin = 0;
+            sheet.PageSetup.FitToPagesTall = 1;
+            sheet.PageSetup.FitToPagesWide = 1;
+
+            return workbook;
+
+        }
+
+        private string formatEventDate (DateTime startDateTime, DateTime endDateTime)
+        {
+            if (startDateTime.Date == endDateTime.Date)
+                return startDateTime.ToString("ddd d");
+            else
+                return $"{startDateTime.ToString("ddd d")} - {endDateTime.ToString("ddd d")}";
+        }
+
+        private string formatEventTime(DateTime startDateTime, DateTime endDateTime)
+        {
+            if (startDateTime.Date == endDateTime.Date)
+                return $"{startDateTime.ToShortTimeString()} - {endDateTime.ToShortTimeString()}";
+            else
+                return $"{startDateTime.ToString("ddd HH:mm")} - {endDateTime.ToString("ddd HH:mm")}";
         }
 
         private int UnitMaxAge(string unit)

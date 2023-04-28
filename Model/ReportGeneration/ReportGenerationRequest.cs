@@ -15,7 +15,8 @@
         Wallchart,
         AdditionalAwards,
         Approvals,
-        PersonalProgress
+        PersonalProgress,
+        TermProgram
     }
 
     public enum OutputType
