@@ -140,6 +140,27 @@ namespace Topo.Controller
 
             return report;
         }
+
+        internal async Task TermProgramReportXlsxClick()
+        {
+            byte[] report = await TermProgramReport(OutputType.Excel);
+            var fileName = $"Term_Program_{_storageService.UnitName.Replace(' ', '_')}.xlsx";
+
+            // Send the data to JS to actually download the file
+            await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, "application/vnd.ms-excel", report);
+        }
+
+        private async Task<byte[]> TermProgramReport(OutputType outputType = OutputType.PDF)
+        {
+            var groupName = _storageService.GroupName ?? "Group Name";
+            var unitName = _storageService.UnitName ?? "Unit Name";
+            var section = _storageService.Section;
+
+            var serialisedTermProgramData = JsonConvert.SerializeObject(model.Events);
+            var report = await _reportService.GetTermProgramReport(groupName, section, unitName, outputType, serialisedTermProgramData);
+
+            return report;
+        }
     }
 
 }
