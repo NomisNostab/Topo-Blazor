@@ -232,7 +232,7 @@ namespace Topo.Services
 
         public async Task<byte[]> GetApprovalsReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData, DateTime fromDate, DateTime toDate, bool groupByMember)
         {
-            var reportGenerationRequest = new ReportGenerationRequest()
+            var reportGenerationRequest = new ReportGenerationRequest() 
             {
                 ReportType = ReportType.Approvals,
                 GroupName = groupName,
@@ -283,7 +283,13 @@ namespace Topo.Services
 
         private async Task<byte[]> CallReportGeneratorFunction(ReportGenerationRequest reportGenerationRequest)
         {
-            HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Put, "https://gkgfntjuhcuc3qtjmohaaxigwe0uevae.lambda-url.ap-southeast-2.on.aws/");
+#if DEBUG
+            string functionUrl = "https://57aqgtwtgggsk47rtvpgqifima0tvhwy.lambda-url.ap-southeast-2.on.aws/";
+#else
+            string functionUrl = "https://qwhcdbhrempok4kpmk6utzavxq0zjzha.lambda-url.ap-southeast-2.on.aws/";
+#endif
+            string functionUrlLatest = "https://gkgfntjuhcuc3qtjmohaaxigwe0uevae.lambda-url.ap-southeast-2.on.aws/";
+            HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Put, functionUrl);
             var content = JsonConvert.SerializeObject(reportGenerationRequest);
             httpRequest.Content = new StringContent(content, Encoding.UTF8, "application/json");
             httpRequest.Headers.Add("accept", "application/json, text/plain, */*");
