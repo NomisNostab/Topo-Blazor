@@ -11,6 +11,8 @@ using Topo.Model.OAS;
 using Topo.Model.SIA;
 using Topo.Model.Wallchart;
 using Topo.Model.Progress;
+using Syncfusion.EJ2.Spreadsheet;
+using System;
 
 namespace Topo.Services
 {
@@ -30,10 +32,13 @@ namespace Topo.Services
         public IWorkbook GenerateWallchartWorkbook(List<WallchartItemModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateApprovalsWorkbook(List<ApprovalsListModel> selectedApprovals, string groupName, string section, string unitName, DateTime approvalSearchFromDate, DateTime approvalSearchToDate, bool groupByMember, bool forPdfOutput);
         public IWorkbook GenerateProgressWorkbook(ProgressDetailsPageViewModel progressEntries, string groupName, string section, string unitName);
+        public IWorkbook GenerateTermProgramWorkbook(List<EventListModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook CreateWorkbookWithSheets(int sheetsToCreate);
     }
     public class ReportService : IReportService
     {
+        public TimeSpan CurrentUtcOffset { get; set; } = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
+
         private enum participateAssistLead
         {
             participate,
@@ -110,8 +115,11 @@ namespace Topo.Services
             Color.FromArgb(156, 242, 80)
         };
 
+        private bool RunningInUtc { get; set; }
+
         public ReportService()
         {
+            RunningInUtc = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now) == TimeSpan.Zero;
         }
 
         public IWorkbook CreateWorkbookWithSheets(int sheetsToCreate)
@@ -811,33 +819,34 @@ namespace Topo.Services
             var communityEvents = attendanceReportData.attendanceReportChallengeAreaSummaries.Where(c => c.ChallengeArea == "Community").FirstOrDefault()?.EventCount ?? 0;
             var creativeEvents = attendanceReportData.attendanceReportChallengeAreaSummaries.Where(c => c.ChallengeArea == "Creative").FirstOrDefault()?.EventCount ?? 0;
             var outdoorsEvents = attendanceReportData.attendanceReportChallengeAreaSummaries.Where(c => c.ChallengeArea == "Outdoors").FirstOrDefault()?.EventCount ?? 0;
-            var personalGrowthEvents = attendanceReportData.attendanceReportChallengeAreaSummaries.Where(c => c.ChallengeArea == "Personal Growth").FirstOrDefault()?.EventCount ?? 0;
+            var personalGrowthEvents = attendanceReportData.attendanceReportChallengeAreaSummaries.Where(c => c.ChallengeArea == "Growth").FirstOrDefault()?.EventCount ?? 0;
 
             // Add Challenge Area Summary
             rowNumber++;
-            sheet.Range[rowNumber, 2].Text = $"Community {communityEvents} / {totalEvents}";
-            sheet.Range[rowNumber, 2, rowNumber, 3].Merge();
-            sheet.Range[rowNumber, 2, rowNumber, 3].BorderAround();
-            sheet.Range[rowNumber, 2, rowNumber, 3].CellStyle.ColorIndex = GetChallengeAreaColour("Community");
-            sheet.Range[rowNumber, 4].Text = $"Creative {creativeEvents} / {totalEvents}";
-            sheet.Range[rowNumber, 4, rowNumber, 5].Merge();
-            sheet.Range[rowNumber, 4, rowNumber, 5].BorderAround();
-            sheet.Range[rowNumber, 4, rowNumber, 5].CellStyle.ColorIndex = GetChallengeAreaColour("Creative");
-            sheet.Range[rowNumber, 6].Text = $"Outdoors {outdoorsEvents} / {totalEvents}";
-            sheet.Range[rowNumber, 6, rowNumber, 7].Merge();
-            sheet.Range[rowNumber, 6, rowNumber, 7].BorderAround();
-            sheet.Range[rowNumber, 6, rowNumber, 7].CellStyle.ColorIndex = GetChallengeAreaColour("Outdoors");
-            sheet.Range[rowNumber, 8].Text = $"Personal Growth {personalGrowthEvents} / {totalEvents}";
-            sheet.Range[rowNumber, 8, rowNumber, 10].Merge();
-            sheet.Range[rowNumber, 8, rowNumber, 10].BorderAround();
-            sheet.Range[rowNumber, 8, rowNumber, 10].CellStyle.ColorIndex = GetChallengeAreaColour("Personal Growth");
-            sheet.Range[rowNumber, 2, rowNumber, 10].CellStyle.Font.Bold = true;
+            var columnNumber = forPdfOutput ? 0 : 1;
+            sheet.Range[rowNumber, columnNumber + 2].Text = $"Community {communityEvents} / {totalEvents}";
+            sheet.Range[rowNumber, columnNumber + 2, rowNumber, columnNumber + 3].Merge();
+            sheet.Range[rowNumber, columnNumber + 2, rowNumber, columnNumber + 3].BorderAround();
+            sheet.Range[rowNumber, columnNumber + 2, rowNumber, columnNumber + 3].CellStyle.ColorIndex = GetChallengeAreaColour("Community");
+            sheet.Range[rowNumber, columnNumber + 4].Text = $"Creative {creativeEvents} / {totalEvents}";
+            sheet.Range[rowNumber, columnNumber + 4, rowNumber, columnNumber + 5].Merge();
+            sheet.Range[rowNumber, columnNumber + 4, rowNumber, columnNumber + 5].BorderAround();
+            sheet.Range[rowNumber, columnNumber + 4, rowNumber, columnNumber + 5].CellStyle.ColorIndex = GetChallengeAreaColour("Creative");
+            sheet.Range[rowNumber, columnNumber + 6].Text = $"Outdoors {outdoorsEvents} / {totalEvents}";
+            sheet.Range[rowNumber, columnNumber + 6, rowNumber, columnNumber + 7].Merge();
+            sheet.Range[rowNumber, columnNumber + 6, rowNumber, columnNumber + 7].BorderAround();
+            sheet.Range[rowNumber, columnNumber + 6, rowNumber, columnNumber + 7].CellStyle.ColorIndex = GetChallengeAreaColour("Outdoors");
+            sheet.Range[rowNumber, columnNumber + 8].Text = $"Personal Growth {personalGrowthEvents} / {totalEvents}";
+            sheet.Range[rowNumber, columnNumber + 8, rowNumber, columnNumber + 10].Merge();
+            sheet.Range[rowNumber, columnNumber + 8, rowNumber, columnNumber + 10].BorderAround();
+            sheet.Range[rowNumber, columnNumber + 8, rowNumber, columnNumber + 10].CellStyle.ColorIndex = GetChallengeAreaColour("Growth");
+            sheet.Range[rowNumber, columnNumber + 2, rowNumber, columnNumber + 10].CellStyle.Font.Bold = true;
             rowNumber++;
             // Group attendance by member for youth
             var groupedAttendances = attendanceReportData.attendanceReportItems.Where(m => m.IsAdultMember == 0).GroupBy(wa => wa.MemberName).ToList();
 
             // Add Event Details
-            var columnNumber = 1;
+            columnNumber = forPdfOutput ? 1 : 2;
             rowNumber++;
             var firstGroupedAttendance = groupedAttendances.FirstOrDefault();
             foreach (var eventAttendance in firstGroupedAttendance)
@@ -900,9 +909,21 @@ namespace Topo.Services
             foreach (var groupedAttendance in groupedAttendances)
             {
                 rowNumber++;
-                sheet.Range[rowNumber, 1].Text = forPdfOutput ? groupedAttendance.FirstOrDefault().MemberNameAndRate : groupedAttendance.FirstOrDefault().MemberName;
-                sheet.Range[rowNumber, 1].BorderAround();
                 columnNumber = 1;
+                if (forPdfOutput)
+                {
+                    sheet.Range[rowNumber, columnNumber].Text = groupedAttendance.FirstOrDefault().MemberNameAndRate;
+                    sheet.Range[rowNumber, columnNumber].BorderAround();
+
+                }
+                else
+                {
+                    sheet.Range[rowNumber, columnNumber].Text = groupedAttendance.FirstOrDefault().MemberFirstName;
+                    sheet.Range[rowNumber, columnNumber].BorderAround();
+                    columnNumber++;
+                    sheet.Range[rowNumber, columnNumber].Text = groupedAttendance.FirstOrDefault().MemberLastName;
+                    sheet.Range[rowNumber, columnNumber].BorderAround();
+                }
                 foreach (var eventAttendance in groupedAttendance)
                 {
                     columnNumber++;
@@ -911,7 +932,7 @@ namespace Topo.Services
                     sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 }
                 // Row total
-                var sumRange = sheet.Range[rowNumber, 2, rowNumber, columnNumber].AddressLocal;
+                var sumRange = sheet.Range[rowNumber, forPdfOutput ? 2 : 3, rowNumber, columnNumber].AddressLocal;
                 columnNumber++;
                 sheet.Range[rowNumber, columnNumber].Formula = @$"=COUNTIFS({sumRange}, ""P"")+COUNTIFS({sumRange}, ""A"")+COUNTIFS({sumRange}, ""L"")";
                 sheet.Range[rowNumber, columnNumber].BorderAround();
@@ -926,7 +947,8 @@ namespace Topo.Services
             var youthTotalRow = rowNumber;
             sheet.Range[rowNumber, 1].Text = "Youth Total";
             sheet.Range[rowNumber, 1].BorderAround();
-            for (int i = 2; i <= columnNumber - 1; i++)
+            var startCol = forPdfOutput ? 2 : 3;
+            for (int i = startCol; i <= columnNumber - 1; i++)
             {
                 var sumRange = sheet.Range[sumStartRow, i, sumEndRow, i].AddressLocal;
                 sheet.Range[rowNumber, i].Formula = @$"=COUNTIFS({sumRange}, ""P"")+COUNTIFS({sumRange}, ""A"")+COUNTIFS({sumRange}, ""L"")";
@@ -949,9 +971,20 @@ namespace Topo.Services
             foreach (var groupedAttendance in groupedAttendances)
             {
                 rowNumber++;
-                sheet.Range[rowNumber, 1].Text = groupedAttendance.FirstOrDefault().MemberName;
-                sheet.Range[rowNumber, 1].BorderAround();
                 columnNumber = 1;
+                if (forPdfOutput)
+                {
+                    sheet.Range[rowNumber, columnNumber].Text = groupedAttendance.FirstOrDefault().MemberName;
+                    sheet.Range[rowNumber, columnNumber].BorderAround();
+                }
+                else
+                {
+                    sheet.Range[rowNumber, columnNumber].Text = groupedAttendance.FirstOrDefault().MemberFirstName;
+                    sheet.Range[rowNumber, columnNumber].BorderAround();
+                    columnNumber++;
+                    sheet.Range[rowNumber, columnNumber].Text = groupedAttendance.FirstOrDefault().MemberLastName;
+                    sheet.Range[rowNumber, columnNumber].BorderAround();
+                }
                 foreach (var eventAttendance in groupedAttendance)
                 {
                     columnNumber++;
@@ -960,7 +993,7 @@ namespace Topo.Services
                     sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 }
                 // Row total
-                var sumRange = sheet.Range[rowNumber, 2, rowNumber, columnNumber].AddressLocal;
+                var sumRange = sheet.Range[rowNumber, forPdfOutput ? 2 : 3, rowNumber, columnNumber].AddressLocal;
                 columnNumber++;
                 sheet.Range[rowNumber, columnNumber].Formula = @$"=COUNTIFS({sumRange}, ""Y"")";
                 sheet.Range[rowNumber, columnNumber].BorderAround();
@@ -975,7 +1008,9 @@ namespace Topo.Services
             var adultTotalRow = rowNumber;
             sheet.Range[rowNumber, 1].Text = "Adult Total";
             sheet.Range[rowNumber, 1].BorderAround();
-            for (int i = 2; i <= columnNumber - 1; i++)
+            if (!forPdfOutput)
+                sheet.Range[rowNumber, 2].BorderAround();
+            for (int i = forPdfOutput ? 2 : 3; i <= columnNumber - 1; i++)
             {
                 var sumRange = sheet.Range[sumStartRow, i, sumEndRow, i].AddressLocal;
                 sheet.Range[rowNumber, i].Formula = @$"=COUNTIFS({sumRange}, ""Y"")";
@@ -994,7 +1029,9 @@ namespace Topo.Services
             rowNumber++;
             sheet.Range[rowNumber, 1].Text = "Event Total";
             sheet.Range[rowNumber, 1].BorderAround();
-            for (int i = 2; i <= columnNumber; i++)
+            if (!forPdfOutput)
+                sheet.Range[rowNumber, 2].BorderAround();
+            for (int i = forPdfOutput ? 2 : 3; i <= columnNumber; i++)
             {
                 var youthTotalCell = int.Parse(sheet.Range[youthTotalRow, i].CalculatedValue);
                 var adultTotalCell = int.Parse(sheet.Range[adultTotalRow, i].CalculatedValue);
@@ -1011,10 +1048,10 @@ namespace Topo.Services
             sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
             sheet.PageSetup.CenterHorizontally = true;
             sheet.PageSetup.CenterVertically = true;
-            sheet.PageSetup.BottomMargin = 0;
-            sheet.PageSetup.TopMargin = 0;
-            sheet.PageSetup.LeftMargin = 0;
-            sheet.PageSetup.RightMargin = 0;
+            sheet.PageSetup.BottomMargin = 0.2;
+            sheet.PageSetup.TopMargin = 0.2;
+            sheet.PageSetup.LeftMargin = 0.2;
+            sheet.PageSetup.RightMargin = 0.2;
             sheet.PageSetup.HeaderMargin = 0;
             sheet.PageSetup.FooterMargin = 0;
             sheet.PageSetup.IsFitToPage = true;
@@ -1910,10 +1947,10 @@ namespace Topo.Services
                 }
                 rowNumber++;
                 rowNumber++;
-                sheet.Range[rowNumber, 1].Text = "Creative:";
+                sheet.Range[rowNumber, 1].Text = "Outdoors:";
                 sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
                 cellNumber = 1;
-                foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "creative"))
+                foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "outdoors"))
                 {
                     cellNumber++;
                     sheet.Range[rowNumber, cellNumber].Text = milestoneEvent.EventName;
@@ -1922,10 +1959,10 @@ namespace Topo.Services
                 }
                 rowNumber++;
                 rowNumber++;
-                sheet.Range[rowNumber, 1].Text = "Outdoors:";
+                sheet.Range[rowNumber, 1].Text = "Creative:";
                 sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
                 cellNumber = 1;
-                foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "outdoors"))
+                foreach (var milestoneEvent in milestone.ParticipateLogs.Where(e => e.ChallengeArea == "creative"))
                 {
                     cellNumber++;
                     sheet.Range[rowNumber, cellNumber].Text = milestoneEvent.EventName;
@@ -2012,7 +2049,7 @@ namespace Topo.Services
                     if (oas.Awarded == DateTime.MinValue)
                         oasText = "Started";
                     else
-                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
                 }
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
@@ -2029,7 +2066,7 @@ namespace Topo.Services
                     if (oas.Awarded == DateTime.MinValue)
                         oasText = "Started";
                     else
-                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
                 }
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
@@ -2046,7 +2083,7 @@ namespace Topo.Services
                     if (oas.Awarded == DateTime.MinValue)
                         oasText = "Started";
                     else
-                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
                 }
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
@@ -2063,7 +2100,7 @@ namespace Topo.Services
                     if (oas.Awarded == DateTime.MinValue)
                         oasText = "Started";
                     else
-                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
                 }
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
@@ -2080,7 +2117,7 @@ namespace Topo.Services
                     if (oas.Awarded == DateTime.MinValue)
                         oasText = "Started";
                     else
-                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
                 }
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
@@ -2097,7 +2134,7 @@ namespace Topo.Services
                     if (oas.Awarded == DateTime.MinValue)
                         oasText = "Started";
                     else
-                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
                 }
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
@@ -2114,7 +2151,7 @@ namespace Topo.Services
                     if (oas.Awarded == DateTime.MinValue)
                         oasText = "Started";
                     else
-                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
                 }
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
@@ -2131,7 +2168,7 @@ namespace Topo.Services
                     if (oas.Awarded == DateTime.MinValue)
                         oasText = "Started";
                     else
-                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
                 }
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
@@ -2148,7 +2185,7 @@ namespace Topo.Services
                     if (oas.Awarded == DateTime.MinValue)
                         oasText = "Started";
                     else
-                        oasText = oas.Awarded.ToString("dd/MM/yy");
+                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
                 }
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
@@ -2238,6 +2275,195 @@ namespace Topo.Services
 
         }
 
+        public IWorkbook GenerateTermProgramWorkbook(List<EventListModel> eventEntries, string groupName, string section, string unitName, bool forPdfOutput)
+        {
+            var workbook = CreateWorkbookWithLogo(groupName, section, 10);
+            IWorksheet sheet = workbook.Worksheets[0];
+            int rowNumber = 1;
+            int columnNumber = 0;
+
+            IStyle headingStyle = workbook.Styles["headingStyle"];
+
+            // Add Unit name
+            rowNumber++;
+            var unit = sheet.Range[rowNumber, 2];
+            unit.Text = unitName;
+            unit.CellStyle = headingStyle;
+            sheet.Range[rowNumber, 2, rowNumber, 10].Merge();
+            sheet.SetRowHeight(rowNumber, 25);
+
+            // Add Title
+            rowNumber++;
+            var title = sheet.Range[rowNumber, 2];
+            title.Text = $"Program Term x {DateTime.Now.Year}";
+            title.CellStyle = headingStyle;
+            sheet.Range[rowNumber, 2, rowNumber, 10].Merge();
+            sheet.SetRowHeight(rowNumber, 25);
+
+            //Headings
+            rowNumber++;
+            rowNumber++;
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Start";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "End";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Date";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Week";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Start and Finish";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Meet at";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Activity";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Organiser";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Lead";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Assist";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Duty Patrol";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Uniform";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Operoo/E1";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            columnNumber++;
+            sheet.Range[rowNumber, columnNumber].Text = "Challenge";
+            sheet.Range[rowNumber, columnNumber].BorderAround();
+            sheet.Range[rowNumber, 1, rowNumber, columnNumber].CellStyle.Font.Italic = true;
+            sheet.Range[rowNumber, 1, rowNumber, columnNumber].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 1, rowNumber, columnNumber].CellStyle.ColorIndex = ExcelKnownColors.Grey_40_percent;
+
+            //Events
+            var currentMonth = 0;
+            foreach (var eventEntry in eventEntries)
+            {
+                if (RunningInUtc)
+                {
+                    // Adjust time to users local time.
+                    // To Do: Check for daylight savings correction
+                    eventEntry.StartDateTime = ConvertToClientLocalTime(eventEntry.StartDateTime);
+                    eventEntry.EndDateTime = ConvertToClientLocalTime(eventEntry.EndDateTime);
+                }
+
+                if (currentMonth != eventEntry.StartDateTime.Month)
+                {
+                    rowNumber++;
+                    currentMonth = eventEntry.StartDateTime.Month;
+                    sheet.Range[rowNumber, 1].Text = eventEntry.StartDateTime.ToString("MMMM");
+                    sheet.Range[rowNumber, 1, rowNumber, columnNumber].CellStyle.Font.Bold = true;
+                    sheet.Range[rowNumber, 1, rowNumber, columnNumber].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                    sheet.Range[rowNumber, 1, rowNumber, columnNumber].BorderAround();
+                }
+                rowNumber++;
+                columnNumber = 1;
+                sheet.Range[rowNumber, columnNumber].DateTime = eventEntry.StartDateTime;
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                sheet.Range[rowNumber, columnNumber].NumberFormat = "dd/MM/yy HH:mm";
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].DateTime = eventEntry.EndDateTime;
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                sheet.Range[rowNumber, columnNumber].NumberFormat = "dd/MM/yy HH:mm";
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = FormatEventDate(eventEntry.StartDateTime, eventEntry.EndDateTime);
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = "";
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = FormatEventTime(eventEntry.StartDateTime, eventEntry.EndDateTime);
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = eventEntry.Location;
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = eventEntry.EventName;
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = eventEntry.Organiser;
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = eventEntry.Lead;
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = eventEntry.Assist;
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = "";
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = "Y";
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = "";
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = eventEntry.ChallengeArea;
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+                sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+
+                sheet.Range[rowNumber, 1, rowNumber, columnNumber].CellStyle.Font.Bold = true;
+                if (eventEntry.StartDateTime.Date != eventEntry.EndDateTime.Date 
+                    || eventEntry.StartDateTime.DayOfWeek == DayOfWeek.Saturday 
+                    || eventEntry.StartDateTime.DayOfWeek == DayOfWeek.Sunday)
+                    sheet.Range[rowNumber, 1, rowNumber, columnNumber].CellStyle.Font.Color = ExcelKnownColors.Red;
+            }
+
+            sheet.Range[1, 1, rowNumber, columnNumber].AutofitColumns();
+
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
+            sheet.PageSetup.BottomMargin = 0.25;
+            sheet.PageSetup.TopMargin = 0.25;
+            sheet.PageSetup.LeftMargin = 0.25;
+            sheet.PageSetup.RightMargin = 0.25;
+            sheet.PageSetup.HeaderMargin = 0;
+            sheet.PageSetup.FooterMargin = 0;
+            sheet.PageSetup.FitToPagesTall = 1;
+            sheet.PageSetup.FitToPagesWide = 1;
+
+            return workbook;
+
+        }
+
+        private DateTime ConvertToClientLocalTime(DateTime dateTime)
+        {
+            return dateTime.AddHours(CurrentUtcOffset.Hours).AddMinutes(CurrentUtcOffset.Minutes);
+        }
+
+        private string FormatEventDate (DateTime startDateTime, DateTime endDateTime)
+        {
+            if (startDateTime.Date == endDateTime.Date)
+                return startDateTime.ToString("ddd d");
+            else
+                return $"{startDateTime.ToString("ddd d")} - {endDateTime.ToString("ddd d")}";
+        }
+
+        private string FormatEventTime(DateTime startDateTime, DateTime endDateTime)
+        {
+            if (startDateTime.Date == endDateTime.Date)
+                return $"{startDateTime.ToShortTimeString()} - {endDateTime.ToShortTimeString()}";
+            else
+                return $"{startDateTime.ToString("ddd HH:mm")} - {endDateTime.ToString("ddd HH:mm")}";
+        }
+
         private int UnitMaxAge(string unit)
         {
             switch (unit)
@@ -2266,7 +2492,7 @@ namespace Topo.Services
                     return ExcelKnownColors.Rose;
                 case "Outdoors":
                     return ExcelKnownColors.Sea_green;
-                case "Personal Growth":
+                case "Growth":
                     return ExcelKnownColors.Gold;
                 default:
                     return ExcelKnownColors.None;

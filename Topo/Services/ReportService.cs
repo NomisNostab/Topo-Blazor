@@ -21,6 +21,7 @@ namespace Topo.Services
         public Task<byte[]> GetAdditionalAwardsReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
         public Task<byte[]> GetApprovalsReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData, DateTime fromDate, DateTime toDate, bool groupByMember);
         public Task<byte[]> GetProgressReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
+        public Task<byte[]> GetTermProgramReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
     }
 
     public class ReportService : IReportService
@@ -231,7 +232,7 @@ namespace Topo.Services
 
         public async Task<byte[]> GetApprovalsReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData, DateTime fromDate, DateTime toDate, bool groupByMember)
         {
-            var reportGenerationRequest = new ReportGenerationRequest()
+            var reportGenerationRequest = new ReportGenerationRequest() 
             {
                 ReportType = ReportType.Approvals,
                 GroupName = groupName,
@@ -264,9 +265,31 @@ namespace Topo.Services
             return report;
         }
 
+        public async Task<byte[]> GetTermProgramReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData)
+        {
+            var reportGenerationRequest = new ReportGenerationRequest()
+            {
+                ReportType = ReportType.TermProgram,
+                GroupName = groupName,
+                Section = section,
+                UnitName = unitName,
+                OutputType = outputType,
+                ReportData = serialisedReportData
+            };
+
+            var report = await CallReportGeneratorFunction(reportGenerationRequest);
+            return report;
+        }
+
         private async Task<byte[]> CallReportGeneratorFunction(ReportGenerationRequest reportGenerationRequest)
         {
-            HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Put, "https://gkgfntjuhcuc3qtjmohaaxigwe0uevae.lambda-url.ap-southeast-2.on.aws/");
+#if DEBUG
+            string functionUrl = "https://57aqgtwtgggsk47rtvpgqifima0tvhwy.lambda-url.ap-southeast-2.on.aws/";
+#else
+            string functionUrl = "https://qwhcdbhrempok4kpmk6utzavxq0zjzha.lambda-url.ap-southeast-2.on.aws/";
+#endif
+            string functionUrlLatest = "https://gkgfntjuhcuc3qtjmohaaxigwe0uevae.lambda-url.ap-southeast-2.on.aws/";
+            HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Put, functionUrl);
             var content = JsonConvert.SerializeObject(reportGenerationRequest);
             httpRequest.Content = new StringContent(content, Encoding.UTF8, "application/json");
             httpRequest.Headers.Add("accept", "application/json, text/plain, */*");

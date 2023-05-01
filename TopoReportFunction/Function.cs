@@ -37,7 +37,7 @@ public class Function
     {
         try
         {
-            System.Globalization.CultureInfo cultureInfo = new System.Globalization.CultureInfo("en-AU");
+            CultureInfo cultureInfo = new("en-AU");
             CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
             CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
@@ -49,6 +49,7 @@ public class Function
             if (reportGenerationRequest != null)
             {
                 var workbook = reportService.CreateWorkbookWithSheets(1);
+                reportService.CurrentUtcOffset = reportGenerationRequest.CurrentUtcOffset;
                 switch (reportGenerationRequest.ReportType)
                 {
                     case ReportType.MemberList:
@@ -92,6 +93,9 @@ public class Function
                         break;
                     case ReportType.PersonalProgress:
                         workbook = GenerateProgressWorkbook(reportGenerationRequest);
+                        break;
+                    case ReportType.TermProgram:
+                        workbook = GenerateTermProgramWorkbook(reportGenerationRequest);
                         break;
                 }
 
@@ -296,6 +300,19 @@ public class Function
             var workbook = reportService.GenerateApprovalsWorkbook(reportData, reportGenerationRequest.GroupName, reportGenerationRequest.Section
                 , reportGenerationRequest.UnitName, reportGenerationRequest.FromDate, reportGenerationRequest.ToDate, reportGenerationRequest.GroupByMember
                 , reportGenerationRequest.OutputType == OutputType.PDF);
+            return workbook;
+        }
+        return reportService.CreateWorkbookWithSheets(1);
+    }
+
+    private IWorkbook GenerateTermProgramWorkbook(ReportGenerationRequest reportGenerationRequest)
+    {
+        var reportData = JsonConvert.DeserializeObject<List<EventListModel>>(reportGenerationRequest.ReportData);
+        if (reportData != null)
+        {
+            var workbook = reportService.GenerateTermProgramWorkbook(reportData, reportGenerationRequest.GroupName, reportGenerationRequest.Section
+                , reportGenerationRequest.UnitName
+                , reportGenerationRequest.OutputType == OutputType.Excel);
             return workbook;
         }
         return reportService.CreateWorkbookWithSheets(1);

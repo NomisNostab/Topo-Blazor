@@ -315,6 +315,10 @@ namespace Topo.Services
 
         public async Task AssumeProfile(string memberId)
         {
+            var profile = _storageService.GetProfilesResult.profiles.FirstOrDefault();
+            if (!profile.group.roles.Any(x => x == "group-leader"))
+                return;
+
             await RefreshTokenAsync();
 
             var requestUri = $"{membersAddress}members/{memberId}/assume-profiles";
@@ -502,11 +506,8 @@ namespace Topo.Services
             var response = await _httpClient.SendAsync(httpRequest);
             var responseContent = response.Content.ReadAsStringAsync();
             var result = responseContent.Result;
-            if (string.IsNullOrEmpty(xAmzTargetHeader)) // Dont log authorisation requests
-            {
-                _logger.LogInformation($"Request: {requestUri}");
-                _logger.LogInformation($"Response: {result}");
-            }
+            _logger.LogInformation($"Request: {requestUri}");
+            _logger.LogInformation($"Response: {result}");
             return result;
         }
 

@@ -61,45 +61,57 @@
     @if (model.Events != null && model.Events.Any())
     {
         <div class="row header">
-            <div class="col-sm-1">
+            <div class="col-sm-2">
                 <strong>Date</strong>
             </div>
-            <div class="col-sm-3">
-                <strong>Program Name</strong>
+            <div class="col-sm-2">
+                <strong>Event / Location</strong>
+            </div>
+            <div class="col-sm-1">
+                <strong>Organiser</strong>
+            </div>
+            <div class="col-sm-1">
+                <strong>Lead</strong>
             </div>
             <div class="col-sm-2">
-                <strong>Status</strong>
+                <strong>Assist</strong>
             </div>
-            <div class="col-sm-2">
-                <strong>Challenge Area</strong>
+            <div class="col-sm-1">
+                <strong>Challenge</strong>
             </div>
             <div class="col-sm-1">
                 <strong>Event</strong>
             </div>
-            <div class="col-sm-3">
+            <div class="col-sm-2">
             </div>
         </div>
 
         @foreach (var item in model?.Events)
         {
             <div class="row striped">
-                <div class="col-sm-1">
+                <div class="col-sm-2">
                     @item.EventDate
                 </div>
-                <div class="col-sm-3">
-                    @item.EventName
+                <div class="col-sm-2">
+                    @item.EventName<br />@item.Location
+                </div>
+                <div class="col-sm-1">
+                    @item.Organiser
+                </div>
+                <div class="col-sm-1">
+                    @item.Lead
                 </div>
                 <div class="col-sm-2">
-                    @item.EventStatus
+                    @item.Assist
                 </div>
-                <div class="col-sm-2">
+                <div class="col-sm-1">
                     @item.ChallengeArea
                 </div>
                 <div class="col-sm-1">
                     @(item.IsUnitEvent ? "Unit" : "Group")
                 </div>
-                <div class="col-sm-3">
-                    <button @onclick="@(e => SignInSheetClick(item.Id))" class="btn btn-link pt-0 pb-0">Sign in Sheet</button>
+                <div class="col-sm-2">
+                    <button @onclick="@(e => SignInSheetClick(item.Id))" class="btn btn-link pt-0 pb-0">Sign in</button>
                     <button @onclick="@(e => EventAttendanceClick(item.Id))" class="btn btn-link pt-0 pb-0">Attendance</button>
                 </div>
             </div>
@@ -108,7 +120,8 @@
         <div class="mt-3 mb-3 row">
             <div class="col-sm">
                 <button type="submit" name="button" @onclick="AttendanceReportPdfClick" class="btn btn-primary">Attendance Report (pdf)</button> &nbsp;
-                <button type="submit" name="button" @onclick="AttendanceReportXlsxClick" class="btn btn-success">Attendance Report (xlsx)</button>
+                <button type="submit" name="button" @onclick="AttendanceReportXlsxClick" class="btn btn-success">Attendance Report (xlsx)</button> &nbsp;
+                <button type="submit" name="button" @onclick="TermProgramReportXlsxClick" class="btn btn-success">Term Program (xlsx)</button>
             </div>
         </div>
 
