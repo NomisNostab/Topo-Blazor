@@ -37,7 +37,7 @@ public class Function
     {
         try
         {
-            System.Globalization.CultureInfo cultureInfo = new System.Globalization.CultureInfo("en-AU");
+            CultureInfo cultureInfo = new("en-AU");
             CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
             CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
@@ -49,6 +49,7 @@ public class Function
             if (reportGenerationRequest != null)
             {
                 var workbook = reportService.CreateWorkbookWithSheets(1);
+                reportService.CurrentUtcOffset = reportGenerationRequest.CurrentUtcOffset;
                 switch (reportGenerationRequest.ReportType)
                 {
                     case ReportType.MemberList:

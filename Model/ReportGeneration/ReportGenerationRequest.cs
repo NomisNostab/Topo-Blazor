@@ -37,6 +37,7 @@
         public string EventName { get; set; } = string.Empty;
         public DateTime FromDate { get; set; }
         public DateTime ToDate { get; set; }
+        public TimeSpan CurrentUtcOffset { get; set; } = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
         public bool BreakByPatrol { get; set; } = false;
         public bool GroupByMember { get; set; } = false;
         public bool FormatLikeTerrain { get; set; } = false;

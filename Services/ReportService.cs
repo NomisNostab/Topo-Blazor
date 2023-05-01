@@ -12,6 +12,7 @@ using Topo.Model.SIA;
 using Topo.Model.Wallchart;
 using Topo.Model.Progress;
 using Syncfusion.EJ2.Spreadsheet;
+using System;
 
 namespace Topo.Services
 {
@@ -36,6 +37,8 @@ namespace Topo.Services
     }
     public class ReportService : IReportService
     {
+        public TimeSpan CurrentUtcOffset { get; set; } = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
+
         private enum participateAssistLead
         {
             participate,
@@ -112,8 +115,11 @@ namespace Topo.Services
             Color.FromArgb(156, 242, 80)
         };
 
+        private bool RunningInUtc { get; set; }
+
         public ReportService()
         {
+            RunningInUtc = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now) == TimeSpan.Zero;
         }
 
         public IWorkbook CreateWorkbookWithSheets(int sheetsToCreate)
@@ -2347,6 +2353,14 @@ namespace Topo.Services
             var currentMonth = 0;
             foreach (var eventEntry in eventEntries)
             {
+                if (RunningInUtc)
+                {
+                    // Adjust time to users local time.
+                    // To Do: Check for daylight savings correction
+                    eventEntry.StartDateTime = ConvertToClientLocalTime(eventEntry.StartDateTime);
+                    eventEntry.EndDateTime = ConvertToClientLocalTime(eventEntry.EndDateTime);
+                }
+
                 if (currentMonth != eventEntry.StartDateTime.Month)
                 {
                     rowNumber++;
@@ -2366,13 +2380,13 @@ namespace Topo.Services
                 sheet.Range[rowNumber, columnNumber].BorderAround();
                 sheet.Range[rowNumber, columnNumber].NumberFormat = "dd/MM/yy HH:mm";
                 columnNumber++;
-                sheet.Range[rowNumber, columnNumber].Text = formatEventDate(eventEntry.StartDateTime, eventEntry.EndDateTime);
+                sheet.Range[rowNumber, columnNumber].Text = FormatEventDate(eventEntry.StartDateTime, eventEntry.EndDateTime);
                 sheet.Range[rowNumber, columnNumber].BorderAround();
                 columnNumber++;
                 sheet.Range[rowNumber, columnNumber].Text = "";
                 sheet.Range[rowNumber, columnNumber].BorderAround();
                 columnNumber++;
-                sheet.Range[rowNumber, columnNumber].Text = formatEventTime(eventEntry.StartDateTime, eventEntry.EndDateTime);
+                sheet.Range[rowNumber, columnNumber].Text = FormatEventTime(eventEntry.StartDateTime, eventEntry.EndDateTime);
                 sheet.Range[rowNumber, columnNumber].BorderAround();
                 columnNumber++;
                 sheet.Range[rowNumber, columnNumber].Text = eventEntry.Location;
@@ -2429,7 +2443,12 @@ namespace Topo.Services
 
         }
 
-        private string formatEventDate (DateTime startDateTime, DateTime endDateTime)
+        private DateTime ConvertToClientLocalTime(DateTime dateTime)
+        {
+            return dateTime.AddHours(CurrentUtcOffset.Hours).AddMinutes(CurrentUtcOffset.Minutes);
+        }
+
+        private string FormatEventDate (DateTime startDateTime, DateTime endDateTime)
         {
             if (startDateTime.Date == endDateTime.Date)
                 return startDateTime.ToString("ddd d");
@@ -2437,7 +2456,7 @@ namespace Topo.Services
                 return $"{startDateTime.ToString("ddd d")} - {endDateTime.ToString("ddd d")}";
         }
 
-        private string formatEventTime(DateTime startDateTime, DateTime endDateTime)
+        private string FormatEventTime(DateTime startDateTime, DateTime endDateTime)
         {
             if (startDateTime.Date == endDateTime.Date)
                 return $"{startDateTime.ToShortTimeString()} - {endDateTime.ToShortTimeString()}";
