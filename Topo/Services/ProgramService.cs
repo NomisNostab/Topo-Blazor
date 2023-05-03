@@ -91,7 +91,8 @@ namespace Topo.Services
                     var leadNames = string.Join(", ", leads);
                     var assists = getEventResultModel.attendance.assistant_members.Select(a => string.Concat(a.first_name, " ", a.last_name.AsSpan(0, 1)));
                     var assistNames = string.Join(", ", assists);
-                    var organiserName = $"{getEventResultModel?.organiser?.first_name ?? ""} {getEventResultModel?.organiser?.last_name.Substring(0, 1) ?? ""}";
+                    var organisers = getEventResultModel.organisers.Select(a => string.Concat(a.first_name, " ", a.last_name.AsSpan(0, 1)));
+                    var organiserNames = string.Join(", ", organisers);
                     eventList.Add(new EventListModel()
                     {
                         Id = eventResult.id,
@@ -102,7 +103,7 @@ namespace Topo.Services
                         EventStatus = myTI.ToTitleCase(eventResult.status),
                         IsUnitEvent = eventResult.invitee_type == "unit",
                         EventDisplay = $"{eventResult.title} {eventResult.start_datetime.ToShortDateString()}",
-                        Organiser = organiserName,
+                        Organiser = organiserNames,
                         Lead = leadNames,
                         Assist = assistNames,
                         Location = getEventResultModel?.location ?? ""
