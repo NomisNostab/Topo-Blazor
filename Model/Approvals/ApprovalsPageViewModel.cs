@@ -14,5 +14,6 @@ namespace Topo.Model.Approvals
         public bool ToBePresented { get; set; }
         public bool IsPresented { get; set; }
         public string GroupName { get; set; } = string.Empty;
+        public bool ShowRejected { get; set; }
     }
 }
