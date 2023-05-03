@@ -2042,7 +2042,7 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
             for (int i = 1; i < 10; i++)
             {
-                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "bushcraft" && o.Stage == i).FirstOrDefault();
+                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "bushcraft" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 var oasText = "";
                 if (oas != null)
                 {
@@ -2059,7 +2059,7 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
             for (int i = 1; i < 10; i++)
             {
-                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "bushwalking" && o.Stage == i).FirstOrDefault();
+                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "bushwalking" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 var oasText = "";
                 if (oas != null)
                 {
@@ -2076,7 +2076,7 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
             for (int i = 1; i < 10; i++)
             {
-                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "camping" && o.Stage == i).FirstOrDefault();
+                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "camping" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 var oasText = "";
                 if (oas != null)
                 {
@@ -2093,7 +2093,7 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
             for (int i = 1; i < 10; i++)
             {
-                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "apline" && o.Stage == i).FirstOrDefault();
+                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "apline" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 var oasText = "";
                 if (oas != null)
                 {
@@ -2110,7 +2110,7 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
             for (int i = 1; i < 10; i++)
             {
-                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "cycling" && o.Stage == i).FirstOrDefault();
+                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "cycling" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 var oasText = "";
                 if (oas != null)
                 {
@@ -2127,7 +2127,7 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
             for (int i = 1; i < 10; i++)
             {
-                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "vertical" && o.Stage == i).FirstOrDefault();
+                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "vertical" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 var oasText = "";
                 if (oas != null)
                 {
@@ -2144,7 +2144,7 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
             for (int i = 1; i < 10; i++)
             {
-                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "aquatics" && o.Stage == i).FirstOrDefault();
+                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "aquatics" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 var oasText = "";
                 if (oas != null)
                 {
@@ -2161,7 +2161,7 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
             for (int i = 1; i < 10; i++)
             {
-                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "boating" && o.Stage == i).FirstOrDefault();
+                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "boating" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 var oasText = "";
                 if (oas != null)
                 {
@@ -2178,7 +2178,7 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
             for (int i = 1; i < 10; i++)
             {
-                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "paddling" && o.Stage == i).FirstOrDefault();
+                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "paddling" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 var oasText = "";
                 if (oas != null)
                 {
