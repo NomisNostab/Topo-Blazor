@@ -1,10 +1,8 @@
 ﻿using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using System.Globalization;
 using Topo.Model.Approvals;
-using Topo.Model.ReportGeneration;
 
 namespace Topo.Services
 {
@@ -142,6 +140,20 @@ namespace Topo.Services
         public async Task<List<ApprovalsListModel>> GetApprovalListItems(string unitId)
         {
             var savedApprovalItems = await ReadApprovalListFromLocalStorage(unitId);
+            var members = await _memberService.GetMembersAsync(unitId);
+            List<ApprovalsListModel> approvalsToRemove = new List<ApprovalsListModel>();
+            foreach (var approvalItem in savedApprovalItems)
+            {
+                var member = members.Where(m => m.id == approvalItem.member_id).FirstOrDefault();
+                if (member == null)
+                {
+                    approvalsToRemove.Add(approvalItem);
+                }
+            }
+            foreach (var approvalToRemove in approvalsToRemove)
+            {
+                savedApprovalItems.Remove(approvalToRemove);
+            }
             var initialLoad = savedApprovalItems.Count == 0;
             var pendingApprovals = await GetApprovalList(unitId, "pending");
             var finalisedApprovals = await GetApprovalList(unitId, "finalised");
