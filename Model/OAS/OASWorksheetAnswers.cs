@@ -12,5 +12,7 @@
         public string MemberName { get; set; } = string.Empty;
         public DateTime? MemberAnswer { get; set; }
         public string MemberPatrol { get; set; } = string.Empty;
+        public bool Answered { get; set; }
+        public bool Awarded { get; set; }
     }
 }

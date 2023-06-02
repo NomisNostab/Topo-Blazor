@@ -192,7 +192,9 @@ namespace Topo.Services
                         MemberId = member.id,
                         MemberName = $"{member.first_name} {member.last_name}",
                         MemberPatrol = member.patrol_name,
-                        MemberAnswer = null
+                        MemberAnswer = null,
+                        Answered = false,
+                        Awarded = false
                     };
                     OASWorksheetAnswers.Add(oASWorksheetAnswers);
                 }
@@ -218,18 +220,11 @@ namespace Topo.Services
                             {
                                 if (answer.Key == "logbook_up_to_date" && answer.Value == "true")
                                 {
-                                    worksheetAnswer.MemberAnswer = memberAchievement.status_updated;
+                                    worksheetAnswer.Answered = true;
                                 }
                                 else
                                 {
-                                    try
-                                    {
-                                        worksheetAnswer.MemberAnswer = ConvertAnswerDate(answer.Value, memberAchievement.status_updated);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        worksheetAnswer.MemberAnswer = memberAchievement.status_updated;
-                                    }
+                                    worksheetAnswer.Answered = true;
                                 }
                             }
                         }
@@ -263,7 +258,11 @@ namespace Topo.Services
                         foreach (var worksheetAnswer in worksheetAnswers)
                         {
                             if (worksheetAnswer != null)
+                            {
                                 worksheetAnswer.MemberAnswer = importedDate;
+                                worksheetAnswer.Answered = true;
+                                worksheetAnswer.Awarded = true;
+                            }
                         }
                     }
                     // No answers
@@ -277,7 +276,13 @@ namespace Topo.Services
                         foreach (var worksheetAnswer in worksheetAnswers)
                         {
                             if (worksheetAnswer != null)
-                                worksheetAnswer.MemberAnswer = memberAchievement.status_updated;
+                            {
+                                {
+                                    worksheetAnswer.MemberAnswer = memberAchievement.status_updated;
+                                    worksheetAnswer.Answered = true;
+                                    worksheetAnswer.Awarded = true;
+                                }
+                            }
                         }
                     }
                     // Answers
@@ -290,14 +295,19 @@ namespace Topo.Services
                                 .Where(wa => wa.MemberId == memberAchievement.member_id)
                                 .FirstOrDefault();
                             if (worksheetAnswer != null)
-                                try
-                                {
-                                    worksheetAnswer.MemberAnswer = ConvertAnswerDate(answer.Value, memberAchievement.status_updated);
-                                }
-                                catch (Exception ex)
-                                {
-                                    worksheetAnswer.MemberAnswer = memberAchievement.status_updated;
-                                }
+                            {
+                                worksheetAnswer.MemberAnswer = memberAchievement.status_updated;
+                                worksheetAnswer.Answered = true;
+                                worksheetAnswer.Awarded = true;
+                            }
+                            //try
+                            //    {
+                            //        worksheetAnswer.MemberAnswer = ConvertAnswerDate(answer.Value, memberAchievement.status_updated);
+                            //    }
+                            //    catch (Exception ex)
+                            //    {
+                            //        worksheetAnswer.MemberAnswer = memberAchievement.status_updated;
+                            //    }
                         }
                     }
                     // Set logbook up to date
@@ -307,7 +317,11 @@ namespace Topo.Services
                         .Where(wa => wa.MemberAnswer == null)
                         .FirstOrDefault();
                     if (logbookUpToDate != null)
+                    {
                         logbookUpToDate.MemberAnswer = memberAchievement.status_updated;
+                        logbookUpToDate.Answered = true;
+                        logbookUpToDate.Awarded = true;
+                    }
                 }
             }
 

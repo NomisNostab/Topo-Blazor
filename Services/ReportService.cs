@@ -1114,10 +1114,23 @@ namespace Topo.Services
                 foreach (var answer in groupedAnswer.OrderBy(ga => ga.InputTitleSortIndex).ThenBy(ga => ga.InputSortIndex))
                 {
                     rowNumber++;
-                    if (answer.MemberAnswer.HasValue)
+                    if (answer.Answered)
                     {
-                        sheet.Range[rowNumber, columnNumber].DateTime = answer.MemberAnswer.Value;
-                        sheet.Range[rowNumber, columnNumber].CellStyle.Color = Color.DarkSeaGreen;
+                        if (answer.Awarded)
+                        {
+                            if (answer.InputId == "logbook_up_to_date")
+                            {
+                                sheet.Range[rowNumber, columnNumber].DateTime = answer.MemberAnswer.Value;
+                            }
+                            sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                            sheet.Range[rowNumber, columnNumber].CellStyle.Color = Color.DarkSeaGreen;
+                        }
+                        else
+                        {
+                            sheet.Range[rowNumber, columnNumber].Text = "Y";
+                            sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                            sheet.Range[rowNumber, columnNumber].CellStyle.Color = Color.Orange;
+                        }
                     }
                     sheet.Range[rowNumber, columnNumber].BorderAround();
                 }
@@ -1125,7 +1138,6 @@ namespace Topo.Services
                 sheet.AutofitColumn(columnNumber);
             }
 
-//            sheet.Range[1, 1, rowNumber, columnNumber].AutofitColumns();
 
         }
         private void GenerateOASWorksheetBodyOriginal(IWorksheet sheet, IList<IGrouping<string, OASWorksheetAnswers>> groupedAnswers, ref int rowNumber, ref int columnNumber)
@@ -1179,10 +1191,23 @@ namespace Topo.Services
                 foreach (var answer in groupedAnswer.OrderBy(ga => ga.InputTitleSortIndex).ThenBy(ga => ga.InputSortIndex))
                 {
                     columnNumber++;
-                    if (answer.MemberAnswer.HasValue)
+                    if (answer.Answered)
                     {
-                        sheet.Range[rowNumber, columnNumber].DateTime = answer.MemberAnswer.Value;
-                        sheet.Range[rowNumber, columnNumber].CellStyle.Color = Color.DarkSeaGreen;
+                        if (answer.Awarded)
+                        {
+                            if (answer.InputId == "logbook_up_to_date")
+                            {
+                                sheet.Range[rowNumber, columnNumber].DateTime = answer.MemberAnswer.Value;
+                            }
+                            sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                            sheet.Range[rowNumber, columnNumber].CellStyle.Color = Color.DarkSeaGreen;
+                        }
+                        else
+                        {
+                            sheet.Range[rowNumber, columnNumber].Text = "Y";
+                            sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                            sheet.Range[rowNumber, columnNumber].CellStyle.Color = Color.Orange;
+                        }
                     }
                     sheet.Range[rowNumber, columnNumber].BorderAround();
                 }
