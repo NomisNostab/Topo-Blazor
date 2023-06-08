@@ -77,6 +77,8 @@ namespace Topo.Controller
                     model.Approvals = model.Approvals.Where(a => !string.IsNullOrEmpty(a.submission_outcome) && !a.presented_date.HasValue).ToList();
                 if (model.IsPresented)
                     model.Approvals = model.Approvals.Where(a => a.presented_date.HasValue && a.presented_date != a.awarded_date).ToList();
+                if (!model.ShowRejected)
+                    model.Approvals = model.Approvals.Where(a => a.submission_outcome.ToLower() != "rejected").ToList();
             }
         }
 

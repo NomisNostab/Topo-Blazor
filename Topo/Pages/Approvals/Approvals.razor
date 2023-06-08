@@ -45,16 +45,23 @@
         <label class="col-sm-2 form-check-label" for="toBePresented">
             To be presented
         </label>
-        <div class="col-sm-3">
+        <div class="col-sm-1">
             <InputCheckbox id="toBePresented" class="form-check-input"
                            @bind-Value="model.ToBePresented" />
         </div>
-        <label for="isPresented" class="col-sm-2 form-check-label">
+        <label class="col-sm-2 form-check-label" for="isPresented">
             Has been presented
         </label>
-        <div class="col-sm-3">
+        <div class="col-sm-1">
             <InputCheckbox id="isPresented" class="form-check-input"
                            @bind-Value="model.IsPresented" />
+        </div>
+        <label class="col-sm-2 form-check-label" for="showRejected">
+            Show Rejected
+        </label>
+        <div class="col-sm-1">
+            <InputCheckbox id="showRejected" class="form-check-input"
+                           @bind-Value="model.ShowRejected" />
         </div>
     </div>
 
