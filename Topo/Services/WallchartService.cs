@@ -11,14 +11,14 @@ namespace Topo.Services
     {
         private readonly StorageService _storageService;
         private readonly ITerrainAPIService _terrainAPIService;
-        //private readonly IApprovalsService _approvalService;
+        private readonly IApprovalsService _approvalService;
         private List<ApprovalsListModel> approvals = new List<ApprovalsListModel>();
 
-        public WallchartService(StorageService storageService, ITerrainAPIService terrainAPIService) //, IApprovalsService approvalService)
+        public WallchartService(StorageService storageService, ITerrainAPIService terrainAPIService, IApprovalsService approvalService)
         {
             _storageService = storageService;
             _terrainAPIService = terrainAPIService;
-            //_approvalService = approvalService;
+            _approvalService = approvalService;
         }
 
         public async Task<List<WallchartItemModel>> GetWallchartItems(string selectedUnitId)
@@ -28,7 +28,7 @@ namespace Topo.Services
                 return cachedWallchartItems;
 
             var section = _storageService.Section;
-            //approvals = _approvalService.ReadApprovalListFromFileSystem(selectedUnitId);
+            approvals = await _approvalService.ReadApprovalListFromLocalStorage(selectedUnitId);
             await _terrainAPIService.RevokeAssumedProfiles();
 
             var wallchartItems = new List<WallchartItemModel>();
@@ -58,7 +58,7 @@ namespace Topo.Services
                             wallchartItem.Milestone1Assist = 2;
                             wallchartItem.Milestone1Lead = 1;
                             wallchartItem.Milestone1Awarded = milestone.status_updated;
-                            wallchartItem.Milestone1Presented = GetApprovalDate(result.member_id, "Milestone 1");
+                            wallchartItem.Milestone1Presented = GetPresentedDate(result.member_id, "Milestone 1");
                         }
                         else
                         {
@@ -81,7 +81,7 @@ namespace Topo.Services
                             wallchartItem.Milestone2Assist = 3;
                             wallchartItem.Milestone2Lead = 2;
                             wallchartItem.Milestone2Awarded = milestone.status_updated;
-                            wallchartItem.Milestone2Presented = GetApprovalDate(result.member_id, "Milestone 2");
+                            wallchartItem.Milestone2Presented = GetPresentedDate(result.member_id, "Milestone 2");
                         }
                         else
                         {
@@ -102,7 +102,7 @@ namespace Topo.Services
                         wallchartItem.Milestone3Assist = milestone.total_assists;
                         wallchartItem.Milestone3Lead = milestone.total_leads;
                         wallchartItem.Milestone3Awarded = milestone.awarded ? milestone.status_updated : null;
-                        wallchartItem.Milestone3Presented = GetApprovalDate(result.member_id, "Milestone 3");
+                        wallchartItem.Milestone3Presented = GetPresentedDate(result.member_id, "Milestone 3");
                     }
                 }
                 foreach (var oas in result.oas.highest.OrderBy(h => h.stream).ThenBy(h => h.stage))
@@ -180,7 +180,7 @@ namespace Topo.Services
             return wallchartItems;
         }
 
-        private DateTime? GetApprovalDate(string member_id, string achievement_name)
+        private DateTime? GetPresentedDate(string member_id, string achievement_name)
         {
             var approval = approvals.Where(a => a.member_id == member_id && a.achievement_name == achievement_name).FirstOrDefault();
             return approval?.presented_date;
