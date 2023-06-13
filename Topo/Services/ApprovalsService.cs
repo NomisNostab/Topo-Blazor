@@ -169,7 +169,7 @@ namespace Topo.Services
                 }
             }
             // Get items in allTerrainApprovals that are not in savedApprovalItems, these are new since last time
-            var newSubmissions = allTerrainApprovals.Where(all => savedApprovalItems.Count(x => x.achievement_id == all.achievement_id) == 0).ToList();
+            var newSubmissions = allTerrainApprovals.Where(all => savedApprovalItems.Count(x => x.achievement_id == all.achievement_id && x.submission_type == all.submission_type) == 0).ToList();
 
             foreach (var newApproval in newSubmissions)
             {
