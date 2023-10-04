@@ -42,7 +42,8 @@ namespace Topo.Services
                         patrol_duty = GetPatrolDuty(m.unit.duty, m.patrol?.duty ?? ""),
                         patrol_order = GetPatrolOrder(m.unit.duty, m.patrol?.duty ?? ""),
                         isAdultLeader = m.unit.duty == "adult_leader" ? 1 : 0,
-                        status = m.status
+                        status = m.status,
+                        isEligibleJamboree = GetJamboreeEligibilityFromBirthdate(m.date_of_birth)
                     })
                     .ToList();
                 _storageService.CachedMembers.Add(new KeyValuePair<string, List<MemberListModel>>(unitId, memberList));
@@ -68,6 +69,23 @@ namespace Topo.Services
                 months += 12;
             }
             return $"{years}y {months}m";
+        }
+
+        private bool GetJamboreeEligibilityFromBirthdate(string dateOfBirth)
+        {
+            var birthday = DateTime.ParseExact(dateOfBirth, "yyyy-MM-dd", CultureInfo.InvariantCulture); // Date in AU format
+            var scoutMaxCutOffDate = new DateTime(2010, 1, 6);
+            var scoutMinCutOffDate = new DateTime(2014, 1, 6);
+            var venturerMaxCutOffDate = new DateTime(2008, 1, 6);
+            if (birthday > scoutMaxCutOffDate && birthday < scoutMinCutOffDate)
+            {
+                return true ;
+            }
+            if (birthday > venturerMaxCutOffDate && birthday < scoutMaxCutOffDate)
+            {
+                return true;
+            }
+            return false;
         }
 
         private string GetPatrolDuty(string unitDuty, string patrolDuty)

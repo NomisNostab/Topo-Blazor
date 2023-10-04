@@ -23,5 +23,6 @@ namespace Topo.Model.Members
         public int patrol_order { get; set; } = 0;
         public int isAdultLeader { get; set; } = 0;
         public bool selected { get; set; }
+        public bool isEligibleJamboree { get; set; } = false;
     }
 }

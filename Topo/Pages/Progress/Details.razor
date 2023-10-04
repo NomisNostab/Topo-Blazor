@@ -199,19 +199,7 @@
                 @for (int i = 1; i <= 9; i++)
                 {
                     <div class="col-sm-1">
-                        @if (model.OASSummaries.Where(o => o.Stream == "bushcraft" && o.Stage == i).FirstOrDefault() == null)
-                        {
-                            <span></span>
-                        }
-                        else if (model.OASSummaries.Where(o => o.Stream == "bushcraft" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault() != null)
-                        {
-                            var summary = model.OASSummaries.Where(o => o.Stream == "bushcraft" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
-                            <span>@summary.Awarded.ToString("dd/MM/yy") @summary.Section</span>
-                        }
-                        else
-                        {
-                            <span>Started</span>
-                        }
+                        @FormatOAS("bushcraft", i)
                     </div>
                 }
             </div>
@@ -222,19 +210,7 @@
                 @for (int i = 1; i <= 9; i++)
                 {
                     <div class="col-sm-1">
-                        @if (model.OASSummaries.Where(o => o.Stream == "bushwalking" && o.Stage == i).FirstOrDefault() == null)
-                        {
-                            <span></span>
-                        }
-                        else if (model.OASSummaries.Where(o => o.Stream == "bushwalking" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault() != null)
-                        {
-                            var summary = model.OASSummaries.Where(o => o.Stream == "bushwalking" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
-                            <span>@summary.Awarded.ToString("dd/MM/yy") @summary.Section</span>
-                        }
-                        else
-                        {
-                            <span>Started</span>
-                        }
+                        @FormatOAS("bushwalking", i)
                     </div>
                 }
             </div>
@@ -245,19 +221,7 @@
                 @for (int i = 1; i <= 9; i++)
                 {
                     <div class="col-sm-1">
-                        @if (model.OASSummaries.Where(o => o.Stream == "camping" && o.Stage == i).FirstOrDefault() == null)
-                        {
-                            <span></span>
-                        }
-                        else if (model.OASSummaries.Where(o => o.Stream == "camping" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault() != null)
-                        {
-                            var summary = model.OASSummaries.Where(o => o.Stream == "camping" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
-                            <span>@summary.Awarded.ToString("dd/MM/yy") @summary.Section</span>
-                        }
-                        else
-                        {
-                            <span>Started</span>
-                        }
+                        @FormatOAS("camping", i)
                     </div>
                 }
             </div>
@@ -268,19 +232,7 @@
                 @for (int i = 1; i <= 9; i++)
                 {
                     <div class="col-sm-1">
-                        @if (model.OASSummaries.Where(o => o.Stream == "alpine" && o.Stage == i).FirstOrDefault() == null)
-                        {
-                            <span></span>
-                        }
-                        else if (model.OASSummaries.Where(o => o.Stream == "alpine" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault() != null)
-                        {
-                            var summary = model.OASSummaries.Where(o => o.Stream == "alpine" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
-                            <span>@summary.Awarded.ToString("dd/MM/yy") @summary.Section</span>
-                        }
-                        else
-                        {
-                            <span>Started</span>
-                        }
+                        @FormatOAS("alpine", i)
                     </div>
                 }
             </div>
@@ -291,19 +243,7 @@
                 @for (int i = 1; i <= 9; i++)
                 {
                     <div class="col-sm-1">
-                        @if (model.OASSummaries.Where(o => o.Stream == "cycling" && o.Stage == i).FirstOrDefault() == null)
-                        {
-                            <span></span>
-                        }
-                        else if (model.OASSummaries.Where(o => o.Stream == "cycling" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault() != null)
-                        {
-                            var summary = model.OASSummaries.Where(o => o.Stream == "cycling" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
-                            <span>@summary.Awarded.ToString("dd/MM/yy") @summary.Section</span>
-                        }
-                        else
-                        {
-                            <span>Started</span>
-                        }
+                        @FormatOAS("cycling", i)
                     </div>
                 }
             </div>
@@ -314,19 +254,7 @@
                 @for (int i = 1; i <= 9; i++)
                 {
                     <div class="col-sm-1">
-                        @if (model.OASSummaries.Where(o => o.Stream == "vertical" && o.Stage == i).FirstOrDefault() == null)
-                        {
-                            <span></span>
-                        }
-                        else if (model.OASSummaries.Where(o => o.Stream == "vertical" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault() != null)
-                        {
-                            var summary = model.OASSummaries.Where(o => o.Stream == "vertical" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
-                            <span>@summary.Awarded.ToString("dd/MM/yy") @summary.Section</span>
-                        }
-                        else
-                        {
-                            <span>Started</span>
-                        }
+                        @FormatOAS("vertical", i)
                     </div>
                 }
             </div>
@@ -337,19 +265,7 @@
                 @for (int i = 1; i <= 9; i++)
                 {
                     <div class="col-sm-1">
-                        @if (model.OASSummaries.Where(o => o.Stream == "aquatics" && o.Stage == i).FirstOrDefault() == null)
-                        {
-                            <span></span>
-                        }
-                        else if (model.OASSummaries.Where(o => o.Stream == "aquatics" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault() != null)
-                        {
-                            var summary = model.OASSummaries.Where(o => o.Stream == "aquatics" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
-                            <span>@summary.Awarded.ToString("dd/MM/yy") @summary.Section</span>
-                        }
-                        else
-                        {
-                            <span>Started</span>
-                        }
+                        @FormatOAS("aquatics", i)
                     </div>
                 }
             </div>
@@ -360,19 +276,7 @@
                 @for (int i = 1; i <= 9; i++)
                 {
                     <div class="col-sm-1">
-                        @if (model.OASSummaries.Where(o => o.Stream == "boating" && o.Stage == i).FirstOrDefault() == null)
-                        {
-                            <span></span>
-                        }
-                        else if (model.OASSummaries.Where(o => o.Stream == "boating" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault() != null)
-                        {
-                            var summary = model.OASSummaries.Where(o => o.Stream == "boating" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
-                            <span>@summary.Awarded.ToString("dd/MM/yy") @summary.Section</span>
-                        }
-                        else
-                        {
-                            <span>Started</span>
-                        }
+                        @FormatOAS("boating", i)
                     </div>
                 }
             </div>
@@ -383,19 +287,7 @@
                 @for (int i = 1; i <= 9; i++)
                 {
                     <div class="col-sm-1">
-                        @if (model.OASSummaries.Where(o => o.Stream == "paddling" && o.Stage == i).FirstOrDefault() == null)
-                        {
-                            <span></span>
-                        }
-                        else if (model.OASSummaries.Where(o => o.Stream == "paddling" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault() != null)
-                        {
-                            var summary = model.OASSummaries.Where(o => o.Stream == "paddling" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
-                            <span>@summary.Awarded.ToString("dd/MM/yy") @summary.Section</span>
-                        }
-                        else
-                        {
-                            <span>Started</span>
-                        }
+                        @FormatOAS("paddling", i)
                     </div>
                 }
             </div>
@@ -426,7 +318,11 @@
                 <div class="col-sm-1">
                     <span>@model.Stats.NightsCamped</span>
                 </div>
-                <div class="col-sm-3">
+                <div class="col-sm-2">
+                    <span>Camped in Section:</span>
+                </div>
+                <div class="col-sm-1">
+                    <span>@model.Stats.NightsCampedInSection</span>
                 </div>
             </div>
         </div>
@@ -513,7 +409,13 @@
         <div class="col-sm-2">
             <button type="submit" name="button" @onclick="ProgressXlsxClick" class="btn btn-success">Progress Report (xlsx)</button>
         </div>
-        <div class="col-sm-6">
+        <div class="col-sm-2">
+            <button type="submit" name="button" @onclick="StartedCoreOasPdfClick" class="btn btn-primary">Core OAS Report (pdf)</button>
+        </div>
+        <div class="col-sm-2">
+            <button type="submit" name="button" @onclick="StartedOasPdfClick" class="btn btn-primary">OAS Report (pdf)</button>
+        </div>
+        <div class="col-sm-2">
         </div>
     </div>
 
