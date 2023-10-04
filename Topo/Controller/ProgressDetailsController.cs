@@ -79,7 +79,7 @@ namespace Topo.Controller
         internal async Task StartedOasPdfClick()
         {
             byte[] report = await StartedOASWorksheet(OutputType.PDF);
-            var fileName = $"Personal_Progress_OAS_{model.Member.first_name}_{model.Member.last_name}.pdf";
+            var fileName = $"Personal_Progress_{model.Member.first_name}_{model.Member.last_name}_OAS.pdf";
 
             // Send the data to JS to actually download the file
             await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, "application/pdf", report);
@@ -88,7 +88,7 @@ namespace Topo.Controller
         internal async Task StartedCoreOasPdfClick()
         {
             byte[] report = await StartedCoreOASWorksheet(OutputType.PDF);
-            var fileName = $"Personal_Progress_OAS_{model.Member.first_name}_{model.Member.last_name}.pdf";
+            var fileName = $"Personal_Progress_{model.Member.first_name}_{model.Member.last_name}_OAS.pdf";
 
             // Send the data to JS to actually download the file
             await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, "application/pdf", report);
