@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.IO;
+using Topo.Model.Members;
 using Topo.Model.OAS;
 
 namespace Topo.Services
@@ -9,6 +10,7 @@ namespace Topo.Services
         public Task<List<OASStageListModel>> GetOASStagesList();
         public Task<List<OASTemplate>> GetOASTemplate(string templateName);
         public Task<List<OASWorksheetAnswers>> GenerateOASWorksheetAnswers(string selectedUnitId, OASStageListModel selectedStage, bool hideCompletedMembers, List<OASTemplate> templateList);
+        public Task<List<OASWorksheetAnswers>> GenerateOASWorksheetAnswersForMember(string selectedUnitId, OASStageListModel selectedStage, bool hideCompletedMembers, List<OASTemplate> templateList, string memberId);
         public Task<GetUnitAchievementsResultsModel> GetUnitAchievements(string unit, string stream, string branch, int stage);
     }
 
@@ -166,10 +168,22 @@ namespace Topo.Services
             return 4;
         }
 
+        public async Task<List<OASWorksheetAnswers>> GenerateOASWorksheetAnswersForMember(string selectedUnitId, OASStageListModel selectedStage, bool hideCompletedMembers, List<OASTemplate> templateList, string memberId)
+        {
+            var members = await _membersService.GetMembersAsync(selectedUnitId);
+            var member = members.Where(m => m.member_number == memberId).ToList();
+            return await GenerateOASWorksheetAnswers(selectedUnitId, selectedStage, hideCompletedMembers, templateList, member);
+        }
+
         public async Task<List<OASWorksheetAnswers>> GenerateOASWorksheetAnswers(string selectedUnitId, OASStageListModel selectedStage, bool hideCompletedMembers, List<OASTemplate> templateList)
         {
-            var getUnitAchievementsResultsModel = await GetUnitAchievements(selectedUnitId, selectedStage.Stream.ToLower(), selectedStage.Branch, selectedStage.Stage);
             var members = await _membersService.GetMembersAsync(selectedUnitId);
+            return await GenerateOASWorksheetAnswers(selectedUnitId, selectedStage, hideCompletedMembers, templateList, members);
+        }
+
+        private async Task<List<OASWorksheetAnswers>> GenerateOASWorksheetAnswers(string selectedUnitId, OASStageListModel selectedStage, bool hideCompletedMembers, List<OASTemplate> templateList, List<MemberListModel> members)
+        {
+            var getUnitAchievementsResultsModel = await GetUnitAchievements(selectedUnitId, selectedStage.Stream.ToLower(), selectedStage.Branch, selectedStage.Stage);
             var sortedMemberList = members.Where(m => m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
             var templateTitle = templateList.Count > 0 ? templateList[0].TemplateTitle : "";
             if (hideCompletedMembers)
