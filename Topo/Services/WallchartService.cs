@@ -38,6 +38,7 @@ namespace Topo.Services
                 await _terrainAPIService.AssumeProfile(result.member_id);
                 var getMemberLogbookMetrics = await _terrainAPIService.GetMemberLogbookMetrics(result.member_id);
                 var totalNightsCamped = getMemberLogbookMetrics.results.Where(r => r.name == "total_nights_camped").FirstOrDefault()?.value ?? 0;
+                var totalNightsCampedInSection = getMemberLogbookMetrics.results.Where(r => r.name == "total_nights_camped" && r.last_updated >= result.intro_to_section).FirstOrDefault()?.value ?? 0;
                 var totalKmsHiked = (getMemberLogbookMetrics.results.Where(r => r.name == "total_distance_hiked").FirstOrDefault()?.value ?? 0) / 1000.0f;
 
                 var wallchartItem = new WallchartItemModel();
@@ -139,6 +140,7 @@ namespace Topo.Services
                     }
                 }
                 wallchartItem.NightsCamped = (int)totalNightsCamped;
+                wallchartItem.NightsCampedInSection = (int)totalNightsCampedInSection;
                 wallchartItem.KMsHiked = (int)totalKmsHiked;
                 wallchartItem.OASStageProgressions = result.oas.total_progressions;
                 var siaResultModel = await _terrainAPIService.GetSIAResultsForMember(result.member_id);
