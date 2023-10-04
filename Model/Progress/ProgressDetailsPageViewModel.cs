@@ -45,6 +45,7 @@ namespace Topo.Model.Progress
         public int Stage { get; set; }
         public DateTime Awarded { get; set; }
         public string Section { get; set; } = string.Empty;
+        public string Template { get; set; } = string.Empty;
     }
 
     public class Stats
@@ -52,6 +53,7 @@ namespace Topo.Model.Progress
         public int OasProgressions { get; set; }
         public int KmsHiked { get; set; }
         public int NightsCamped { get; set; }
+        public int NightsCampedInSection { get; set; }
     }
 
     public class SIASummary

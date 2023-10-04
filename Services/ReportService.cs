@@ -2069,13 +2069,7 @@ namespace Topo.Services
             {
                 var oas = progressEntries.OASSummaries.Where(o => o.Stream == "bushcraft" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 var oasText = "";
-                if (oas != null)
-                {
-                    if (oas.Awarded == DateTime.MinValue)
-                        oasText = "Started";
-                    else
-                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
-                }
+                oasText = setOasText(oas, oasText);
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
 
@@ -2086,13 +2080,7 @@ namespace Topo.Services
             {
                 var oas = progressEntries.OASSummaries.Where(o => o.Stream == "bushwalking" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 var oasText = "";
-                if (oas != null)
-                {
-                    if (oas.Awarded == DateTime.MinValue)
-                        oasText = "Started";
-                    else
-                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
-                }
+                oasText = setOasText(oas, oasText);
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
 
@@ -2103,13 +2091,7 @@ namespace Topo.Services
             {
                 var oas = progressEntries.OASSummaries.Where(o => o.Stream == "camping" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 var oasText = "";
-                if (oas != null)
-                {
-                    if (oas.Awarded == DateTime.MinValue)
-                        oasText = "Started";
-                    else
-                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
-                }
+                oasText = setOasText(oas, oasText);
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
 
@@ -2120,13 +2102,7 @@ namespace Topo.Services
             {
                 var oas = progressEntries.OASSummaries.Where(o => o.Stream == "apline" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 var oasText = "";
-                if (oas != null)
-                {
-                    if (oas.Awarded == DateTime.MinValue)
-                        oasText = "Started";
-                    else
-                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
-                }
+                oasText = setOasText(oas, oasText);
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
 
@@ -2137,13 +2113,7 @@ namespace Topo.Services
             {
                 var oas = progressEntries.OASSummaries.Where(o => o.Stream == "cycling" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 var oasText = "";
-                if (oas != null)
-                {
-                    if (oas.Awarded == DateTime.MinValue)
-                        oasText = "Started";
-                    else
-                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
-                }
+                oasText = setOasText(oas, oasText);
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
 
@@ -2154,13 +2124,7 @@ namespace Topo.Services
             {
                 var oas = progressEntries.OASSummaries.Where(o => o.Stream == "vertical" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 var oasText = "";
-                if (oas != null)
-                {
-                    if (oas.Awarded == DateTime.MinValue)
-                        oasText = "Started";
-                    else
-                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
-                }
+                oasText = setOasText(oas, oasText);
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
 
@@ -2171,13 +2135,7 @@ namespace Topo.Services
             {
                 var oas = progressEntries.OASSummaries.Where(o => o.Stream == "aquatics" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 var oasText = "";
-                if (oas != null)
-                {
-                    if (oas.Awarded == DateTime.MinValue)
-                        oasText = "Started";
-                    else
-                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
-                }
+                oasText = setOasText(oas, oasText);
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
 
@@ -2188,13 +2146,7 @@ namespace Topo.Services
             {
                 var oas = progressEntries.OASSummaries.Where(o => o.Stream == "boating" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 var oasText = "";
-                if (oas != null)
-                {
-                    if (oas.Awarded == DateTime.MinValue)
-                        oasText = "Started";
-                    else
-                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
-                }
+                oasText = setOasText(oas, oasText);
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
 
@@ -2205,13 +2157,7 @@ namespace Topo.Services
             {
                 var oas = progressEntries.OASSummaries.Where(o => o.Stream == "paddling" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 var oasText = "";
-                if (oas != null)
-                {
-                    if (oas.Awarded == DateTime.MinValue)
-                        oasText = "Started";
-                    else
-                        oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
-                }
+                oasText = setOasText(oas, oasText);
                 sheet.Range[rowNumber, i + 1].Text = oasText;
             }
 
@@ -2232,6 +2178,9 @@ namespace Topo.Services
             sheet.Range[rowNumber, 5].Text = "Nights Camped:";
             sheet.Range[rowNumber, 5].CellStyle.Font.Bold = true;
             sheet.Range[rowNumber, 6].Text = progressEntries.Stats.NightsCamped.ToString();
+            sheet.Range[rowNumber, 7].Text = "Camped in Section:";
+            sheet.Range[rowNumber, 7].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 8].Text = progressEntries.Stats.NightsCampedInSection.ToString();
 
             // Special Interest Areas
             rowNumber++;
@@ -2298,6 +2247,19 @@ namespace Topo.Services
 
             return workbook;
 
+        }
+
+        private static string setOasText(OASSummary? oas, string oasText)
+        {
+            if (oas != null)
+            {
+                if (oas.Awarded == DateTime.MinValue || oas.Awarded < new DateTime(2000,1,1))
+                    oasText = "Started";
+                else
+                    oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
+            }
+
+            return oasText;
         }
 
         public IWorkbook GenerateTermProgramWorkbook(List<EventListModel> eventEntries, string groupName, string section, string unitName, bool forPdfOutput)

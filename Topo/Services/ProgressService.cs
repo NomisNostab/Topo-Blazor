@@ -33,12 +33,13 @@ namespace Topo.Services
             progressDetailsPageViewModel.Member = members.Where(m => m.id == memberId).FirstOrDefault() ?? new MemberListModel();
 
             progressDetailsPageViewModel.IntroToScoutingDate = await GetIntroToScouting(memberId);
-            progressDetailsPageViewModel.IntroToSectionDate = await GetIntroToSection(memberId);
+            var introToSectionDate = await GetIntroToSection(memberId);
+            progressDetailsPageViewModel.IntroToSectionDate = introToSectionDate.ToString("dd/MM/yyyy");
             progressDetailsPageViewModel.Milestones = await GetMilestoneSummaries(memberId);
             progressDetailsPageViewModel.OASSummaries = await GetOASSummaries(memberId);
             await _terrainAPIService.RevokeAssumedProfiles();
             await _terrainAPIService.AssumeProfile(memberId);
-            progressDetailsPageViewModel.Stats = await GetStats(memberId);
+            progressDetailsPageViewModel.Stats = await GetStats(memberId, introToSectionDate);
             await _terrainAPIService.RevokeAssumedProfiles();
             progressDetailsPageViewModel.SIASummaries = await GetSIASummaries(memberId);
             progressDetailsPageViewModel.PeakAward = await GetPeakAwardSummary(memberId);
@@ -66,20 +67,20 @@ namespace Topo.Services
             return introToScoutingDate;
         }
 
-        private async Task<string> GetIntroToSection(string memberId)
+        private async Task<DateTime> GetIntroToSection(string memberId)
         {
-            var introToSectionDate = "";
+            var introToSectionDate = new DateTime();
             var introToSection = await _terrainAPIService.GetIntroductionToSectionResultsForMember(memberId);
             var result = introToSection.results.Where(r => r.section == _storageService.Section && r.status == "awarded").FirstOrDefault();
             if (result != null)
             {
                 if (!string.IsNullOrEmpty(result.imported.date_awarded))
                 {
-                    introToSectionDate = ConvertStringToDate(result.imported.date_awarded, "yyyy-MM-dd").ToString("dd/MM/yy");
+                    introToSectionDate = ConvertStringToDate(result.imported.date_awarded, "yyyy-MM-dd");
                 }
                 else
                 {
-                    introToSectionDate = result.status_updated.ToString("dd/MM/yy");
+                    introToSectionDate = result.status_updated;
                 }
             }
 
@@ -305,7 +306,8 @@ namespace Topo.Services
                     Stream = oasResult.achievement_meta.stream,
                     Stage = oasResult.achievement_meta.stage,
                     Awarded = awardedDate,
-                    Section = oasResult.section.ToLower().Substring(0,1)
+                    Section = oasResult.section.ToLower().Substring(0,1),
+                    Template = oasResult.template
                 });
             }
 
@@ -313,17 +315,19 @@ namespace Topo.Services
             return oasSummaries;
         }
 
-        private async Task<Stats> GetStats(string memberId)
+        private async Task<Stats> GetStats(string memberId, DateTime introToSection)
         {
             var stats = new Stats();
 
             var getMemberLogbookMetrics = await _terrainAPIService.GetMemberLogbookMetrics(memberId);
             var totalNightsCamped = getMemberLogbookMetrics.results.Where(r => r.name == "total_nights_camped").FirstOrDefault()?.value ?? 0;
+            var totalNightsCampedInSection = getMemberLogbookMetrics.results.Where(r => r.name == "total_nights_camped" && r.last_updated >= introToSection).FirstOrDefault()?.value ?? 0;
             var totalKmsHiked = (getMemberLogbookMetrics.results.Where(r => r.name == "total_distance_hiked").FirstOrDefault()?.value ?? 0) / 1000.0f;
 
             stats.OasProgressions = _oasProgressionCount;
             stats.KmsHiked = (int)totalKmsHiked;
             stats.NightsCamped = (int)totalNightsCamped;
+            stats.NightsCampedInSection = (int)totalNightsCampedInSection;
 
             return stats;
         }
