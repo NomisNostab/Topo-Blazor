@@ -11,6 +11,7 @@ namespace Topo.Services
         public event Action OnChange;
         public string ClientId { get; set; } = string.Empty;
         private bool _isAuthenticated;
+        private bool _isYouthMember;
         public bool IsAuthenticated
         {
             get { return _isAuthenticated; }
@@ -74,5 +75,18 @@ namespace Topo.Services
             GroupName = "";
             CachedMembers = new List<KeyValuePair<string, List<MemberListModel>>>();
         }
+        public bool IsYouthMember
+        {
+            get { return _isYouthMember; }
+            set
+            {
+                if (_isYouthMember != value)
+                {
+                    _isYouthMember = value;
+                    NotifyStateChanged();
+                }
+            }
+        }
+
     }
 }

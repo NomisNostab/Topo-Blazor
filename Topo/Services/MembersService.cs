@@ -27,26 +27,48 @@ namespace Topo.Services
 
             var getMembersResultModel = await _terrainAPIService.GetMembersAsync(unitId ?? "");
             var memberList = new List<MemberListModel>();
-            if (getMembersResultModel != null && getMembersResultModel.results != null)
+            if (_storageService.IsYouthMember)
             {
-                memberList = getMembersResultModel.results
-                    .Select(m => new MemberListModel
-                    {
-                        id = m.id,
-                        member_number = m.member_number,
-                        first_name = m.first_name,
-                        last_name = m.last_name,
-                        age = GetAgeFromBirthdate(m.date_of_birth),
-                        unit_council = m.unit.unit_council,
-                        patrol_name = m.patrol == null ? "" : m.patrol.name,
-                        patrol_duty = GetPatrolDuty(m.unit.duty, m.patrol?.duty ?? ""),
-                        patrol_order = GetPatrolOrder(m.unit.duty, m.patrol?.duty ?? ""),
-                        isAdultLeader = m.unit.duty == "adult_leader" ? 1 : 0,
-                        status = m.status,
-                        isEligibleJamboree = GetJamboreeEligibilityFromBirthdate(m.date_of_birth)
-                    })
-                    .ToList();
-                _storageService.CachedMembers.Add(new KeyValuePair<string, List<MemberListModel>>(unitId, memberList));
+                if (_storageService.GetProfilesResult != null && _storageService.GetProfilesResult.profiles != null && _storageService.GetProfilesResult.profiles.Length > 0)
+                {
+                    var usernameSplit = _storageService.GetProfilesResult.username.Split("-");
+                    var profile = _storageService.GetProfilesResult.profiles[0];
+                    var nameSplit = profile.member.name.Split(" ");
+                    memberList.Add(
+                            new MemberListModel
+                            {
+                                id = profile.member.id,
+                                member_number = usernameSplit.Length > 1 ? usernameSplit[1] : "",
+                                first_name = nameSplit.Length > 0 ? nameSplit[0] : "",
+                                last_name = nameSplit.Length > 1 ? nameSplit[1] + (nameSplit.Length > 2 ? $"{nameSplit[2]} " : "") : "",
+                                isAdultLeader = 0
+                            });
+
+                }
+            }
+            else
+            {
+                if (getMembersResultModel != null && getMembersResultModel.results != null)
+                {
+                    memberList = getMembersResultModel.results
+                        .Select(m => new MemberListModel
+                        {
+                            id = m.id,
+                            member_number = m.member_number,
+                            first_name = m.first_name,
+                            last_name = m.last_name,
+                            age = GetAgeFromBirthdate(m.date_of_birth),
+                            unit_council = m.unit.unit_council,
+                            patrol_name = m.patrol == null ? "" : m.patrol.name,
+                            patrol_duty = GetPatrolDuty(m.unit.duty, m.patrol?.duty ?? ""),
+                            patrol_order = GetPatrolOrder(m.unit.duty, m.patrol?.duty ?? ""),
+                            isAdultLeader = m.unit.duty == "adult_leader" ? 1 : 0,
+                            status = m.status,
+                            isEligibleJamboree = GetJamboreeEligibilityFromBirthdate(m.date_of_birth)
+                        })
+                        .ToList();
+                    _storageService.CachedMembers.Add(new KeyValuePair<string, List<MemberListModel>>(unitId, memberList));
+                }
             }
             return memberList;
         }
