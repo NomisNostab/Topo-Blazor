@@ -25,10 +25,17 @@ namespace Topo.Controller
             {
                 await _loginService.GetUserAsync();
                 await _loginService.GetProfilesAsync();
+                var isLeader = false;
                 if (_storageService.GetProfilesResult != null && _storageService.GetProfilesResult.profiles != null && _storageService.GetProfilesResult.profiles.Length > 0)
                 {
                     _storageService.MemberName = _storageService.GetProfilesResult.profiles[0].member?.name ?? "";
                     _storageService.GroupName = _storageService.GetProfilesResult.profiles[0].group?.name ?? "";
+                    var profiles = _storageService.GetProfilesResult.profiles.ToList();
+                    foreach (var profile in profiles)
+                    {
+                        isLeader = profile.group.roles.Any(x => x == "group-leader") || isLeader;
+                    }
+                    _storageService.IsYouthMember = !isLeader;
                 }
                 _storageService.Groups = _loginService.GetGroups();
                 _storageService.GroupId = _storageService.Groups.Count == 1 ? _storageService.Groups.FirstOrDefault().Key : "";
