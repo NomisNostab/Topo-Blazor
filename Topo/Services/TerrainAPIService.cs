@@ -315,14 +315,10 @@ namespace Topo.Services
 
         public async Task AssumeProfile(string memberId)
         {
-            var glFound = false;
-            var profiles = _storageService.GetProfilesResult.profiles.ToList();
-            foreach (var profile in profiles)
+            if (_storageService.IsYouthMember)
             {
-                glFound = profile.group.roles.Any(x => x == "group-leader") || glFound;
-            }
-            if (!glFound)
                 return;
+            }
 
             await RefreshTokenAsync();
 

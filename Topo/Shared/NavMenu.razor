@@ -30,56 +30,78 @@
         }
         else
         {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="members">
-                    <span class="oi oi-people" aria-hidden="true"></span> Members
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="program">
-                    <span class="oi oi-calendar" aria-hidden="true"></span> Program
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="oas">
-                    <span class="oi oi-compass" aria-hidden="true"></span> OAS
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="sia">
-                    <span class="oi oi-clipboard" aria-hidden="true"></span> SIA
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="milestone">
-                    <span class="oi oi-flag" aria-hidden="true"></span> Milestone
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="logbook">
-                    <span class="oi oi-book" aria-hidden="true"></span> Logbook
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="wallchart">
-                    <span class="oi oi-bar-chart" aria-hidden="true"></span> Wallchart
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="awards">
-                    <span class="oi oi-shield" aria-hidden="true"></span> Additional Awards
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="approvals/approvals">
-                    <span class="oi oi-thumb-up" aria-hidden="true"></span> Approvals
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="progress/progress">
-                    <span class="oi oi-person" aria-hidden="true"></span> Personal Progress
-                </NavLink>
-            </div>
+            if (_storageService.IsYouthMember)
+            {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="logbook">
+                        <span class="oi oi-book" aria-hidden="true"></span> Logbook
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="awards">
+                        <span class="oi oi-shield" aria-hidden="true"></span> Additional Awards
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="progress/progress">
+                        <span class="oi oi-person" aria-hidden="true"></span> Personal Progress
+                    </NavLink>
+                </div>
+            }
+            else
+            {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="members">
+                        <span class="oi oi-people" aria-hidden="true"></span> Members
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="program">
+                        <span class="oi oi-calendar" aria-hidden="true"></span> Program
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="oas">
+                        <span class="oi oi-compass" aria-hidden="true"></span> OAS
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="sia">
+                        <span class="oi oi-clipboard" aria-hidden="true"></span> SIA
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="milestone">
+                        <span class="oi oi-flag" aria-hidden="true"></span> Milestone
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="logbook">
+                        <span class="oi oi-book" aria-hidden="true"></span> Logbook
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="wallchart">
+                        <span class="oi oi-bar-chart" aria-hidden="true"></span> Wallchart
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="awards">
+                        <span class="oi oi-shield" aria-hidden="true"></span> Additional Awards
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="approvals/approvals">
+                        <span class="oi oi-thumb-up" aria-hidden="true"></span> Approvals
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="progress/progress">
+                        <span class="oi oi-person" aria-hidden="true"></span> Personal Progress
+                    </NavLink>
+                </div>
+
+            }
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="logout">
                     <span class="oi oi-lock-locked" aria-hidden="true"></span> Logout
@@ -88,7 +110,7 @@
         }
         <div class="nav-item px-3">
             <NavLink class="nav-link disabled" href="" >
-                <span class="" aria-hidden="true"></span> Version 1.45
+                <span class="" aria-hidden="true"></span> Version 1.46
             </NavLink>
         </div>
 
