@@ -99,6 +99,8 @@ public class Function
                         break;
                 }
 
+                Console.WriteLine("Workbook completed");
+
                 if (workbook != null)
                 {
                     MemoryStream strm = new MemoryStream();
@@ -112,12 +114,16 @@ public class Function
                         //Convert Excel document into PDF document 
                         PdfDocument pdfDocument = renderer.ConvertToPDF(workbook);
                         pdfDocument.Save(strm);
+
+                        Console.WriteLine("Workbook streamed to PDF");
                     }
 
                     if (reportGenerationRequest.OutputType == OutputType.Excel)
                     {
                         //Stream as Excel file
                         workbook.SaveAs(strm);
+
+                        Console.WriteLine("Workbook streamed to Excel");
                     }
 
                     // return stream in browser
