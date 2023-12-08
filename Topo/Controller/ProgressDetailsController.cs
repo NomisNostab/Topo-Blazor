@@ -85,6 +85,15 @@ namespace Topo.Controller
             await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, "application/pdf", report);
         }
 
+        internal async Task StartedOasXlsxClick()
+        {
+            byte[] report = await StartedOASWorksheet(OutputType.Excel);
+            var fileName = $"Personal_Progress_{model.Member.first_name}_{model.Member.last_name}_OAS.xlsx";
+
+            // Send the data to JS to actually download the file
+            await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, "application/vnd.ms-excel", report);
+        }
+
         internal async Task StartedCoreOasPdfClick()
         {
             byte[] report = await StartedCoreOASWorksheet(OutputType.PDF);
@@ -92,6 +101,14 @@ namespace Topo.Controller
 
             // Send the data to JS to actually download the file
             await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, "application/pdf", report);
+        }
+        internal async Task StartedCoreOasXlsxClick()
+        {
+            byte[] report = await StartedCoreOASWorksheet(OutputType.Excel);
+            var fileName = $"Personal_Progress_{model.Member.first_name}_{model.Member.last_name}_OAS.xlsx";
+
+            // Send the data to JS to actually download the file
+            await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, "application/vnd.ms-excel", report);
         }
 
         private async Task<byte[]> StartedOASWorksheet(OutputType outputType = OutputType.PDF)
