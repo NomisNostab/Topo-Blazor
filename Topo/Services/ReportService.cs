@@ -288,7 +288,6 @@ namespace Topo.Services
 #else
             string functionUrl = "https://qwhcdbhrempok4kpmk6utzavxq0zjzha.lambda-url.ap-southeast-2.on.aws/";
 #endif
-            string functionUrlLatest = "https://gkgfntjuhcuc3qtjmohaaxigwe0uevae.lambda-url.ap-southeast-2.on.aws/";
             HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Put, functionUrl);
             var content = JsonConvert.SerializeObject(reportGenerationRequest);
             httpRequest.Content = new StringContent(content, Encoding.UTF8, "application/json");
