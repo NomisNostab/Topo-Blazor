@@ -33,7 +33,11 @@ namespace Topo.Controller
                     var profiles = _storageService.GetProfilesResult.profiles.ToList();
                     foreach (var profile in profiles)
                     {
-                        isLeader = profile.group.roles.Any(x => x == "group-leader") || isLeader;
+                        if (profile.group != null && profile.group.roles != null && profile.group.roles.Any(x => x == "group-leader" || x.StartsWith("support-leader-group-")))
+                        {
+                            isLeader = true;
+                            break;
+                        }
                     }
                     _storageService.IsYouthMember = !isLeader;
                 }
