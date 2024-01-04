@@ -50,7 +50,7 @@ namespace Topo.Services
 
         public Dictionary<string, string> GetGroups()
         {
-            var groups = _storageService.GetProfilesResult?.profiles?.Where(p => p.group != null).Select(p => p.group).ToList();
+            var groups = _storageService.GetProfilesResult?.profiles?.Where(p => p.group != null && p.unit != null).Select(p => p.group).ToList();
             groups = groups.DistinctBy(g => new {g.id}).ToList();
             return groups
                 .OrderBy(g => g.name)
