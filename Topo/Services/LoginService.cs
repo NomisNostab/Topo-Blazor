@@ -1,4 +1,5 @@
-﻿using Topo.Model.Login;
+﻿using Syncfusion.Blazor.Data;
+using Topo.Model.Login;
 
 namespace Topo.Services
 {
@@ -43,18 +44,17 @@ namespace Topo.Services
         public async Task GetProfilesAsync()
         {
             var getProfilesResultModel = await _terrainAPIService.GetProfilesAsync();
-            var profilesWithUnits = getProfilesResultModel.profiles.Where(p => p.unit != null).ToArray();
-            getProfilesResultModel.profiles = profilesWithUnits;
             if (_storageService != null)
                 _storageService.GetProfilesResult = getProfilesResultModel;
         }
 
         public Dictionary<string, string> GetGroups()
         {
-            var groups = _storageService.GetProfilesResult?.profiles?.Select(p => p.group).ToList();
+            var groups = _storageService.GetProfilesResult?.profiles?.Where(p => p.group != null && p.unit != null).Select(p => p.group).ToList();
             groups = groups.DistinctBy(g => new {g.id}).ToList();
             return groups
-                .ToDictionary(p => p.id, p => p.name);
+                .OrderBy(g => g.name)
+                .ToDictionary(g => g.id, g => g.name);
         }
 
     }

@@ -45,10 +45,11 @@ namespace Topo.Services
             get
             {
                 return GetProfilesResult?.profiles?
+                    .Where(p => p.unit != null)
                     .Where(p => p.group.name == GroupName)
                     .Where(p => p.member.name == MemberName)
                     .Select(p => p.unit)
-                    .ToDictionary(p => p?.id?.ToString() ?? "", p => p?.name ?? "");
+                    .ToDictionary(u => u?.id?.ToString() ?? "", u => u?.name ?? "");
             }
         }
         public string UnitId { get; set; } = "";
