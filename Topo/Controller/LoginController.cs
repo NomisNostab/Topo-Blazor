@@ -38,6 +38,11 @@ namespace Topo.Controller
                             isLeader = true;
                             break;
                         }
+                        if (profile.unit != null && profile.unit.roles != null && profile.unit.roles.Any(x => x == "unit-council"))
+                        {
+                            isLeader = true;
+                            break;
+                        }
                     }
                     _storageService.IsYouthMember = !isLeader;
                 }
