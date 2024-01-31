@@ -43,12 +43,14 @@ namespace Topo.Controller
             model.CalendarSearchToDate = DateTime.Now.AddMonths(4);
             model.DateErrorMessage = "";
             groupCalendarId = _storageService.GroupId ?? "";
+            model.CalendarId = _storageService.UnitId;
         }
 
         internal void CalendarChange(ChangeEventArgs e)
         {
             var calendarId = e.Value?.ToString() ?? "";
             model.CalendarId = calendarId;
+            _storageService.UnitId = calendarId;
         }
 
         internal async Task ShowUnitCalendarClick()
