@@ -12,6 +12,7 @@ namespace Topo.Services
         public string ClientId { get; set; } = string.Empty;
         private bool _isAuthenticated;
         private bool _isYouthMember;
+        private string _unitId = string.Empty;
         public bool IsAuthenticated
         {
             get { return _isAuthenticated; }
@@ -52,7 +53,22 @@ namespace Topo.Services
                     .ToDictionary(u => u?.id?.ToString() ?? "", u => u?.name ?? "");
             }
         }
-        public string UnitId { get; set; } = "";
+        public string UnitId
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_unitId) && Units.Count == 1)
+                {
+                    _unitId = Units.First().Key;
+                }
+                return _unitId;
+            }
+            set
+            {
+                _unitId = value;
+            }
+        }
+
         public string UnitName { get; set; } = "";
         public string Section
         {

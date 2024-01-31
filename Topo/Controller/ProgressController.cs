@@ -39,6 +39,7 @@ namespace Topo.Controller
             {
                 await populateMembers();
             }
+            model.UnitId = _storageService.UnitId;
         }
 
         internal async Task UnitChange(ChangeEventArgs e)
