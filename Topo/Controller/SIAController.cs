@@ -4,6 +4,7 @@ using Topo.Model.SIA;
 using Topo.Services;
 using Topo.Model.ReportGeneration;
 using Newtonsoft.Json;
+using Topo.Model.Members;
 
 namespace Topo.Controller
 {
@@ -50,6 +51,15 @@ namespace Topo.Controller
 
         internal async Task UnitChange(string unitId)
         {
+            if (string.IsNullOrEmpty(unitId))
+            {
+                model.UnitId = unitId;
+                _storageService.UnitId = model.UnitId;
+                _storageService.UnitName = "";
+                model.UnitName = _storageService.UnitName;
+                model.Members = new List<MemberListModel>();
+                return;
+            }
             model.UnitId = unitId;
             _storageService.UnitId = model.UnitId;
             if (_storageService.Units != null)
