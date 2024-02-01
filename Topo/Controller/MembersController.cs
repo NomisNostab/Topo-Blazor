@@ -161,5 +161,10 @@ namespace Topo.Controller
             return report;
         }
 
+        internal async Task MemberRefreshClick()
+        {
+            _membersService.ClearMemberCache(_storageService.UnitId);
+            await UnitChange(_storageService.UnitId);
+        }
     }
 }

@@ -5,6 +5,9 @@
 
 <EditForm Model="@model">
 
+    @{
+        bool disabled = !(model.Members != null && model.Members.Any());
+    }
     <div class="mt-3 mb-3 row">
         <h2>Members @model.GroupName</h2>
     </div>
@@ -22,7 +25,10 @@
                 }
             </select>
         </div>
-        <div class="col-sm-7">
+        <div class="col-sm-3">
+            <button type="submit" name="button" @onclick="MemberRefreshClick" class="btn btn-primary" disabled=@disabled >Refresh Members</button>
+        </div>
+        <div class="col-sm-4">
         </div>
     </div>
 

@@ -6,6 +6,7 @@ namespace Topo.Services
     public interface IMembersService
     {
         public Task<List<MemberListModel>> GetMembersAsync(string unitId);
+        public void ClearMemberCache(string unitId);
     }
 
     public class MembersService : IMembersService
@@ -17,6 +18,12 @@ namespace Topo.Services
         {
             _storageService = storageService;
             _terrainAPIService = terrainAPIService;
+        }
+
+        public void ClearMemberCache(string unitId)
+        {
+            var cachedMembersList = _storageService.CachedMembers.Where(cm => cm.Key == unitId).FirstOrDefault();
+            _storageService.CachedMembers.Remove(cachedMembersList);
         }
 
         public async Task<List<MemberListModel>> GetMembersAsync(string unitId)
