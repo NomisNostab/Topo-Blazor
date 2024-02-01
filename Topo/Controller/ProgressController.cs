@@ -39,11 +39,21 @@ namespace Topo.Controller
             {
                 await populateMembers();
             }
+            model.UnitId = _storageService.UnitId;
         }
 
         internal async Task UnitChange(ChangeEventArgs e)
         {
             var unitId = e.Value?.ToString() ?? "";
+            if (string.IsNullOrEmpty(unitId))
+            {
+                model.UnitId = unitId;
+                _storageService.UnitId = model.UnitId;
+                _storageService.UnitName = "";
+                model.UnitName = _storageService.UnitName;
+                model.Members = new List<MemberListModel>();
+                return;
+            }
             model.UnitId = unitId;
             _storageService.UnitId = unitId;
             await populateMembers();

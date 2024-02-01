@@ -138,6 +138,7 @@ namespace Topo.Services
             eventListModel.Id = eventId;
             eventListModel.EventName = getEventResultModel?.title ?? "Event not found";
             eventListModel.StartDateTime = getEventResultModel?.start_datetime ?? DateTime.Now;
+            eventListModel.EndDateTime = getEventResultModel?.end_datetime ?? DateTime.Now;
             eventListModel.EventDisplay = $"{eventListModel.EventName} {eventListModel.EventDate}";
             eventListModel.attendees = eventAttendance;
 
@@ -148,6 +149,20 @@ namespace Topo.Services
                     if (eventAttendance.Any(a => a.member_number == attended.member_number))
                     {
                         eventAttendance.Where(a => a.member_number == attended.member_number).Single().attended = true;
+                    }
+                    else
+                    {
+                        // Load out of unit members
+                        eventAttendance.Add(new EventAttendance
+                        {
+                            first_name = attended.first_name,
+                            last_name = attended.last_name,
+                            member_number = attended.member_number,
+                            patrol_name = "",
+                            isAdultMember = false,
+                            attended = true,
+                            pal = ""
+                        });
                     }
                 }
                 foreach (var participated in getEventResultModel.attendance.participant_members)

@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Newtonsoft.Json;
+using System.Runtime.InteropServices;
 using Topo.Model.Logbook;
+using Topo.Model.Members;
 using Topo.Model.ReportGeneration;
 using Topo.Model.SIA;
 using Topo.Services;
@@ -30,18 +32,36 @@ namespace Topo.Controller
 
         public LogbookPageViewModel model = new LogbookPageViewModel();
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
             if (!_storageService.IsAuthenticated)
                 NavigationManager.NavigateTo("index");
 
             model.GroupName = _storageService.GroupNameDisplay;
             model.Units = _storageService.Units;
+            if (!string.IsNullOrEmpty(_storageService.UnitId))
+            {
+                await UnitChange(_storageService.UnitId);
+            }
         }
 
         internal async Task UnitChange(ChangeEventArgs e)
         {
             var unitId = e.Value?.ToString() ?? "";
+            await UnitChange(unitId);
+        }
+
+        internal async Task UnitChange(string unitId)
+        {
+            if (string.IsNullOrEmpty(unitId))
+            {
+                model.UnitId = unitId;
+                _storageService.UnitId = model.UnitId;
+                _storageService.UnitName = "";
+                model.UnitName = _storageService.UnitName;
+                model.Members = new List<MemberListModel>();
+                return;
+            }
             model.UnitId = unitId;
             _storageService.UnitId = model.UnitId;
             if (_storageService.Units != null)

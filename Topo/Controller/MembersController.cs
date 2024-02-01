@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Newtonsoft.Json;
+using Topo.Model.Login;
 using Topo.Model.Members;
 using Topo.Model.ReportGeneration;
 using Topo.Services;
@@ -27,19 +28,37 @@ namespace Topo.Controller
 
         public MembersPageViewModel model = new MembersPageViewModel();
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
             if (!_storageService.IsAuthenticated)
                 NavigationManager.NavigateTo("index");
 
             model.Units = _storageService.Units;
             model.GroupName = _storageService.GroupNameDisplay;
+            if (!string.IsNullOrEmpty(_storageService.UnitId))
+            {
+                await UnitChange(_storageService.UnitId);
+            }
         }
 
         internal async Task UnitChange(ChangeEventArgs e)
         {
             var unitId = e.Value?.ToString() ?? "";
-            model.UnitId = unitId; 
+            await UnitChange(unitId);
+        }
+
+        internal async Task UnitChange(string unitId)
+        {
+            if (string.IsNullOrEmpty(unitId))
+            {
+                model.UnitId = unitId;
+                _storageService.UnitId = model.UnitId;
+                _storageService.UnitName = "";
+                model.UnitName = _storageService.UnitName;
+                model.Members = new List<MemberListModel>();
+                return; 
+            }
+            model.UnitId = unitId;
             _storageService.UnitId = model.UnitId;
             if (_storageService.Units != null)
                 _storageService.UnitName = _storageService.Units.Where(u => u.Key == model.UnitId).FirstOrDefault().Value;
@@ -47,7 +66,6 @@ namespace Topo.Controller
             model.Members = allMembers.Where(m => m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
             model.UnitName = _storageService.UnitName;
         }
-
         internal async Task PatrolListPdfClick()
         {
             byte[] report = await PatrolList(model.IncludeLeaders, OutputType.PDF);
@@ -143,5 +161,10 @@ namespace Topo.Controller
             return report;
         }
 
+        internal async Task MemberRefreshClick()
+        {
+            _membersService.ClearMemberCache(_storageService.UnitId);
+            await UnitChange(_storageService.UnitId);
+        }
     }
 }

@@ -47,6 +47,7 @@ namespace Topo.Controller
             model.GroupName = _storageService.GroupNameDisplay;
             model.Units = _storageService.Units;
             model.Stages = await _oasService.GetOASStagesList();
+            model.UnitId = _storageService.UnitId;
         }
 
         internal async Task UnitChange(ChangeEventArgs e)
