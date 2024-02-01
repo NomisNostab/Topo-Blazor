@@ -2,6 +2,7 @@
 using Microsoft.JSInterop;
 using Newtonsoft.Json;
 using Topo.Model.AdditionalAwards;
+using Topo.Model.Members;
 using Topo.Model.ReportGeneration;
 using Topo.Model.SIA;
 using Topo.Services;
@@ -51,6 +52,15 @@ namespace Topo.Controller
 
         internal async Task UnitChange(string unitId)
         {
+            if (string.IsNullOrEmpty(unitId))
+            {
+                model.UnitId = unitId;
+                _storageService.UnitId = model.UnitId;
+                _storageService.UnitName = "";
+                model.UnitName = _storageService.UnitName;
+                model.Members = new List<MemberListModel>();
+                return;
+            }
             model.UnitId = unitId;
             _storageService.UnitId = model.UnitId;
             if (_storageService.Units != null)
