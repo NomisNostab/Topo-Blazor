@@ -25,28 +25,12 @@
 
     public class Event_Count
     {
-        public Participant participant { get; set; } = new Participant();
-        public Assistant assistant { get; set; } = new Assistant();
-        public Leader leader { get; set; } = new Leader();
+        public PALEventCount participant { get; set; } = new PALEventCount();
+        public PALEventCount assistant { get; set; } = new PALEventCount();
+        public PALEventCount leader { get; set; } = new PALEventCount();
     }
 
-    public class Participant
-    {
-        public float community { get; set; }
-        public float outdoors { get; set; }
-        public float creative { get; set; }
-        public float personal_growth { get; set; }
-    }
-
-    public class Assistant
-    {
-        public float community { get; set; }
-        public float outdoors { get; set; }
-        public float creative { get; set; }
-        public float personal_growth { get; set; }
-    }
-
-    public class Leader
+    public class PALEventCount
     {
         public float community { get; set; }
         public float outdoors { get; set; }

@@ -10,70 +10,136 @@ namespace Topo.Services
     public class MilestoneService : IMilestoneService
     {
         private readonly ITerrainAPIService _terrainAPIService;
+        private readonly IMembersService _membersService;
+        private readonly StorageService _storageService;
 
-        public MilestoneService(ITerrainAPIService terrainAPIService)
+        public MilestoneService(ITerrainAPIService terrainAPIService, IMembersService membersService, StorageService storageService)
         {
             _terrainAPIService = terrainAPIService;
+            _membersService = membersService;
+            _storageService = storageService;
         }
 
         public async Task<List<MilestoneSummaryListModel>> GetMilestoneSummaries(string selectedUnitId)
         {
             var unitMilestoneSummary = new List<MilestoneSummaryListModel>();
-            var getGroupLifeResultModel = await _terrainAPIService.GetGroupLifeForUnit(selectedUnitId);
-            foreach (var result in getGroupLifeResultModel.results)
+            var members = await _membersService.GetMembersAsync(selectedUnitId);
+            foreach (var member in members.Where(m => m.isAdultLeader == 0))
             {
-                var milestone1 = result.milestones.Where(m => m.milestone == 1).FirstOrDefault();
-                var milestone1Awarded = result.milestone.milestone > 1 && (milestone1?.awarded ?? false);
-                var milestone1Skipped = result.milestone.milestone > 1 && !(milestone1?.awarded ?? false);
-                var milestone2 = result.milestones.Where(m => m.milestone == 2).FirstOrDefault();
-                var milestone2Awarded = result.milestone.milestone > 2 && (milestone2?.awarded ?? false);
-                var milestone2Skipped = result.milestone.milestone > 2 && !(milestone2?.awarded ?? false);
-                var milestone3 = result.milestones.Where(m => m.milestone == 3).FirstOrDefault();
-                var milestone3Awarded = milestone3?.awarded ?? false;
+                var memberMilestones = await _terrainAPIService.GetMilestoneResultsForMember(member.id);
+                MilestoneResult milestone1 = new MilestoneResult();
+                MilestoneResult milestone2 = new MilestoneResult();
+                MilestoneResult milestone3 = new MilestoneResult();
+                bool milestone1Awarded = false;
+                bool milestone2Awarded = false;
+                bool milestone3Awarded = false;
+                bool milestone1Skipped = false;
+                bool milestone2Skipped = false;
+                bool milestone3Skipped = false;
+                int currentLevel = 1;
+                foreach (var milestoneResult in memberMilestones.results.Where(r => r.section == _storageService.Section).OrderBy(r => r.achievement_meta.stage))
+                {
+                    switch (milestoneResult.achievement_meta.stage)
+                    {
+                        case 1:
+                            milestone1 = milestoneResult;
+                            milestone1Awarded = milestone1.status == "awarded";
+                            milestone1Skipped = milestone1.status == "not_required";
+                            currentLevel = (milestone1Awarded || milestone1Skipped) ? 2 : 1;
+                            break;
+                        case 2:
+                            milestone2 = milestoneResult;
+                            milestone2Awarded = milestone2.status == "awarded";
+                            milestone2Skipped = milestone2.status == "not_required";
+                            currentLevel = (milestone1Awarded || milestone1Skipped) && (milestone2Awarded || milestone2Skipped) ? 3 : currentLevel;
+                            break;
+                        case 3:
+                            milestone3 = milestoneResult;
+                            milestone3Awarded = milestone3.status == "awarded";
+                            milestone3Skipped = milestone3.status == "not_required";
+                            break;
+                    }
+                }
+                int percentComplete = 0;
+                switch (currentLevel)
+                {
+                    case 1:
+                        percentComplete = CalculateMilestonePercentComplete(1, milestone1.event_count);
+                        break;
+                    case 2:
+                        percentComplete = CalculateMilestonePercentComplete(2, milestone2.event_count);
+                        break; 
+                    case 3:
+                        percentComplete = CalculateMilestonePercentComplete(3, milestone3.event_count);
+                        break;
+                }
                 unitMilestoneSummary.Add(
                     new MilestoneSummaryListModel
                     {
-                        memberName = result.name,
-                        currentLevel = result.milestone.milestone,
-                        percentComplete = CalculateMilestonePercentComplete(result.milestone),
-                        milestone1ParticipateCommunity = milestone1Skipped ? -1 : (milestone1Awarded ? 6 : milestone1?.participates.Where(p => p.challenge_area == "community").FirstOrDefault()?.total ?? 0),
-                        milestone1ParticipateOutdoors = milestone1Skipped ? -1 : (milestone1Awarded ? 6 : milestone1?.participates.Where(p => p.challenge_area == "outdoors").FirstOrDefault()?.total ?? 0),
-                        milestone1ParticipateCreative = milestone1Skipped ? -1 : (milestone1Awarded ? 6 : milestone1?.participates.Where(p => p.challenge_area == "creative").FirstOrDefault()?.total ?? 0),
-                        milestone1ParticipatePersonalGrowth = milestone1Skipped ? -1 : (milestone1Awarded ? 6 : milestone1?.participates.Where(p => p.challenge_area == "personal_growth").FirstOrDefault()?.total ?? 0),
-                        milestone1Assist = milestone1Skipped ? -1 : (milestone1Awarded ? 2 : milestone1?.total_assists ?? 0),
-                        milestone1Lead = milestone1Skipped ? -1 : (milestone1Awarded ? 1 : milestone1?.total_leads ?? 0),
-                        milestone2ParticipateCommunity = milestone2Skipped ? -1 : (milestone2Awarded ? 5 : milestone2?.participates.Where(p => p.challenge_area == "community").FirstOrDefault()?.total ?? 0),
-                        milestone2ParticipateOutdoors = milestone2Skipped ? -1 : (milestone2Awarded ? 5 : milestone2?.participates.Where(p => p.challenge_area == "outdoors").FirstOrDefault()?.total ?? 0),
-                        milestone2ParticipateCreative = milestone2Skipped ? -1 : (milestone2Awarded ? 5 : milestone2?.participates.Where(p => p.challenge_area == "creative").FirstOrDefault()?.total ?? 0),
-                        milestone2ParticipatePersonalGrowth = milestone2Skipped ? -1 : (milestone2Awarded ? 5 : milestone2?.participates.Where(p => p.challenge_area == "personal_growth").FirstOrDefault()?.total ?? 0),
-                        milestone2Assist = milestone2Skipped ? -1 : (milestone2Awarded ? 3 : milestone2?.total_assists ?? 0),
-                        milestone2Lead = milestone2Skipped ? -1 : (milestone2Awarded ? 2 : milestone2?.total_leads ?? 0),
-                        milestone3ParticipateCommunity = milestone3Awarded ? 4 : milestone3?.participates.Where(p => p.challenge_area == "community").FirstOrDefault()?.total ?? 0,
-                        milestone3ParticipateOutdoors = milestone3Awarded ? 4 : milestone3?.participates.Where(p => p.challenge_area == "outdoors").FirstOrDefault()?.total ?? 0,
-                        milestone3ParticipateCreative = milestone3Awarded ? 4 : milestone3?.participates.Where(p => p.challenge_area == "creative").FirstOrDefault()?.total ?? 0,
-                        milestone3ParticipatePersonalGrowth = milestone3Awarded ? 4 : milestone3?.participates.Where(p => p.challenge_area == "personal_growth").FirstOrDefault()?.total ?? 0,
-                        milestone3Assist = milestone3Awarded ? 4 : milestone3?.total_assists ?? 0,
-                        milestone3Lead = milestone3Awarded ? 4 : milestone3?.total_leads ?? 0
+                        memberName = $"{member.first_name} {member.last_name}",
+                        currentLevel = currentLevel,
+                        percentComplete = percentComplete,
+                        milestone1ParticipateCommunity = milestone1Skipped ? -1 : (milestone1Awarded ? 6 : (int)milestone1.event_count.participant.community),
+                        milestone1ParticipateOutdoors = milestone1Skipped ? -1 : (milestone1Awarded ? 6 : (int)milestone1.event_count.participant.outdoors),
+                        milestone1ParticipateCreative = milestone1Skipped ? -1 : (milestone1Awarded ? 6 : (int)milestone1.event_count.participant.creative),
+                        milestone1ParticipatePersonalGrowth = milestone1Skipped ? -1 : (milestone1Awarded ? 6 : (int)milestone1.event_count.participant.personal_growth),
+                        milestone1Assist = milestone1Skipped ? -1 : (milestone1Awarded ? 2 : (int)milestone1.event_count.assistant.community 
+                                                                                            + (int)milestone1.event_count.assistant.outdoors
+                                                                                            + (int)milestone1.event_count.assistant.creative
+                                                                                            + (int)milestone1.event_count.assistant.personal_growth),
+                        milestone1Lead = milestone1Skipped ? -1 : (milestone1Awarded ? 1 : (int)milestone1.event_count.leader.community
+                                                                                            + (int)milestone1.event_count.leader.outdoors
+                                                                                            + (int)milestone1.event_count.leader.creative
+                                                                                            + (int)milestone1.event_count.leader.personal_growth),
+                        milestone2ParticipateCommunity = milestone2Skipped ? -1 : (milestone2Awarded ? 5 : (int)milestone2.event_count.participant.community),
+                        milestone2ParticipateOutdoors = milestone2Skipped ? -1 : (milestone2Awarded ? 5 : (int)milestone2.event_count.participant.outdoors),
+                        milestone2ParticipateCreative = milestone2Skipped ? -1 : (milestone2Awarded ? 5 : (int)milestone2.event_count.participant.creative),
+                        milestone2ParticipatePersonalGrowth = milestone2Skipped ? -1 : (milestone2Awarded ? 5 : (int)milestone2.event_count.participant.personal_growth),
+                        milestone2Assist = milestone2Skipped ? -1 : (milestone2Awarded ? 3 : (int)milestone2.event_count.assistant.community
+                                                                                            + (int)milestone2.event_count.assistant.outdoors
+                                                                                            + (int)milestone2.event_count.assistant.creative
+                                                                                            + (int)milestone2.event_count.assistant.personal_growth),
+                        milestone2Lead = milestone2Skipped ? -1 : (milestone2Awarded ? 2 : (int)milestone2.event_count.leader.community
+                                                                                            + (int)milestone2.event_count.leader.outdoors
+                                                                                            + (int)milestone2.event_count.leader.creative
+                                                                                            + (int)milestone2.event_count.leader.personal_growth),
+                        milestone3ParticipateCommunity = milestone3Skipped ? -1 : (milestone3Awarded ? 4 : (int)milestone3.event_count.participant.community),
+                        milestone3ParticipateOutdoors = milestone3Skipped ? -1 : (milestone3Awarded ? 4 : (int)milestone3.event_count.participant.outdoors),
+                        milestone3ParticipateCreative = milestone3Skipped ? -1 : (milestone3Awarded ? 4 : (int)milestone3.event_count.participant.creative),
+                        milestone3ParticipatePersonalGrowth = milestone3Skipped ? -1 : (milestone3Awarded ? 4 : (int)milestone3.event_count.participant.personal_growth),
+                        milestone3Assist = milestone3Awarded ? 4 : (int)milestone3.event_count.assistant.community
+                                                                + (int)milestone3.event_count.assistant.outdoors
+                                                                + (int)milestone3.event_count.assistant.creative
+                                                                + (int)milestone3.event_count.assistant.personal_growth,
+                        milestone3Lead = milestone3Awarded ? 4 : (int)milestone3.event_count.leader.community
+                                                                + (int)milestone3.event_count.leader.outdoors
+                                                                + (int)milestone3.event_count.leader.creative
+                                                                + (int)milestone3.event_count.leader.personal_growth,
                     });
             }
             return unitMilestoneSummary;
         }
 
-        private int CalculateMilestonePercentComplete(Milestone milestone)
+        private int CalculateMilestonePercentComplete(int currentLevel, Event_Count eventCount)
         {
-            int participateTotal = 0;
             int target = 0;
-            foreach (var participate in milestone.participates)
-            {
-                participateTotal += milestone.milestone == 3
-                                    ? Math.Min(4, participate.total)
-                                    : participate.total;
-            }
-            participateTotal += milestone.milestone == 3
-                                ? Math.Min(4, milestone.total_assists) + Math.Min(4, milestone.total_leads)
-                                : milestone.total_assists + milestone.total_leads;
+            int participantTotal = (int)((currentLevel == 3 ? Math.Min(4.0, eventCount.participant.community) : eventCount.participant.community)
+                                + (currentLevel == 3 ? Math.Min(4.0, eventCount.participant.outdoors) : eventCount.participant.outdoors)
+                                + (currentLevel == 3 ? Math.Min(4.0, eventCount.participant.creative) : eventCount.participant.creative)
+                                + (currentLevel == 3 ? Math.Min(4.0, eventCount.participant.personal_growth) : eventCount.participant.personal_growth));
+            int assistantTotal = (int)(eventCount.assistant.community
+                                 + eventCount.assistant.creative
+                                 + eventCount.assistant.outdoors
+                                 + eventCount.assistant.personal_growth);
+            int leaderTotal = (int)(eventCount.leader.community
+                                 + eventCount.leader.creative
+                                 + eventCount.leader.outdoors
+                                 + eventCount.leader.personal_growth);
+            var total = currentLevel == 3
+                    ? participantTotal + Math.Min(4, assistantTotal) + Math.Min(4, leaderTotal)
+                    : participantTotal + assistantTotal + leaderTotal;
 
-            switch (milestone.milestone)
+            switch (currentLevel)
             {
                 case 1:
                     target = 27;
@@ -86,7 +152,7 @@ namespace Topo.Services
                     break;
             }
 
-            var percentComplete = participateTotal * 100 / target;
+            var percentComplete = total * 100 / target;
             return percentComplete;
         }
 
