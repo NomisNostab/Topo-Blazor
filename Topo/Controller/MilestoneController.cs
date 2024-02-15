@@ -38,6 +38,7 @@ namespace Topo.Controller
             model.GroupName = _storageService.GroupNameDisplay;
             model.Units = _storageService.Units;
             model.UnitId = _storageService.UnitId;
+            model.UnitName = _storageService.UnitName;
         }
 
         internal async Task UnitChange(ChangeEventArgs e)

@@ -47,12 +47,21 @@ namespace Topo.Controller
             model.GroupName = _storageService.GroupNameDisplay;
             model.Units = _storageService.Units;
             model.Stages = await _oasService.GetOASStagesList();
-            model.UnitId = _storageService.UnitId;
+            if (!string.IsNullOrEmpty(_storageService.UnitId))
+            {
+                await UnitChange(_storageService.UnitId);
+            }
+
         }
 
         internal async Task UnitChange(ChangeEventArgs e)
         {
             var unitId = e.Value?.ToString() ?? "";
+            await UnitChange(unitId);
+        }
+
+        internal async Task UnitChange(string unitId)
+        {
             model.UnitId = unitId;
             _storageService.UnitId = model.UnitId;
             if (_storageService.Units != null)
