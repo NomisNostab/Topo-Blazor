@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Topo.Model.Wallchart;
 using Topo.Model.ReportGeneration;
 using Topo.Services;
+using System.Reflection;
 
 namespace Topo.Controller
 {
@@ -37,6 +38,7 @@ namespace Topo.Controller
             model.GroupName = _storageService.GroupNameDisplay;
             model.Units = _storageService.Units;
             model.UnitId = _storageService.UnitId;
+            model.UnitName = _storageService.UnitName;
         }
 
         internal async Task UnitChange(ChangeEventArgs e)
@@ -55,6 +57,11 @@ namespace Topo.Controller
                 return;
 
             byte[] report = await WallchartReport(OutputType.PDF);
+            if (report.Length == 0)
+            {
+                model.ErrorMessage = "Group life request took too long. Please try Group Life for unit in Terrain first.";
+                return;
+            }
             var fileName = $"Wallchart_{model.UnitName.Replace(' ', '_')}.pdf";
 
             // Send the data to JS to actually download the file
@@ -67,6 +74,11 @@ namespace Topo.Controller
                 return;
 
             byte[] report = await WallchartReport(OutputType.Excel);
+            if (report.Length == 0)
+            {
+                model.ErrorMessage = "Group life request took too long. Please try Group Life for unit in Terrain first.";
+                return;
+            }
             var fileName = $"Wallchart_{model.UnitName.Replace(' ', '_')}.xlsx";
 
             // Send the data to JS to actually download the file
@@ -75,7 +87,12 @@ namespace Topo.Controller
 
         private async Task<byte[]> WallchartReport(OutputType outputType = OutputType.PDF)
         {
+            model.ErrorMessage = "";
             var wallchartItems = await _wallchartService.GetWallchartItems(model.UnitId);
+            if (wallchartItems.Count == 0)
+            {
+                return new byte[0];
+            }
 
             var groupName = _storageService.GroupName ?? "";
             var unitName = _storageService.UnitName ?? "";

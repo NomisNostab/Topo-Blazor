@@ -7,6 +7,7 @@ namespace Topo.Services
     {
         public Task<List<MemberListModel>> GetMembersAsync(string unitId);
         public void ClearMemberCache(string unitId);
+        public Task<MemberListModel> GetMember(string unitId, string memberId);
     }
 
     public class MembersService : IMembersService
@@ -78,6 +79,13 @@ namespace Topo.Services
                 }
             }
             return memberList;
+        }
+
+        public async Task<MemberListModel> GetMember(string unitId, string memberId)
+        {
+            var members = await GetMembersAsync(unitId);
+            var member = members.Where(m => m.id == memberId).FirstOrDefault();
+            return member ?? new MemberListModel();
         }
 
         private string GetAgeFromBirthdate(string dateOfBirth)
