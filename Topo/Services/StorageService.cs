@@ -47,8 +47,8 @@ namespace Topo.Services
             {
                 return GetProfilesResult?.profiles?
                     .Where(p => p.unit != null)
-                    .Where(p => p.group.name == GroupName)
-                    .Where(p => p.member.name == MemberName)
+                    .Where(p => p.group.name == (GroupName ?? ""))
+                    .Where(p => p.member.name == (MemberName ?? ""))
                     .Select(p => p.unit)
                     .ToDictionary(u => u?.id?.ToString() ?? "", u => u?.name ?? "");
             }
@@ -91,6 +91,8 @@ namespace Topo.Services
             IsAuthenticated = false;
             GroupName = "";
             CachedMembers = new List<KeyValuePair<string, List<MemberListModel>>>();
+            _unitId = "";
+            GetProfilesResult = null;
         }
         public bool IsYouthMember
         {

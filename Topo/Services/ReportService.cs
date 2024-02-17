@@ -17,7 +17,7 @@ namespace Topo.Services
         public Task<byte[]> GetSIAReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
         public Task<byte[]> GetMilestoneReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
         public Task<byte[]> GetLogbookReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
-        public Task<byte[]> GetWallchartReport(string groupName, string section, string unitName, OutputType outputType, string serialisedWallchartItems);
+        public Task<byte[]> GetWallchartReport(string groupName, string section, string unitName, OutputType outputType, string serialisedWallchartItems, bool breakByPatrol);
         public Task<byte[]> GetAdditionalAwardsReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
         public Task<byte[]> GetApprovalsReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData, DateTime fromDate, DateTime toDate, bool groupByMember);
         public Task<byte[]> GetProgressReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
@@ -182,7 +182,7 @@ namespace Topo.Services
             return report;
         }
 
-        public async Task<byte[]> GetWallchartReport(string groupName, string section, string unitName, OutputType outputType, string serialisedWallchartItems)
+        public async Task<byte[]> GetWallchartReport(string groupName, string section, string unitName, OutputType outputType, string serialisedWallchartItems, bool breakByPatrol = false)
         {
             var reportGenerationRequest = new ReportGenerationRequest()
             {
@@ -191,7 +191,8 @@ namespace Topo.Services
                 Section = section,
                 UnitName = unitName,
                 OutputType = outputType,
-                ReportData = serialisedWallchartItems
+                ReportData = serialisedWallchartItems,
+                BreakByPatrol = breakByPatrol
             };
 
             var report = await CallReportGeneratorFunction(reportGenerationRequest);

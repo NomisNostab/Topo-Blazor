@@ -29,7 +29,7 @@ namespace Topo.Services
         public IWorkbook GenerateSIAWorkbook(List<SIAProjectListModel> siaProjects, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateMilestoneWorkbook(List<MilestoneSummaryListModel> milestoneSummaries, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateLogbookWorkbook(List<MemberLogbookReportViewModel> logbookEntries, string groupName, string section, string unitName, bool forPdfOutput);
-        public IWorkbook GenerateWallchartWorkbook(List<WallchartItemModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput);
+        public IWorkbook GenerateWallchartWorkbook(List<WallchartItemModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput, bool breakByPatrol = false);
         public IWorkbook GenerateApprovalsWorkbook(List<ApprovalsListModel> selectedApprovals, string groupName, string section, string unitName, DateTime approvalSearchFromDate, DateTime approvalSearchToDate, bool groupByMember, bool forPdfOutput);
         public IWorkbook GenerateProgressWorkbook(ProgressDetailsPageViewModel progressEntries, string groupName, string section, string unitName);
         public IWorkbook GenerateTermProgramWorkbook(List<EventListModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput);
@@ -1584,247 +1584,256 @@ namespace Topo.Services
 
         }
 
-        public IWorkbook GenerateWallchartWorkbook(List<WallchartItemModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput)
+        public IWorkbook GenerateWallchartWorkbook(List<WallchartItemModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput, bool breakByPatrol = false)
         {
-            var workbook = CreateWorkbookWithLogo(groupName, section, 41);
-            IWorksheet sheet = workbook.Worksheets[0];
-            int rowNumber = 1;
+            var worksheetAnswersGroupedByTemplate = wallchartEntries.GroupBy(wa => breakByPatrol ? wa.MemberPatrol : "");
+            var workbook = CreateWorkbookWithSheets(worksheetAnswersGroupedByTemplate.Count());
+            var worksheetIndex = 0;
 
-            IStyle headingStyle = workbook.Styles["headingStyle"];
-
-            // Add Unit name
-            rowNumber++;
-            var unit = sheet.Range[rowNumber, 2];
-            unit.Text = unitName;
-            unit.CellStyle = headingStyle;
-            sheet.Range[rowNumber, 2, rowNumber, 41].Merge();
-            sheet.SetRowHeight(rowNumber, 25);
-
-            // Add Title
-            rowNumber++;
-            var title = sheet.Range[rowNumber, 2];
-            title.Text = $"Group Life Wallchart as at {DateTime.Now.ToShortDateString()}";
-            title.CellStyle = headingStyle;
-            sheet.Range[rowNumber, 2, rowNumber, 41].Merge();
-            sheet.SetRowHeight(rowNumber, 25);
-
-            // Add Heading 1
-            rowNumber++;
-            sheet.Range[rowNumber, 2, rowNumber, 3].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 2, rowNumber, 3].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 4].Text = "MILESTONE 1";
-            sheet.Range[rowNumber, 4, rowNumber, 9].Merge();
-            sheet.Range[rowNumber, 4, rowNumber, 9].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 4, rowNumber, 9].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 10].Text = "MILESTONE 2";
-            sheet.Range[rowNumber, 10, rowNumber, 15].Merge();
-            sheet.Range[rowNumber, 10, rowNumber, 15].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 10, rowNumber, 15].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 16].Text = "MILESTONE 3";
-            sheet.Range[rowNumber, 16, rowNumber, 21].Merge();
-            sheet.Range[rowNumber, 16, rowNumber, 21].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 16, rowNumber, 21].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 22].Text = "OUTDOOR ADVENTURE SKILLS";
-            sheet.Range[rowNumber, 22, rowNumber, 33].Merge();
-            sheet.Range[rowNumber, 22, rowNumber, 33].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 22, rowNumber, 33].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 34].Text = "SPECIAL INTEREST AREAS";
-            sheet.Range[rowNumber, 34, rowNumber, 39].Merge();
-            sheet.Range[rowNumber, 34, rowNumber, 39].CellStyle.WrapText = true;
-            sheet.Range[rowNumber, 34, rowNumber, 39].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 34, rowNumber, 39].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 40, rowNumber, 43].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 40, rowNumber, 43].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-            sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
-            sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.Font.Bold = true;
-            sheet.SetRowHeight(rowNumber, 30);
-
-            // Add Heading 2
-            rowNumber++;
-            sheet.Range[rowNumber, 2, rowNumber, 21].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 2, rowNumber, 21].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 22].Text = "CORE";
-            sheet.Range[rowNumber, 22, rowNumber, 24].Merge();
-            sheet.Range[rowNumber, 22, rowNumber, 24].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 22, rowNumber, 24].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 25].Text = "LAND";
-            sheet.Range[rowNumber, 25, rowNumber, 27].Merge();
-            sheet.Range[rowNumber, 25, rowNumber, 27].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 25, rowNumber, 27].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 28].Text = "WATER";
-            sheet.Range[rowNumber, 28, rowNumber, 30].Merge();
-            sheet.Range[rowNumber, 28, rowNumber, 30].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 28, rowNumber, 30].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 31, rowNumber, 43].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 31, rowNumber, 43].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-            sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.Font.Bold = true;
-
-            // Add Heading 3
-            rowNumber++;
-            sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-            sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-            sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.VerticalAlignment = ExcelVAlign.VAlignBottom;
-            sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.Rotation = 90;
-            sheet.Range[rowNumber, 1, rowNumber, 43].CellStyle.Font.Bold = true;
-            sheet.Range[rowNumber, 1].Text = " Name";
-            sheet.Range[rowNumber, 2].Text = " Intro To Scouting";
-            sheet.Range[rowNumber, 3].Text = " Intro To Section";
-            sheet.Range[rowNumber, 4].Text = " Community (6)";
-            sheet.Range[rowNumber, 5].Text = " Creative (6)";
-            sheet.Range[rowNumber, 6].Text = " Outdoors (6)";
-            sheet.Range[rowNumber, 7].Text = " Personal Growth (6)";
-            sheet.Range[rowNumber, 8].Text = " Assist (2)";
-            sheet.Range[rowNumber, 9].Text = " Lead (1)";
-            sheet.Range[rowNumber, 10].Text = " Community (5)";
-            sheet.Range[rowNumber, 11].Text = " Creative (5)";
-            sheet.Range[rowNumber, 12].Text = " Outdoors (5)";
-            sheet.Range[rowNumber, 13].Text = " Personal Growth (5)";
-            sheet.Range[rowNumber, 14].Text = " Assist (3)";
-            sheet.Range[rowNumber, 15].Text = " Lead (2)";
-            sheet.Range[rowNumber, 16].Text = " Community (4)";
-            sheet.Range[rowNumber, 17].Text = " Creative (4)";
-            sheet.Range[rowNumber, 18].Text = " Outdoors (4)";
-            sheet.Range[rowNumber, 19].Text = " Personal Growth (4)";
-            sheet.Range[rowNumber, 20].Text = " Assist (4)";
-            sheet.Range[rowNumber, 21].Text = " Lead (4)";
-            sheet.Range[rowNumber, 22].Text = " Bushcraft";
-            sheet.Range[rowNumber, 23].Text = " Bushwalking";
-            sheet.Range[rowNumber, 24].Text = " Camping";
-            sheet.Range[rowNumber, 25].Text = " Alpine";
-            sheet.Range[rowNumber, 26].Text = " Cycling";
-            sheet.Range[rowNumber, 27].Text = " Vertical";
-            sheet.Range[rowNumber, 28].Text = " Aquatics";
-            sheet.Range[rowNumber, 29].Text = " Boating";
-            sheet.Range[rowNumber, 30].Text = " Paddling";
-            sheet.Range[rowNumber, 31].Text = " Total Progressions";
-            sheet.Range[rowNumber, 32].Text = " Total Nights Camped";
-            sheet.Range[rowNumber, 33].Text = " Total KMs Hiked";
-            sheet.Range[rowNumber, 34].Text = " Adventure & Sport";
-            sheet.Range[rowNumber, 35].Text = " Arts & Literature";
-            sheet.Range[rowNumber, 36].Text = " Environment";
-            sheet.Range[rowNumber, 37].Text = " STEM & Innovation";
-            sheet.Range[rowNumber, 38].Text = " Growth & Development";
-            sheet.Range[rowNumber, 39].Text = " Creating a Better World";
-            sheet.Range[rowNumber, 40].Text = " Leadership Course";
-            sheet.Range[rowNumber, 41].Text = " Adventurous Journey";
-            sheet.Range[rowNumber, 42].Text = " Personal Reflection";
-            sheet.Range[rowNumber, 43].Text = " PEAK AWARD";
-            sheet.SetRowHeight(rowNumber, 120);
-
-            foreach (var wallchartEntry in wallchartEntries)
+            foreach (var templatAnswerGroup in worksheetAnswersGroupedByTemplate.OrderBy(a => a.Key))
             {
+                IWorksheet sheet = AddLogoToSheet(workbook, worksheetIndex, groupName, section, 41);
+                sheet.Name = string.IsNullOrEmpty(templatAnswerGroup.Key) ? "Unit" : templatAnswerGroup.Key;
+                int rowNumber = 1;
+                int columnNumber = 1;
+
+                IStyle headingStyle = workbook.Styles["headingStyle"];
+
+                // Add Unit name
                 rowNumber++;
-                sheet.Range[rowNumber, 1].Text = wallchartEntry.MemberName;
-                SetWallchartCell(sheet.Range[rowNumber, 2], 0, wallchartGroups.intro, wallchartEntry.IntroToScouting);
-                SetWallchartCell(sheet.Range[rowNumber, 3], 0, wallchartGroups.intro, wallchartEntry.IntroToSection);
-                if (wallchartEntry.Milestone1Presented.HasValue)
-                {
-                    sheet.Range[rowNumber, 4].DateTime = wallchartEntry.Milestone1Presented.Value;
-                    sheet.Range[rowNumber, 4, rowNumber, 9].Merge();
-                    sheet.Range[rowNumber, 4, rowNumber, 9].CellStyle.Color = Milestone1LeadColours[1];
-                }
-                else if (wallchartEntry.Milestone1Awarded.HasValue)
-                {
-                    sheet.Range[rowNumber, 4].Text = $"{wallchartEntry.Milestone1Awarded.Value.ToShortDateString()}*";
-                    sheet.Range[rowNumber, 4, rowNumber, 9].Merge();
-                    sheet.Range[rowNumber, 4, rowNumber, 9].CellStyle.Color = Milestone1LeadColours[1];
-                }
-                else
-                {
-                    SetWallchartCell(sheet.Range[rowNumber, 4], 1, wallchartGroups.participate, wallchartEntry.Milestone1Community);
-                    SetWallchartCell(sheet.Range[rowNumber, 5], 1, wallchartGroups.participate, wallchartEntry.Milestone1Creative);
-                    SetWallchartCell(sheet.Range[rowNumber, 6], 1, wallchartGroups.participate, wallchartEntry.Milestone1Outdoors);
-                    SetWallchartCell(sheet.Range[rowNumber, 7], 1, wallchartGroups.participate, wallchartEntry.Milestone1PersonalGrowth);
-                    SetWallchartCell(sheet.Range[rowNumber, 8], 1, wallchartGroups.assist, wallchartEntry.Milestone1Assist);
-                    SetWallchartCell(sheet.Range[rowNumber, 9], 1, wallchartGroups.lead, wallchartEntry.Milestone1Lead);
-                }
+                var unit = sheet.Range[rowNumber, 2];
+                unit.Text = unitName;
+                unit.CellStyle = headingStyle;
+                sheet.Range[rowNumber, 2, rowNumber, 41].Merge();
+                sheet.SetRowHeight(rowNumber, 25);
 
-                if (wallchartEntry.Milestone2Presented.HasValue)
-                {
-                    sheet.Range[rowNumber, 10].DateTime = wallchartEntry.Milestone2Presented.Value;
-                    sheet.Range[rowNumber, 10, rowNumber, 15].Merge();
-                    sheet.Range[rowNumber, 10, rowNumber, 15].CellStyle.Color = Milestone1LeadColours[1];
-                }
-                else if (wallchartEntry.Milestone2Awarded.HasValue)
-                {
-                    sheet.Range[rowNumber, 10].Text = $"{wallchartEntry.Milestone2Awarded.Value.ToShortDateString()}*";
-                    sheet.Range[rowNumber, 10, rowNumber, 15].Merge();
-                    sheet.Range[rowNumber, 10, rowNumber, 15].CellStyle.Color = Milestone1LeadColours[1];
-                }
-                else
-                {
-                    SetWallchartCell(sheet.Range[rowNumber, 10], 2, wallchartGroups.participate, wallchartEntry.Milestone2Community);
-                    SetWallchartCell(sheet.Range[rowNumber, 11], 2, wallchartGroups.participate, wallchartEntry.Milestone2Creative);
-                    SetWallchartCell(sheet.Range[rowNumber, 12], 2, wallchartGroups.participate, wallchartEntry.Milestone2Outdoors);
-                    SetWallchartCell(sheet.Range[rowNumber, 13], 2, wallchartGroups.participate, wallchartEntry.Milestone2PersonalGrowth);
-                    SetWallchartCell(sheet.Range[rowNumber, 14], 2, wallchartGroups.assist, wallchartEntry.Milestone2Assist);
-                    SetWallchartCell(sheet.Range[rowNumber, 15], 2, wallchartGroups.lead, wallchartEntry.Milestone2Lead);
-                }
+                // Add Title
+                rowNumber++;
+                var title = sheet.Range[rowNumber, 2];
+                title.Text = $"{(string.IsNullOrEmpty(templatAnswerGroup.Key) ? "" : templatAnswerGroup.Key) + " "}Group Life Wallchart as at {DateTime.Now.ToShortDateString()}";
+                title.CellStyle = headingStyle;
+                sheet.Range[rowNumber, 2, rowNumber, 41].Merge();
+                sheet.SetRowHeight(rowNumber, 25);
 
-                if (wallchartEntry.Milestone3Presented.HasValue)
-                {
-                    sheet.Range[rowNumber, 16].DateTime = wallchartEntry.Milestone3Presented.Value;
-                    sheet.Range[rowNumber, 16, rowNumber, 21].Merge();
-                    sheet.Range[rowNumber, 16, rowNumber, 21].CellStyle.Color = Milestone1LeadColours[1];
-                }
-                else if (wallchartEntry.Milestone3Awarded.HasValue)
-                {
-                    sheet.Range[rowNumber, 16].Text = $"{wallchartEntry.Milestone3Awarded.Value.ToShortDateString()}*";
-                    sheet.Range[rowNumber, 16, rowNumber, 21].Merge();
-                    sheet.Range[rowNumber, 16, rowNumber, 21].CellStyle.Color = Milestone1LeadColours[1];
-                }
-                else
-                {
-                    SetWallchartCell(sheet.Range[rowNumber, 16], 3, wallchartGroups.participate, wallchartEntry.Milestone3Community);
-                    SetWallchartCell(sheet.Range[rowNumber, 17], 3, wallchartGroups.participate, wallchartEntry.Milestone3Creative);
-                    SetWallchartCell(sheet.Range[rowNumber, 18], 3, wallchartGroups.participate, wallchartEntry.Milestone3Outdoors);
-                    SetWallchartCell(sheet.Range[rowNumber, 19], 3, wallchartGroups.participate, wallchartEntry.Milestone3PersonalGrowth);
-                    SetWallchartCell(sheet.Range[rowNumber, 20], 3, wallchartGroups.assist, wallchartEntry.Milestone3Assist);
-                    SetWallchartCell(sheet.Range[rowNumber, 21], 3, wallchartGroups.lead, wallchartEntry.Milestone3Lead);
-                }
-                SetWallchartCell(sheet.Range[rowNumber, 22], 0, wallchartGroups.oasCore, wallchartEntry.OASBushcraftStage);
-                SetWallchartCell(sheet.Range[rowNumber, 23], 0, wallchartGroups.oasCore, wallchartEntry.OASBushwalkingStage);
-                SetWallchartCell(sheet.Range[rowNumber, 24], 0, wallchartGroups.oasCore, wallchartEntry.OASCampingStage);
-                SetWallchartCell(sheet.Range[rowNumber, 25], 0, wallchartGroups.oasLand, wallchartEntry.OASAlpineStage);
-                SetWallchartCell(sheet.Range[rowNumber, 26], 0, wallchartGroups.oasLand, wallchartEntry.OASCyclingStage);
-                SetWallchartCell(sheet.Range[rowNumber, 27], 0, wallchartGroups.oasLand, wallchartEntry.OASVerticalStage);
-                SetWallchartCell(sheet.Range[rowNumber, 28], 0, wallchartGroups.oasWater, wallchartEntry.OASAquaticsStage);
-                SetWallchartCell(sheet.Range[rowNumber, 29], 0, wallchartGroups.oasWater, wallchartEntry.OASBoatingStage);
-                SetWallchartCell(sheet.Range[rowNumber, 30], 0, wallchartGroups.oasWater, wallchartEntry.OASPaddlingStage);
-                SetWallchartCell(sheet.Range[rowNumber, 31], 0, wallchartGroups.oasProgression, wallchartEntry.OASStageProgressions);
-                SetWallchartCell(sheet.Range[rowNumber, 32], 0, wallchartGroups.oasProgression, wallchartEntry.NightsCamped);
-                SetWallchartCell(sheet.Range[rowNumber, 33], 0, wallchartGroups.oasProgression, wallchartEntry.KMsHiked);
-                SetWallchartCell(sheet.Range[rowNumber, 34], 0, wallchartGroups.siaOdd, wallchartEntry.SIAAdventureSport);
-                SetWallchartCell(sheet.Range[rowNumber, 35], 0, wallchartGroups.siaEven, wallchartEntry.SIAArtsLiterature);
-                SetWallchartCell(sheet.Range[rowNumber, 36], 0, wallchartGroups.siaOdd, wallchartEntry.SIAEnvironment);
-                SetWallchartCell(sheet.Range[rowNumber, 37], 0, wallchartGroups.siaEven, wallchartEntry.SIAStemInnovation);
-                SetWallchartCell(sheet.Range[rowNumber, 38], 0, wallchartGroups.siaOdd, wallchartEntry.SIAGrowthDevelopment);
-                SetWallchartCell(sheet.Range[rowNumber, 39], 0, wallchartGroups.siaEven, wallchartEntry.SIACreatingABetterWorld);
-                SetWallchartCell(sheet.Range[rowNumber, 40], 0, wallchartGroups.leadershipCourse, wallchartEntry.LeadershipCourse);
-                SetWallchartCell(sheet.Range[rowNumber, 41], 0, wallchartGroups.adventurousJourney, wallchartEntry.AdventurousJourney);
-                SetWallchartCell(sheet.Range[rowNumber, 42], 0, wallchartGroups.personalReflection, wallchartEntry.PersonalReflection);
-                SetWallchartCell(sheet.Range[rowNumber, 43], 0, wallchartGroups.intro, wallchartEntry.PeakAward);
-                sheet.Range[rowNumber, 1, rowNumber, 43].BorderAround();
-                sheet.Range[rowNumber, 1, rowNumber, 43].BorderInside();
+                // Add Heading 1
+                rowNumber++;
+                sheet.Range[rowNumber, 2, rowNumber, 3].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 2, rowNumber, 3].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 4].Text = "MILESTONE 1";
+                sheet.Range[rowNumber, 4, rowNumber, 9].Merge();
+                sheet.Range[rowNumber, 4, rowNumber, 9].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 4, rowNumber, 9].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 10].Text = "MILESTONE 2";
+                sheet.Range[rowNumber, 10, rowNumber, 15].Merge();
+                sheet.Range[rowNumber, 10, rowNumber, 15].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 10, rowNumber, 15].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 16].Text = "MILESTONE 3";
+                sheet.Range[rowNumber, 16, rowNumber, 21].Merge();
+                sheet.Range[rowNumber, 16, rowNumber, 21].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 16, rowNumber, 21].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 22].Text = "OUTDOOR ADVENTURE SKILLS";
+                sheet.Range[rowNumber, 22, rowNumber, 33].Merge();
+                sheet.Range[rowNumber, 22, rowNumber, 33].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 22, rowNumber, 33].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 34].Text = "SPECIAL INTEREST AREAS";
+                sheet.Range[rowNumber, 34, rowNumber, 39].Merge();
+                sheet.Range[rowNumber, 34, rowNumber, 39].CellStyle.WrapText = true;
+                sheet.Range[rowNumber, 34, rowNumber, 39].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 34, rowNumber, 39].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 40, rowNumber, 43].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 40, rowNumber, 43].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
                 sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
+                sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.Font.Bold = true;
+                sheet.SetRowHeight(rowNumber, 30);
+
+                // Add Heading 2
+                rowNumber++;
+                sheet.Range[rowNumber, 2, rowNumber, 21].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 2, rowNumber, 21].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 22].Text = "CORE";
+                sheet.Range[rowNumber, 22, rowNumber, 24].Merge();
+                sheet.Range[rowNumber, 22, rowNumber, 24].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 22, rowNumber, 24].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 25].Text = "LAND";
+                sheet.Range[rowNumber, 25, rowNumber, 27].Merge();
+                sheet.Range[rowNumber, 25, rowNumber, 27].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 25, rowNumber, 27].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 28].Text = "WATER";
+                sheet.Range[rowNumber, 28, rowNumber, 30].Merge();
+                sheet.Range[rowNumber, 28, rowNumber, 30].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 28, rowNumber, 30].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 31, rowNumber, 43].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 31, rowNumber, 43].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.Font.Bold = true;
+
+                // Add Heading 3
+                rowNumber++;
+                sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.VerticalAlignment = ExcelVAlign.VAlignBottom;
+                sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.Rotation = 90;
+                sheet.Range[rowNumber, 1, rowNumber, 43].CellStyle.Font.Bold = true;
+                sheet.Range[rowNumber, 1].Text = " Name";
+                sheet.Range[rowNumber, 2].Text = " Intro To Scouting";
+                sheet.Range[rowNumber, 3].Text = " Intro To Section";
+                sheet.Range[rowNumber, 4].Text = " Community (6)";
+                sheet.Range[rowNumber, 5].Text = " Creative (6)";
+                sheet.Range[rowNumber, 6].Text = " Outdoors (6)";
+                sheet.Range[rowNumber, 7].Text = " Personal Growth (6)";
+                sheet.Range[rowNumber, 8].Text = " Assist (2)";
+                sheet.Range[rowNumber, 9].Text = " Lead (1)";
+                sheet.Range[rowNumber, 10].Text = " Community (5)";
+                sheet.Range[rowNumber, 11].Text = " Creative (5)";
+                sheet.Range[rowNumber, 12].Text = " Outdoors (5)";
+                sheet.Range[rowNumber, 13].Text = " Personal Growth (5)";
+                sheet.Range[rowNumber, 14].Text = " Assist (3)";
+                sheet.Range[rowNumber, 15].Text = " Lead (2)";
+                sheet.Range[rowNumber, 16].Text = " Community (4)";
+                sheet.Range[rowNumber, 17].Text = " Creative (4)";
+                sheet.Range[rowNumber, 18].Text = " Outdoors (4)";
+                sheet.Range[rowNumber, 19].Text = " Personal Growth (4)";
+                sheet.Range[rowNumber, 20].Text = " Assist (4)";
+                sheet.Range[rowNumber, 21].Text = " Lead (4)";
+                sheet.Range[rowNumber, 22].Text = " Bushcraft";
+                sheet.Range[rowNumber, 23].Text = " Bushwalking";
+                sheet.Range[rowNumber, 24].Text = " Camping";
+                sheet.Range[rowNumber, 25].Text = " Alpine";
+                sheet.Range[rowNumber, 26].Text = " Cycling";
+                sheet.Range[rowNumber, 27].Text = " Vertical";
+                sheet.Range[rowNumber, 28].Text = " Aquatics";
+                sheet.Range[rowNumber, 29].Text = " Boating";
+                sheet.Range[rowNumber, 30].Text = " Paddling";
+                sheet.Range[rowNumber, 31].Text = " Total Progressions";
+                sheet.Range[rowNumber, 32].Text = " Total Nights Camped";
+                sheet.Range[rowNumber, 33].Text = " Total KMs Hiked";
+                sheet.Range[rowNumber, 34].Text = " Adventure & Sport";
+                sheet.Range[rowNumber, 35].Text = " Arts & Literature";
+                sheet.Range[rowNumber, 36].Text = " Environment";
+                sheet.Range[rowNumber, 37].Text = " STEM & Innovation";
+                sheet.Range[rowNumber, 38].Text = " Growth & Development";
+                sheet.Range[rowNumber, 39].Text = " Creating a Better World";
+                sheet.Range[rowNumber, 40].Text = " Leadership Course";
+                sheet.Range[rowNumber, 41].Text = " Adventurous Journey";
+                sheet.Range[rowNumber, 42].Text = " Personal Reflection";
+                sheet.Range[rowNumber, 43].Text = " PEAK AWARD";
+                sheet.SetRowHeight(rowNumber, 120);
+
+                foreach (var wallchartEntry in templatAnswerGroup)
+                {
+                    rowNumber++;
+                    sheet.Range[rowNumber, 1].Text = wallchartEntry.MemberName;
+                    SetWallchartCell(sheet.Range[rowNumber, 2], 0, wallchartGroups.intro, wallchartEntry.IntroToScouting);
+                    SetWallchartCell(sheet.Range[rowNumber, 3], 0, wallchartGroups.intro, wallchartEntry.IntroToSection);
+                    if (wallchartEntry.Milestone1Presented.HasValue)
+                    {
+                        sheet.Range[rowNumber, 4].DateTime = wallchartEntry.Milestone1Presented.Value;
+                        sheet.Range[rowNumber, 4, rowNumber, 9].Merge();
+                        sheet.Range[rowNumber, 4, rowNumber, 9].CellStyle.Color = Milestone1LeadColours[1];
+                    }
+                    else if (wallchartEntry.Milestone1Awarded.HasValue)
+                    {
+                        sheet.Range[rowNumber, 4].Text = $"{wallchartEntry.Milestone1Awarded.Value.ToShortDateString()}*";
+                        sheet.Range[rowNumber, 4, rowNumber, 9].Merge();
+                        sheet.Range[rowNumber, 4, rowNumber, 9].CellStyle.Color = Milestone1LeadColours[1];
+                    }
+                    else
+                    {
+                        SetWallchartCell(sheet.Range[rowNumber, 4], 1, wallchartGroups.participate, wallchartEntry.Milestone1Community);
+                        SetWallchartCell(sheet.Range[rowNumber, 5], 1, wallchartGroups.participate, wallchartEntry.Milestone1Creative);
+                        SetWallchartCell(sheet.Range[rowNumber, 6], 1, wallchartGroups.participate, wallchartEntry.Milestone1Outdoors);
+                        SetWallchartCell(sheet.Range[rowNumber, 7], 1, wallchartGroups.participate, wallchartEntry.Milestone1PersonalGrowth);
+                        SetWallchartCell(sheet.Range[rowNumber, 8], 1, wallchartGroups.assist, wallchartEntry.Milestone1Assist);
+                        SetWallchartCell(sheet.Range[rowNumber, 9], 1, wallchartGroups.lead, wallchartEntry.Milestone1Lead);
+                    }
+
+                    if (wallchartEntry.Milestone2Presented.HasValue)
+                    {
+                        sheet.Range[rowNumber, 10].DateTime = wallchartEntry.Milestone2Presented.Value;
+                        sheet.Range[rowNumber, 10, rowNumber, 15].Merge();
+                        sheet.Range[rowNumber, 10, rowNumber, 15].CellStyle.Color = Milestone1LeadColours[1];
+                    }
+                    else if (wallchartEntry.Milestone2Awarded.HasValue)
+                    {
+                        sheet.Range[rowNumber, 10].Text = $"{wallchartEntry.Milestone2Awarded.Value.ToShortDateString()}*";
+                        sheet.Range[rowNumber, 10, rowNumber, 15].Merge();
+                        sheet.Range[rowNumber, 10, rowNumber, 15].CellStyle.Color = Milestone1LeadColours[1];
+                    }
+                    else
+                    {
+                        SetWallchartCell(sheet.Range[rowNumber, 10], 2, wallchartGroups.participate, wallchartEntry.Milestone2Community);
+                        SetWallchartCell(sheet.Range[rowNumber, 11], 2, wallchartGroups.participate, wallchartEntry.Milestone2Creative);
+                        SetWallchartCell(sheet.Range[rowNumber, 12], 2, wallchartGroups.participate, wallchartEntry.Milestone2Outdoors);
+                        SetWallchartCell(sheet.Range[rowNumber, 13], 2, wallchartGroups.participate, wallchartEntry.Milestone2PersonalGrowth);
+                        SetWallchartCell(sheet.Range[rowNumber, 14], 2, wallchartGroups.assist, wallchartEntry.Milestone2Assist);
+                        SetWallchartCell(sheet.Range[rowNumber, 15], 2, wallchartGroups.lead, wallchartEntry.Milestone2Lead);
+                    }
+
+                    if (wallchartEntry.Milestone3Presented.HasValue)
+                    {
+                        sheet.Range[rowNumber, 16].DateTime = wallchartEntry.Milestone3Presented.Value;
+                        sheet.Range[rowNumber, 16, rowNumber, 21].Merge();
+                        sheet.Range[rowNumber, 16, rowNumber, 21].CellStyle.Color = Milestone1LeadColours[1];
+                    }
+                    else if (wallchartEntry.Milestone3Awarded.HasValue)
+                    {
+                        sheet.Range[rowNumber, 16].Text = $"{wallchartEntry.Milestone3Awarded.Value.ToShortDateString()}*";
+                        sheet.Range[rowNumber, 16, rowNumber, 21].Merge();
+                        sheet.Range[rowNumber, 16, rowNumber, 21].CellStyle.Color = Milestone1LeadColours[1];
+                    }
+                    else
+                    {
+                        SetWallchartCell(sheet.Range[rowNumber, 16], 3, wallchartGroups.participate, wallchartEntry.Milestone3Community);
+                        SetWallchartCell(sheet.Range[rowNumber, 17], 3, wallchartGroups.participate, wallchartEntry.Milestone3Creative);
+                        SetWallchartCell(sheet.Range[rowNumber, 18], 3, wallchartGroups.participate, wallchartEntry.Milestone3Outdoors);
+                        SetWallchartCell(sheet.Range[rowNumber, 19], 3, wallchartGroups.participate, wallchartEntry.Milestone3PersonalGrowth);
+                        SetWallchartCell(sheet.Range[rowNumber, 20], 3, wallchartGroups.assist, wallchartEntry.Milestone3Assist);
+                        SetWallchartCell(sheet.Range[rowNumber, 21], 3, wallchartGroups.lead, wallchartEntry.Milestone3Lead);
+                    }
+                    SetWallchartCell(sheet.Range[rowNumber, 22], 0, wallchartGroups.oasCore, wallchartEntry.OASBushcraftStage);
+                    SetWallchartCell(sheet.Range[rowNumber, 23], 0, wallchartGroups.oasCore, wallchartEntry.OASBushwalkingStage);
+                    SetWallchartCell(sheet.Range[rowNumber, 24], 0, wallchartGroups.oasCore, wallchartEntry.OASCampingStage);
+                    SetWallchartCell(sheet.Range[rowNumber, 25], 0, wallchartGroups.oasLand, wallchartEntry.OASAlpineStage);
+                    SetWallchartCell(sheet.Range[rowNumber, 26], 0, wallchartGroups.oasLand, wallchartEntry.OASCyclingStage);
+                    SetWallchartCell(sheet.Range[rowNumber, 27], 0, wallchartGroups.oasLand, wallchartEntry.OASVerticalStage);
+                    SetWallchartCell(sheet.Range[rowNumber, 28], 0, wallchartGroups.oasWater, wallchartEntry.OASAquaticsStage);
+                    SetWallchartCell(sheet.Range[rowNumber, 29], 0, wallchartGroups.oasWater, wallchartEntry.OASBoatingStage);
+                    SetWallchartCell(sheet.Range[rowNumber, 30], 0, wallchartGroups.oasWater, wallchartEntry.OASPaddlingStage);
+                    SetWallchartCell(sheet.Range[rowNumber, 31], 0, wallchartGroups.oasProgression, wallchartEntry.OASStageProgressions);
+                    SetWallchartCell(sheet.Range[rowNumber, 32], 0, wallchartGroups.oasProgression, wallchartEntry.NightsCamped);
+                    SetWallchartCell(sheet.Range[rowNumber, 33], 0, wallchartGroups.oasProgression, wallchartEntry.KMsHiked);
+                    SetWallchartCell(sheet.Range[rowNumber, 34], 0, wallchartGroups.siaOdd, wallchartEntry.SIAAdventureSport);
+                    SetWallchartCell(sheet.Range[rowNumber, 35], 0, wallchartGroups.siaEven, wallchartEntry.SIAArtsLiterature);
+                    SetWallchartCell(sheet.Range[rowNumber, 36], 0, wallchartGroups.siaOdd, wallchartEntry.SIAEnvironment);
+                    SetWallchartCell(sheet.Range[rowNumber, 37], 0, wallchartGroups.siaEven, wallchartEntry.SIAStemInnovation);
+                    SetWallchartCell(sheet.Range[rowNumber, 38], 0, wallchartGroups.siaOdd, wallchartEntry.SIAGrowthDevelopment);
+                    SetWallchartCell(sheet.Range[rowNumber, 39], 0, wallchartGroups.siaEven, wallchartEntry.SIACreatingABetterWorld);
+                    SetWallchartCell(sheet.Range[rowNumber, 40], 0, wallchartGroups.leadershipCourse, wallchartEntry.LeadershipCourse);
+                    SetWallchartCell(sheet.Range[rowNumber, 41], 0, wallchartGroups.adventurousJourney, wallchartEntry.AdventurousJourney);
+                    SetWallchartCell(sheet.Range[rowNumber, 42], 0, wallchartGroups.personalReflection, wallchartEntry.PersonalReflection);
+                    //SetWallchartCell(sheet.Range[rowNumber, 43], 0, wallchartGroups.intro, wallchartEntry.PeakAward); // TODO: Change to date
+                    sheet.Range[rowNumber, 1, rowNumber, 43].BorderAround();
+                    sheet.Range[rowNumber, 1, rowNumber, 43].BorderInside();
+                    sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                }
+
+
+                sheet.Range[1, 1, rowNumber, 43].AutofitColumns();
+
+                sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+                sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
+                sheet.PageSetup.BottomMargin = 0.25;
+                sheet.PageSetup.TopMargin = 0.25;
+                sheet.PageSetup.LeftMargin = 0.25;
+                sheet.PageSetup.RightMargin = 0.25;
+                sheet.PageSetup.HeaderMargin = 0;
+                sheet.PageSetup.FooterMargin = 0;
+                sheet.PageSetup.IsFitToPage = true;
+
+                worksheetIndex++;
             }
-
-
-            sheet.Range[1, 1, rowNumber, 43].AutofitColumns();
-
-            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
-            sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
-            sheet.PageSetup.BottomMargin = 0.25;
-            sheet.PageSetup.TopMargin = 0.25;
-            sheet.PageSetup.LeftMargin = 0.25;
-            sheet.PageSetup.RightMargin = 0.25;
-            sheet.PageSetup.HeaderMargin = 0;
-            sheet.PageSetup.FooterMargin = 0;
-            sheet.PageSetup.IsFitToPage = true;
-
             return workbook;
         }
 

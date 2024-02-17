@@ -28,10 +28,26 @@
     </div>
 
     <div class="mt-3 mb-3 row">
+        <div class="col-sm-3">
+            <InputCheckbox id="breakByPatrol" class="form-check-input"
+                           @bind-Value="model.BreakByPatrol" />
+            <label class="form-check-label" for="breakByPatrol">
+                Break by Patrol
+            </label>
+        </div>
+        <div class="col-sm-9">
+        </div>
+    </div>
+
+    <div class="mt-3 mb-3 row">
         <div class="col-sm">
             <button type="submit" name="button" @onclick="WallchartReportPdfClick" class="btn btn-primary">Wallchart (pdf)</button>
             <button type="submit" name="button" @onclick="WallchartReportXlsxClick" class="btn btn-success">Wallchart (xlsx)</button>
         </div>
+    </div>
+
+    <div class="mt-3 mb-3 row">
+        <label class="col-form-label validation-message">@model.ErrorMessage</label>
     </div>
 
 </EditForm>
