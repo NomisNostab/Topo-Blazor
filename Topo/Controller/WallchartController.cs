@@ -100,7 +100,7 @@ namespace Topo.Controller
 
             var serialisedWallchartItems = JsonConvert.SerializeObject(wallchartItems);
 
-            var report = await _reportService.GetWallchartReport(groupName, section, unitName, outputType, serialisedWallchartItems);
+            var report = await _reportService.GetWallchartReport(groupName, section, unitName, outputType, serialisedWallchartItems, model.BreakByPatrol);
             return report;
         }
 
