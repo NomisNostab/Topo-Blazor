@@ -11,11 +11,19 @@ namespace Topo
         }
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            _spinnerService.Show();
-            //  await Task.Delay(1000);
-            var response = await base.SendAsync(request, cancellationToken);
-            _spinnerService.Hide();
-            return response;
+            try
+            {
+                _spinnerService.Show();
+                //  await Task.Delay(1000);
+                var response = await base.SendAsync(request, cancellationToken);
+                _spinnerService.Hide();
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _spinnerService.Hide();
+                throw;
+            }
         }
     }
 }

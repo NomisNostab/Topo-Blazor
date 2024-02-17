@@ -504,12 +504,24 @@ namespace Topo.Services
             httpRequest.Headers.Add("accept", "application/json, text/plain, */*");
             //httpRequest.Headers.Add("X-Amz-User-Agent", "aws-amplify/0.1.x js");
 
-            var response = await _httpClient.SendAsync(httpRequest);
-            var responseContent = response.Content.ReadAsStringAsync();
-            var result = responseContent.Result;
-            _logger.LogInformation($"Request: {requestUri}");
-            _logger.LogInformation($"Response: {result}");
-            return result;
+            var response = new HttpResponseMessage();
+            try
+            {
+                response = await _httpClient.SendAsync(httpRequest);
+                var responseContent = response.Content.ReadAsStringAsync();
+                var result = responseContent.Result;
+                _logger.LogInformation($"Request: {requestUri}");
+                _logger.LogInformation($"Response: {result}");
+                return result;
+            }
+            catch( Exception ex )
+            {
+                _logger.LogInformation($"Request: {requestUri}");
+                _logger.LogInformation($"StatusCode: {response.StatusCode}");
+                _logger.LogInformation($"Exception: {ex}");
+                return "";
+            }
+
         }
 
         private T DeserializeObject<T>(string result)

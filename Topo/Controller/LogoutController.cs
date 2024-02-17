@@ -11,7 +11,7 @@ namespace Topo.Controller
 
         [Inject]
         public NavigationManager NavigationManager { get; set; }
-        protected override async Task OnInitializedAsync()
+        protected override void OnInitialized()
         {
             _storageService.Logout();
             NavigationManager.NavigateTo("index");

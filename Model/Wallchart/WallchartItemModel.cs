@@ -3,6 +3,7 @@
     public class WallchartItemModel
     {
         public string MemberName { get; set; } = string.Empty;
+        public string MemberPatrol { get; set; } = string.Empty;
         public DateTime? IntroToScouting { get; set; }
         public DateTime? IntroToSection { get; set; }
         public int Milestone1Community { get; set; }
