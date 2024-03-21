@@ -50,8 +50,6 @@ namespace Topo.Controller
             if (_storageService.UnitId != null)
             {
                 model.UnitId = _storageService.UnitId;
-                if (_storageService.Units != null)
-                    _storageService.UnitName = _storageService.Units.Where(u => u.Key == model.UnitId).FirstOrDefault().Value;
                 model.UnitName = _storageService.UnitName;
             }
         }
@@ -61,8 +59,6 @@ namespace Topo.Controller
             var unitId = e.Value?.ToString() ?? "";
             model.UnitId = unitId;
             _storageService.UnitId = model.UnitId;
-            if (_storageService.Units != null)
-                _storageService.UnitName = _storageService.Units.Where(u => u.Key == model.UnitId).FirstOrDefault().Value;
             model.UnitName = _storageService.UnitName;
             await RefreshApprovalsClick();
         }
