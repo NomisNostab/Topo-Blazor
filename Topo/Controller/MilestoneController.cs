@@ -35,10 +35,10 @@ namespace Topo.Controller
             if (!_storageService.IsAuthenticated)
                 NavigationManager.NavigateTo("index");
 
-            model.GroupName = _storageService.GroupNameDisplay;
-            model.Units = _storageService.Units;
             model.UnitId = _storageService.UnitId;
             model.UnitName = _storageService.UnitName;
+            model.GroupName = _storageService.GroupNameDisplay;
+            model.Units = _storageService.Units;
         }
 
         internal async Task UnitChange(ChangeEventArgs e)
@@ -46,8 +46,6 @@ namespace Topo.Controller
             var unitId = e.Value?.ToString() ?? "";
             model.UnitId = unitId;
             _storageService.UnitId = model.UnitId;
-            if (_storageService.Units != null)
-                _storageService.UnitName = _storageService.Units.Where(u => u.Key == model.UnitId).FirstOrDefault().Value;
             model.UnitName = _storageService.UnitName;
         }
 

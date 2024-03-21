@@ -510,15 +510,15 @@ namespace Topo.Services
                 response = await _httpClient.SendAsync(httpRequest);
                 var responseContent = response.Content.ReadAsStringAsync();
                 var result = responseContent.Result;
-                _logger.LogInformation($"Request: {requestUri}");
-                _logger.LogInformation($"Response: {result}");
+                _logger.LogInformation($"Version: {_storageService.Version}; Date: {DateTime.Now.ToString("dd/MM/yyyy : HH:mm:ss")}; Request: {requestUri}");
+                _logger.LogInformation($"Version: {_storageService.Version}; Date: {DateTime.Now.ToString("dd/MM/yyyy : HH:mm:ss")}; Response: {result}");
                 return result;
             }
             catch( Exception ex )
             {
-                _logger.LogInformation($"Request: {requestUri}");
-                _logger.LogInformation($"StatusCode: {response.StatusCode}");
-                _logger.LogInformation($"Exception: {ex}");
+                _logger.LogInformation($"Version: {_storageService.Version}; Date: {DateTime.Now.ToString("dd/MM/yyyy : HH:mm:ss")}; Request: {requestUri}");
+                _logger.LogInformation($"Version: {_storageService.Version}; Date: {DateTime.Now.ToString("dd/MM/yyyy : HH:mm:ss")}; StatusCode: {response.StatusCode}");
+                _logger.LogInformation($"Version: {_storageService.Version}; Date: {DateTime.Now.ToString("dd/MM/yyyy : HH:mm:ss")}; Exception: {ex}");
                 return "";
             }
 
@@ -532,9 +532,9 @@ namespace Topo.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error deserialising: {typeof(T)}");
-                _logger.LogError($"String being processed: {result}");
-                _logger.LogError($"Exception message: {ex.Message}");
+                _logger.LogError($"Version: {_storageService.Version}; Date: {DateTime.Now.ToString("dd/MM/yyyy : HH:mm:ss")}; Error deserialising: {typeof(T)}");
+                _logger.LogError($"Version: {_storageService.Version}; Date: {DateTime.Now.ToString("dd/MM/yyyy : HH:mm:ss")}; String being processed: {result}");
+                _logger.LogError($"Version: {_storageService.Version}; Date: {DateTime.Now.ToString("dd/MM/yyyy : HH:mm:ss")}; Exception message: {ex.Message}");
             }
             return JsonConvert.DeserializeObject<T>("");
         }

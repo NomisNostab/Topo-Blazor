@@ -49,7 +49,6 @@ namespace Topo.Controller
             {
                 model.UnitId = unitId;
                 _storageService.UnitId = model.UnitId;
-                _storageService.UnitName = "";
                 model.UnitName = _storageService.UnitName;
                 model.Members = new List<MemberListModel>();
                 return;
@@ -61,8 +60,6 @@ namespace Topo.Controller
 
         async Task populateMembers()
         {
-            if (_storageService.Units != null)
-                _storageService.UnitName = _storageService.Units.Where(u => u.Key == _storageService.UnitId).FirstOrDefault().Value;
             var allMembers = await _membersService.GetMembersAsync(_storageService.UnitId);
             model.Members = allMembers.Where(m => m.isAdultLeader == 0).OrderBy(m => m.first_name).ThenBy(m => m.last_name).ToList();
             model.UnitName = _storageService.UnitName;

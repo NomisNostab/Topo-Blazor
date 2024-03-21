@@ -64,8 +64,6 @@ namespace Topo.Controller
         {
             model.UnitId = unitId;
             _storageService.UnitId = model.UnitId;
-            if (_storageService.Units != null)
-                _storageService.UnitName = _storageService.Units.Where(u => u.Key == model.UnitId).FirstOrDefault().Value;
             model.UnitName = _storageService.UnitName;
         }
 

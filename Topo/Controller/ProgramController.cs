@@ -63,7 +63,6 @@ namespace Topo.Controller
             }
             if (!string.IsNullOrEmpty(model.CalendarId))
             {
-                _storageService.UnitName = _storageService.Units.Where(u => u.Key == model.CalendarId)?.FirstOrDefault().Value ?? "";
                 _storageService.UnitId = model.CalendarId;
                 await _programService.SetCalendar(model.CalendarId);
                 var events = await _programService.GetEventsForDates(model.CalendarSearchFromDate, model.CalendarSearchToDate);
