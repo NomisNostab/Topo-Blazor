@@ -13,6 +13,7 @@ using Topo.Model.Wallchart;
 using Topo.Model.Progress;
 using Syncfusion.EJ2.Spreadsheet;
 using System;
+using Syncfusion.EJ2.Linq;
 
 namespace Topo.Services
 {
@@ -844,12 +845,12 @@ namespace Topo.Services
             rowNumber++;
             // Group attendance by member for youth
             var groupedAttendances = attendanceReportData.attendanceReportItems.Where(m => m.IsAdultMember == 0).GroupBy(wa => wa.MemberName).ToList();
+            var allEvents = attendanceReportData.attendanceReportItems.DistinctBy(i => i.EventNameDisplay).OrderBy(i => i.EventStartDate).ToList();
 
             // Add Event Details
             columnNumber = forPdfOutput ? 1 : 2;
             rowNumber++;
-            var firstGroupedAttendance = groupedAttendances.FirstOrDefault();
-            foreach (var eventAttendance in firstGroupedAttendance)
+            foreach (var eventAttendance in allEvents)
             {
                 columnNumber++;
                 if (forPdfOutput)
@@ -908,6 +909,7 @@ namespace Topo.Services
             var sumStartRow = rowNumber + 1;
             foreach (var groupedAttendance in groupedAttendances)
             {
+                // Name
                 rowNumber++;
                 columnNumber = 1;
                 if (forPdfOutput)
@@ -924,17 +926,19 @@ namespace Topo.Services
                     sheet.Range[rowNumber, columnNumber].Text = groupedAttendance.FirstOrDefault().MemberLastName;
                     sheet.Range[rowNumber, columnNumber].BorderAround();
                 }
-                foreach (var eventAttendance in groupedAttendance)
+                // Event Attendance
+                foreach (var events in allEvents)
                 {
+                    var eventAttendance = groupedAttendance.Where(a => a.EventNameDisplay == events.EventNameDisplay).FirstOrDefault();
                     columnNumber++;
-                    sheet.Range[rowNumber, columnNumber].Text = eventAttendance.Pal;
+                    sheet.Range[rowNumber, columnNumber].Text = eventAttendance?.Pal;
                     sheet.Range[rowNumber, columnNumber].BorderAround();
                     sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 }
                 // Row total
                 var sumRange = sheet.Range[rowNumber, forPdfOutput ? 2 : 3, rowNumber, columnNumber].AddressLocal;
                 columnNumber++;
-                sheet.Range[rowNumber, columnNumber].Formula = @$"=COUNTIFS({sumRange}, ""P"")+COUNTIFS({sumRange}, ""A"")+COUNTIFS({sumRange}, ""L"")";
+                sheet.Range[rowNumber, columnNumber].Formula = @$"=COUNTIFS({sumRange}, ""Y"")+COUNTIFS({sumRange}, ""P"")+COUNTIFS({sumRange}, ""A"")+COUNTIFS({sumRange}, ""L"")";
                 sheet.Range[rowNumber, columnNumber].BorderAround();
                 sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, columnNumber].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
@@ -951,7 +955,7 @@ namespace Topo.Services
             for (int i = startCol; i <= columnNumber - 1; i++)
             {
                 var sumRange = sheet.Range[sumStartRow, i, sumEndRow, i].AddressLocal;
-                sheet.Range[rowNumber, i].Formula = @$"=COUNTIFS({sumRange}, ""P"")+COUNTIFS({sumRange}, ""A"")+COUNTIFS({sumRange}, ""L"")";
+                sheet.Range[rowNumber, i].Formula = @$"=COUNTIFS({sumRange}, ""Y"")+COUNTIFS({sumRange}, ""P"")+COUNTIFS({sumRange}, ""A"")+COUNTIFS({sumRange}, ""L"")";
                 sheet.Range[rowNumber, i].BorderAround();
                 sheet.Range[rowNumber, i].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, i].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;

@@ -27,10 +27,14 @@ namespace Topo.Services
     public class ReportService : IReportService
     {
         private readonly HttpClient _httpClient;
+        private readonly ILogger<TerrainAPIService> _logger;
+        private readonly StorageService _storageService;
 
-        public ReportService(HttpClient httpClient)
+        public ReportService(HttpClient httpClient, ILogger<TerrainAPIService> logger, StorageService storageService)
         {
             _httpClient = httpClient;
+            _logger = logger;
+            _storageService = storageService;
         }
         public async Task<byte[]> GetMemberListReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberList)
         {
@@ -291,6 +295,8 @@ namespace Topo.Services
 #endif
             HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Put, functionUrl);
             var content = JsonConvert.SerializeObject(reportGenerationRequest);
+            string message = $"Version: {_storageService.Version}; Date: {DateTime.Now.ToString("dd/MM/yyyy : HH:mm:ss")}; ReportGenerationRequestData: {reportGenerationRequest.ReportData}";
+            _logger.LogInformation(message);
             httpRequest.Content = new StringContent(content, Encoding.UTF8, "application/json");
             httpRequest.Headers.Add("accept", "application/json, text/plain, */*");
             var response = await _httpClient.SendAsync(httpRequest);
