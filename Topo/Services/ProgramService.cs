@@ -125,6 +125,7 @@ namespace Topo.Services
             {
                 eventAttendance.Add(new EventAttendance
                 {
+                    id = member.id,
                     first_name = member.first_name,
                     last_name = member.last_name,
                     member_number = member.member_number,
@@ -149,19 +150,21 @@ namespace Topo.Services
                     if (eventAttendance.Any(a => a.member_number == attended.member_number))
                     {
                         eventAttendance.Where(a => a.member_number == attended.member_number).Single().attended = true;
+                        eventAttendance.Where(a => a.member_number == attended.member_number).Single().pal = "Y";
                     }
                     else
                     {
                         // Load out of unit members
                         eventAttendance.Add(new EventAttendance
                         {
+                            id = attended.id,
                             first_name = attended.first_name,
                             last_name = attended.last_name,
                             member_number = attended.member_number,
                             patrol_name = "",
                             isAdultMember = false,
                             attended = true,
-                            pal = ""
+                            pal = "Y"
                         });
                     }
                 }
@@ -213,7 +216,6 @@ namespace Topo.Services
             var attendanceReport = new AttendanceReportModel();
             var attendanceReportItems = new List<AttendanceReportItemModel>();
             await SetCalendar(selectedCalendar);
-            var members = await _memberService.GetMembersAsync(_storageService.UnitId);
 
             var programEvents = await GetEventsForDates(fromDate, toDate);
             await ResetCalendar();
@@ -228,24 +230,22 @@ namespace Topo.Services
             {
                 var eventListModel = await GetAttendanceForEvent(programEvent.Id);
                 programEvent.attendees = eventListModel.attendees;
-                foreach (var member in members)
+                foreach (var attendee in programEvent.attendees)
                 {
-                    var attended = programEvent.attendees.Where(a => a.member_number == member.member_number).SingleOrDefault()?.attended ?? false;
-                    var pal = programEvent.attendees.Where(a => a.member_number == member.member_number).SingleOrDefault()?.pal ?? "";
                     attendanceReportItems.Add(new AttendanceReportItemModel
                     {
-                        MemberId = member.id,
-                        MemberName = $"{member.first_name} {member.last_name}",
-                        MemberFirstName = member.first_name,
-                        MemberLastName = member.last_name,
+                        MemberId = attendee.id,
+                        MemberName = $"{attendee.first_name} {attendee.last_name}",
+                        MemberFirstName = attendee.first_name,
+                        MemberLastName = attendee.last_name,
                         EventName = programEvent.EventName,
                         EventChallengeArea = programEvent.ChallengeArea,
                         EventStartDate = programEvent.StartDateTime,
                         EventNameDisplay = $"{programEvent.EventName} {programEvent.EventDate}",
-                        Attended = attended ? 1 : 0,
-                        IsAdultMember = member.isAdultLeader,
+                        Attended = attendee.attended ? 1 : 0,
+                        IsAdultMember = attendee.isAdultMember ? 1 : 0,
                         EventStatus = programEvent.EventStatus,
-                        Pal = pal
+                        Pal = attendee.pal
                     });
                 }
             }
@@ -253,10 +253,10 @@ namespace Topo.Services
 
             var memberSummaries = new List<AttendanceReportMemberSummaryModel>();
             var attendanceReportItemsGroupedByMember = attendanceReportItems.GroupBy(a => a.MemberId);
+            var totalEvents = attendanceReportItems.DistinctBy(i => i.EventNameDisplay).Where(ma => ma.EventStartDate <= DateTime.Now).Count();
             foreach (var memberAttendance in attendanceReportItemsGroupedByMember)
             {
                 var attendedCount = memberAttendance.Where(ma => ma.EventStartDate <= DateTime.Now).Sum(ma => ma.Attended);
-                var totalEvents = memberAttendance.Where(ma => ma.EventStartDate <= DateTime.Now).Count();
                 memberSummaries.Add(new AttendanceReportMemberSummaryModel
                 {
                     MemberId = memberAttendance.Key,
@@ -270,7 +270,6 @@ namespace Topo.Services
             foreach (var attendanceItem in attendanceReportItems)
             {
                 var attendanceCount = memberSummaries.Where(ms => ms.MemberId == attendanceItem.MemberId).FirstOrDefault()?.AttendanceCount ?? 0;
-                var totalEvents = memberSummaries.Where(ms => ms.MemberId == attendanceItem.MemberId).FirstOrDefault()?.TotalEvents ?? 0;
                 var attendanceRate = totalEvents == 0 ? 0 : (decimal)attendanceCount / totalEvents * 100m;
                 attendanceItem.MemberNameAndRate = $"{attendanceItem.MemberName} ({Math.Round(attendanceRate, 0)}%)";
             }
