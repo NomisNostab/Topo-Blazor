@@ -1,4 +1,5 @@
-﻿using Topo.Model.AdditionalAwards;
+﻿using System.Reflection;
+using Topo.Model.AdditionalAwards;
 using Topo.Model.Login;
 using Topo.Model.Members;
 using Topo.Model.OAS;
@@ -69,7 +70,16 @@ namespace Topo.Services
             }
         }
 
-        public string UnitName { get; set; } = "";
+        public string UnitName
+        {
+            get
+            {
+                if (Units != null)
+                    return Units.Where(u => u.Key == UnitId).FirstOrDefault().Value;
+                else
+                    return string.Empty;
+            }
+        }
         public string Section
         {
             get
@@ -107,5 +117,6 @@ namespace Topo.Services
             }
         }
 
+        public string Version = "1.51";
     }
 }

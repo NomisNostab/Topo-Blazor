@@ -57,15 +57,12 @@ namespace Topo.Controller
             {
                 model.UnitId = unitId;
                 _storageService.UnitId = model.UnitId;
-                _storageService.UnitName = "";
                 model.UnitName = _storageService.UnitName;
                 model.Members = new List<MemberListModel>();
                 return;
             }
             model.UnitId = unitId;
             _storageService.UnitId = model.UnitId;
-            if (_storageService.Units != null)
-                _storageService.UnitName = _storageService.Units.Where(u => u.Key == model.UnitId).FirstOrDefault().Value;
             model.UnitName = _storageService.UnitName;
             await PopulateMembers();
         }
