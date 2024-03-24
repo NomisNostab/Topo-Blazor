@@ -907,7 +907,7 @@ namespace Topo.Services
 
             // Add youth member rows
             var sumStartRow = rowNumber + 1;
-            foreach (var groupedAttendance in groupedAttendances)
+            foreach (var groupedAttendance in groupedAttendances.OrderBy(a => a.Key))
             {
                 // Name
                 rowNumber++;
