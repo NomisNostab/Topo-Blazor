@@ -2226,7 +2226,7 @@ namespace Topo.Services
             // Peak Award
             rowNumber++;
             rowNumber++;
-            sheet.Range[rowNumber, 1].Text = "Peak Award";
+            sheet.Range[rowNumber, 1].Text = $"Peak Award: {(string.IsNullOrEmpty(progressEntries.PeakAward.Awarded) ? "" : "Awarded " + progressEntries.PeakAward.Awarded)}";
             sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
 
             rowNumber++;
@@ -2242,11 +2242,6 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].Text = "Personal Reflection:";
             sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
             sheet.Range[rowNumber, 2].Text = progressEntries.PeakAward.PersonalReflection;
-            rowNumber++;
-            sheet.Range[rowNumber, 1].Text = "Awarded:";
-            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
-            sheet.Range[rowNumber, 2].Text = progressEntries.PeakAward.Awarded;
-
 
 
             sheet.Range[1, 1, rowNumber, 10].AutofitColumns();
