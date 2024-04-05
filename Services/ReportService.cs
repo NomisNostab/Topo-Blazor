@@ -2113,7 +2113,7 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
             for (int i = 1; i < 10; i++)
             {
-                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "apline" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
+                var oas = progressEntries.OASSummaries.Where(o => o.Stream == "alpine" && o.Stage == i).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 var oasText = "";
                 oasText = setOasText(oas, oasText);
                 sheet.Range[rowNumber, i + 1].Text = oasText;
