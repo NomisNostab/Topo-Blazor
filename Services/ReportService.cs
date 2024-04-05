@@ -2242,6 +2242,10 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].Text = "Personal Reflection:";
             sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
             sheet.Range[rowNumber, 2].Text = progressEntries.PeakAward.PersonalReflection;
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Awarded:";
+            sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 2].Text = progressEntries.PeakAward.Awarded;
 
 
 
