@@ -98,7 +98,12 @@ namespace Topo.Services
                         Id = eventResult.id,
                         EventName = eventResult.title,
                         StartDateTime = eventResult.start_datetime,
+                        StartDateTimeDisplay = eventResult.start_datetime.ToString("dd/MM/yy HH:mm"),
                         EndDateTime = eventResult.end_datetime,
+                        EndDateTimeDisplay = eventResult.end_datetime.ToString("dd/MM/yy HH:mm"),
+                        StartFinishDisplay = eventResult.start_datetime.Date == eventResult.end_datetime.Date
+                            ? $"{eventResult.start_datetime:h:mm tt} - {eventResult.end_datetime:h:mm tt}"
+                            : $"{eventResult.start_datetime:ddd h:mm tt} - {eventResult.end_datetime:ddd h:mm tt}",
                         ChallengeArea = myTI.ToTitleCase(eventResult.challenge_area.Replace("_", " ").Replace("personal ", "")),
                         EventStatus = myTI.ToTitleCase(eventResult.status),
                         IsUnitEvent = eventResult.invitee_type == "unit",

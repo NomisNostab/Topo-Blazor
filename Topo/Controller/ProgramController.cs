@@ -31,6 +31,11 @@ namespace Topo.Controller
         public ProgramPageViewModel model = new ProgramPageViewModel();
         private string groupCalendarId = string.Empty;
 
+        private JsonSerializerSettings _settings = new JsonSerializerSettings
+        {
+            DateParseHandling = DateParseHandling.None
+        };
+
         protected override async Task OnInitializedAsync()
         {
             if (!_storageService.IsAuthenticated)
@@ -157,7 +162,7 @@ namespace Topo.Controller
             var unitName = _storageService.UnitName ?? "Unit Name";
             var section = _storageService.Section;
 
-            var serialisedTermProgramData = JsonConvert.SerializeObject(model.Events);
+            var serialisedTermProgramData = JsonConvert.SerializeObject(model.Events, _settings);
             var report = await _reportService.GetTermProgramReport(groupName, section, unitName, outputType, serialisedTermProgramData);
 
             return report;

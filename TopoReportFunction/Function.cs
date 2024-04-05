@@ -27,6 +27,11 @@ public class Function
 {
     private ReportService reportService = new ReportService();
 
+    private JsonSerializerSettings _settings = new JsonSerializerSettings
+    {
+        DateParseHandling = DateParseHandling.None
+    };
+
     /// <summary>
     /// Returns a Member List Report in a base 64 string of the PDF or XLSX
     /// </summary>
@@ -45,7 +50,7 @@ public class Function
 
             var requestBody = request.Body;
             Console.WriteLine(requestBody);
-            var reportGenerationRequest = JsonConvert.DeserializeObject<ReportGenerationRequest>(requestBody);
+            var reportGenerationRequest = JsonConvert.DeserializeObject<ReportGenerationRequest>(requestBody, _settings);
             if (reportGenerationRequest != null)
             {
                 var workbook = reportService.CreateWorkbookWithSheets(1);
@@ -313,7 +318,7 @@ public class Function
 
     private IWorkbook GenerateTermProgramWorkbook(ReportGenerationRequest reportGenerationRequest)
     {
-        var reportData = JsonConvert.DeserializeObject<List<EventListModel>>(reportGenerationRequest.ReportData);
+        var reportData = JsonConvert.DeserializeObject<List<EventListModel>>(reportGenerationRequest.ReportData, _settings);
         if (reportData != null)
         {
             var workbook = reportService.GenerateTermProgramWorkbook(reportData, reportGenerationRequest.GroupName, reportGenerationRequest.Section
