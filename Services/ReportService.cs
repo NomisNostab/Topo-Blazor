@@ -2372,21 +2372,19 @@ namespace Topo.Services
                 }
                 rowNumber++;
                 columnNumber = 1;
-                sheet.Range[rowNumber, columnNumber].DateTime = eventEntry.StartDateTime;
+                sheet.Range[rowNumber, columnNumber].Text = eventEntry.StartDateTimeDisplay;
                 sheet.Range[rowNumber, columnNumber].BorderAround();
-                sheet.Range[rowNumber, columnNumber].NumberFormat = "dd/MM/yy HH:mm";
                 columnNumber++;
-                sheet.Range[rowNumber, columnNumber].DateTime = eventEntry.EndDateTime;
+                sheet.Range[rowNumber, columnNumber].Text = eventEntry.EndDateTimeDisplay;
                 sheet.Range[rowNumber, columnNumber].BorderAround();
-                sheet.Range[rowNumber, columnNumber].NumberFormat = "dd/MM/yy HH:mm";
                 columnNumber++;
-                sheet.Range[rowNumber, columnNumber].Text = FormatEventDate(eventEntry.StartDateTime, eventEntry.EndDateTime);
+                sheet.Range[rowNumber, columnNumber].Text = eventEntry.DateDisplay;
                 sheet.Range[rowNumber, columnNumber].BorderAround();
                 columnNumber++;
                 sheet.Range[rowNumber, columnNumber].Text = "";
                 sheet.Range[rowNumber, columnNumber].BorderAround();
                 columnNumber++;
-                sheet.Range[rowNumber, columnNumber].Text = FormatEventTime(eventEntry.StartDateTime, eventEntry.EndDateTime);
+                sheet.Range[rowNumber, columnNumber].Text = eventEntry.StartFinishDisplay;
                 sheet.Range[rowNumber, columnNumber].BorderAround();
                 columnNumber++;
                 sheet.Range[rowNumber, columnNumber].Text = eventEntry.Location;

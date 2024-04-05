@@ -11,7 +11,13 @@ namespace Topo.Model.Program
 
         [Display(Name = "Date")]
         public DateTime StartDateTime { get; set; }
+        public string StartDateTimeDisplay { get; set; } = string.Empty;
         public DateTime EndDateTime { get; set; }
+        public string EndDateTimeDisplay { get; set; } = string.Empty;
+        public string DateDisplay => StartDateTime.Date == EndDateTime.Date
+            ? $"{StartDateTime:ddd d}"
+            : $"{StartDateTime:ddd d} - {EndDateTime:ddd d}";
+        public string StartFinishDisplay { get; set; } = string.Empty;
 
         [Display(Name = "Challenge Area")]
         public string ChallengeArea { get; set; } = string.Empty;
@@ -19,8 +25,8 @@ namespace Topo.Model.Program
 
         [Display(Name = "Date Time")]
         public string EventDate => StartDateTime.Date == EndDateTime.Date 
-            ? $"{StartDateTime.ToString("dd/MM/yy HH:mm")} - {EndDateTime.ToString("HH:mm")}"
-            : $"{StartDateTime.ToString("dd/MM/yy HH:mm")} - {EndDateTime.ToString("HH:mm")} +{EndDateTime.DayOfYear - StartDateTime.DayOfYear}";
+            ? $"{StartDateTime:dd/MM/yy HH:mm} - {EndDateTime:HH:mm}"
+            : $"{StartDateTime:dd/MM/yy HH:mm} - {EndDateTime:HH:mm} +{EndDateTime.DayOfYear - StartDateTime.DayOfYear}";
 
         public List<EventAttendance> attendees = new List<EventAttendance>();
 

@@ -294,7 +294,7 @@ namespace Topo.Services
             string functionUrl = "https://qwhcdbhrempok4kpmk6utzavxq0zjzha.lambda-url.ap-southeast-2.on.aws/";
 #endif
             HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Put, functionUrl);
-            var content = JsonConvert.SerializeObject(reportGenerationRequest);
+            var content = JsonConvert.SerializeObject(reportGenerationRequest, new JsonSerializerSettings { DateParseHandling = DateParseHandling.None});
             string message = $"Version: {_storageService.Version}; Date: {DateTime.Now.ToString("dd/MM/yyyy : HH:mm:ss")}; ReportGenerationRequestData: {reportGenerationRequest.ReportData}";
             _logger.LogInformation(message);
             httpRequest.Content = new StringContent(content, Encoding.UTF8, "application/json");
