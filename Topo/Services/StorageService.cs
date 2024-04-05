@@ -117,6 +117,6 @@ namespace Topo.Services
             }
         }
 
-        public string Version = "1.51";
+        public string Version = "1.52";
     }
 }
