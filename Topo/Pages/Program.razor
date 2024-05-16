@@ -73,14 +73,17 @@
             <div class="col-sm-1">
                 <strong>Lead</strong>
             </div>
-            <div class="col-sm-2">
+            <div class="col-sm-1">
                 <strong>Assist</strong>
             </div>
             <div class="col-sm-1">
                 <strong>Challenge</strong>
             </div>
             <div class="col-sm-1">
-                <strong>Event</strong>
+                <strong>Scope</strong>
+            </div>
+            <div class="col-sm-1">
+                <strong>State</strong>
             </div>
             <div class="col-sm-2">
             </div>
@@ -101,7 +104,7 @@
                 <div class="col-sm-1">
                     @item.Lead
                 </div>
-                <div class="col-sm-2">
+                <div class="col-sm-1">
                     @item.Assist
                 </div>
                 <div class="col-sm-1">
@@ -109,6 +112,9 @@
                 </div>
                 <div class="col-sm-1">
                     @(item.IsUnitEvent ? "Unit" : "Group")
+                </div>
+                <div class="col-sm-1">
+                    @item.EventStatus
                 </div>
                 <div class="col-sm-2">
                     <button @onclick="@(e => SignInSheetClick(item.Id))" class="btn btn-link pt-0 pb-0">Sign in</button>
