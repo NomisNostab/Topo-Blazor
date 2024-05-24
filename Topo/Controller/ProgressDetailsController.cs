@@ -42,6 +42,10 @@ namespace Topo.Controller
 
             model = await _progressService.GetProgressDetailsPageViewModel(MemberId);
             model.GroupName = _storageService.GroupNameDisplay;
+            model.DisableOAS = model.OASSummaries.Where(o => o.Awarded == DateTime.MinValue).Count() == 0 ? "disable" : null;
+            model.DisableCoreOAS = model.OASSummaries
+                .Where(o => o.Stream == "bushcraft" || o.Stream == "bushwalking" || o.Stream == "camping")
+                .Where(o => o.Awarded == DateTime.MinValue).Count() == 0 ? "disable" : null;
         }
 
         internal async Task ProgressPdfClick()

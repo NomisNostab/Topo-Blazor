@@ -406,13 +406,13 @@
         <div class="col-sm-2">
             <button type="submit" name="button" @onclick="ProgressPdfClick" class="btn btn-primary">Progress Report (pdf)</button>
         </div>
-        <div class="col-sm-2">
-            <button type="submit" name="button" @onclick="StartedCoreOasPdfClick" class="btn btn-primary">Core OAS (pdf)</button>
+        <div class="col-sm-3">
+            <button type="submit" name="button" @onclick="StartedCoreOasPdfClick" class="btn btn-primary" disabled="@model.DisableCoreOAS">Core OAS started (pdf)</button>
         </div>
         <div class="col-sm-2">
-            <button type="submit" name="button" @onclick="StartedOasPdfClick" class="btn btn-primary">OAS (pdf)</button>
+            <button type="submit" name="button" @onclick="StartedOasPdfClick" class="btn btn-primary" disabled="@model.DisableOAS">OAS started (pdf)</button>
         </div>
-        <div class="col-sm-4">
+        <div class="col-sm-3">
         </div>
     </div>
     <div class="mt-3 mb-3 row">
@@ -421,13 +421,13 @@
         <div class="col-sm-2">
             <button type="submit" name="button" @onclick="ProgressXlsxClick" class="btn btn-success">Progress Report (xlsx)</button>
         </div>
-        <div class="col-sm-2">
-            <button type="submit" name="button" @onclick="StartedCoreOasXlsxClick" class="btn btn-success">Core OAS (xlsx)</button>
+        <div class="col-sm-3">
+            <button type="submit" name="button" @onclick="StartedCoreOasXlsxClick" class="btn btn-success" disabled="@model.DisableCoreOAS">Core OAS started (xlsx)</button>
         </div>
         <div class="col-sm-2">
-            <button type="submit" name="button" @onclick="StartedOasXlsxClick" class="btn btn-success">OAS (xlsx)</button>
+            <button type="submit" name="button" @onclick="StartedOasXlsxClick" class="btn btn-success" disabled="@model.DisableOAS">OAS started (xlsx)</button>
         </div>
-        <div class="col-sm-4">
+        <div class="col-sm-3">
         </div>
     </div>
 
