@@ -84,10 +84,16 @@ namespace Topo.Services
         {
             get
             {
-                var unit = GetProfilesResult.profiles.FirstOrDefault(u => u.unit.name == UnitName);
-                if (unit == null)
-                    throw new IndexOutOfRangeException($"No unit found with name {UnitName}. You may not have permissions to this section");
-                return unit.unit.section;
+                var profile = GetProfilesResult?.profiles?.Where(p => p.group != null && p.unit != null && p.unit.id == _unitId).Select(p => p).FirstOrDefault();
+                if (profile == null)
+                {
+                    throw new IndexOutOfRangeException($"No unit found with id {_unitId}. You may not have permissions to this section");
+
+                }
+                else
+                {
+                    return profile.unit.section;
+                }
             }
         }
         public List<KeyValuePair<string, List<MemberListModel>>> CachedMembers { get; set; } = new List<KeyValuePair<string, List<MemberListModel>>>();
@@ -117,6 +123,6 @@ namespace Topo.Services
             }
         }
 
-        public string Version = "1.54";
+        public string Version = "1.55";
     }
 }
