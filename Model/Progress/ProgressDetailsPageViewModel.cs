@@ -20,6 +20,8 @@ namespace Topo.Model.Progress
         public Stats Stats { get; set; } = new Stats();
         public List<SIASummary> SIASummaries { get; set; } = new List<SIASummary>();
         public PeakAward PeakAward { get; set; } = new PeakAward();
+        public string? DisableOAS { get; set; }
+        public string? DisableCoreOAS { get; set; }
     }
 
     public class MilestoneSummary
