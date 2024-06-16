@@ -33,8 +33,8 @@ namespace Topo.Services
                 bool milestone1Awarded = false;
                 bool milestone2Awarded = false;
                 bool milestone3Awarded = false;
-                bool milestone1Skipped = false;
-                bool milestone2Skipped = false;
+                bool milestone1Skipped = true;
+                bool milestone2Skipped = true;
                 bool milestone3Skipped = false;
                 int currentLevel = 1;
                 foreach (var milestoneResult in memberMilestones.results.Where(r => r.section == _storageService.Section).OrderBy(r => r.achievement_meta.stage))
@@ -51,12 +51,16 @@ namespace Topo.Services
                             milestone2 = milestoneResult;
                             milestone2Awarded = milestone2.status == "awarded";
                             milestone2Skipped = milestone2.status == "not_required";
+                            currentLevel = (milestone1Awarded || milestone1Skipped) ? 2 : 1;
                             currentLevel = (milestone1Awarded || milestone1Skipped) && (milestone2Awarded || milestone2Skipped) ? 3 : currentLevel;
                             break;
                         case 3:
                             milestone3 = milestoneResult;
                             milestone3Awarded = milestone3.status == "awarded";
                             milestone3Skipped = milestone3.status == "not_required";
+                            currentLevel = (milestone1Awarded || milestone1Skipped) ? 2 : 1;
+                            currentLevel = (milestone1Awarded || milestone1Skipped) && (milestone2Awarded || milestone2Skipped) ? 3 : currentLevel;
+                            currentLevel = (milestone1Awarded || milestone1Skipped) && (milestone2Awarded || milestone2Skipped) && (milestone3Awarded || milestone3Skipped) ? 3 : currentLevel;
                             break;
                     }
                 }
