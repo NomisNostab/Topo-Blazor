@@ -1125,13 +1125,24 @@ namespace Topo.Services
                             if (answer.InputId == "logbook_up_to_date")
                             {
                                 sheet.Range[rowNumber, columnNumber].DateTime = answer.MemberAnswer.Value;
+                                sheet.Range[rowNumber, columnNumber].NumberFormat = "dd/MM/yy";
+
                             }
                             sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                             sheet.Range[rowNumber, columnNumber].CellStyle.Color = Color.DarkSeaGreen;
                         }
                         else
                         {
-                            sheet.Range[rowNumber, columnNumber].Text = "Y";
+                            if (answer.MemberAnswer.HasValue)
+                            {
+                                sheet.Range[rowNumber, columnNumber].DateTime = answer.MemberAnswer.Value;
+                                sheet.Range[rowNumber, columnNumber].NumberFormat = "dd/MM/yy";
+
+                            }
+                            else
+                            {
+                                sheet.Range[rowNumber, columnNumber].Text = "Y";
+                            }
                             sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                             sheet.Range[rowNumber, columnNumber].CellStyle.Color = Color.Orange;
                         }
@@ -1202,13 +1213,22 @@ namespace Topo.Services
                             if (answer.InputId == "logbook_up_to_date")
                             {
                                 sheet.Range[rowNumber, columnNumber].DateTime = answer.MemberAnswer.Value;
+                                sheet.Range[rowNumber, columnNumber].NumberFormat = "dd/MM/yy";
                             }
                             sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                             sheet.Range[rowNumber, columnNumber].CellStyle.Color = Color.DarkSeaGreen;
                         }
                         else
                         {
-                            sheet.Range[rowNumber, columnNumber].Text = "Y";
+                            if (answer.MemberAnswer.HasValue)
+                            {
+                                sheet.Range[rowNumber, columnNumber].DateTime = answer.MemberAnswer.Value;
+                                sheet.Range[rowNumber, columnNumber].NumberFormat = "dd/MM/yy";
+                            }
+                            else
+                            {
+                                sheet.Range[rowNumber, columnNumber].Text = "Y";
+                            }
                             sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                             sheet.Range[rowNumber, columnNumber].CellStyle.Color = Color.Orange;
                         }
