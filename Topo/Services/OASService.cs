@@ -238,6 +238,9 @@ namespace Topo.Services
                                 }
                                 else
                                 {
+                                    // Conver string date from dd/mm/yyyy format
+                                    var verifiedDate = DateTime.ParseExact(answer.Value, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+                                    worksheetAnswer.MemberAnswer = verifiedDate;
                                     worksheetAnswer.Answered = true;
                                 }
                             }
