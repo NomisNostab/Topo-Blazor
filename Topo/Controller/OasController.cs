@@ -99,6 +99,10 @@ namespace Topo.Controller
                 var templateList = await _oasService.GetOASTemplate(selectedStageTemplate.Replace("/latest.json", ""));
                 var selectedStage = model.Stages.Where(s => s.TemplateLink == selectedStageTemplate).FirstOrDefault() ?? new OASStageListModel();
                 var sortedTemplateAnswers = await _oasService.GenerateOASWorksheetAnswers(model.UnitId, selectedStage, model.HideCompletedMembers, templateList);
+                //sortedTemplateAnswers = sortedTemplateAnswers.Where(a => !a.MemberAnswer.HasValue || a.MemberAnswer > new DateTime(2024, 5, 1))
+                //    .OrderBy(owa => owa.InputTitleSortIndex)
+                //    .ThenBy(owa => owa.InputSortIndex)
+                //    .ToList();
                 sortedAnswers.AddRange(sortedTemplateAnswers);
             }
 
