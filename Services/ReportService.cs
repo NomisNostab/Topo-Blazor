@@ -1124,8 +1124,7 @@ namespace Topo.Services
                         {
                             if (answer.InputId == "logbook_up_to_date")
                             {
-                                sheet.Range[rowNumber, columnNumber].DateTime = answer.MemberAnswer.Value;
-                                sheet.Range[rowNumber, columnNumber].NumberFormat = "dd/MM/yy";
+                                sheet.Range[rowNumber, columnNumber].Text = answer.MemberAnswer;
 
                             }
                             sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
@@ -1133,10 +1132,9 @@ namespace Topo.Services
                         }
                         else
                         {
-                            if (answer.MemberAnswer.HasValue)
+                            if (!string.IsNullOrEmpty(answer.MemberAnswer))
                             {
-                                sheet.Range[rowNumber, columnNumber].DateTime = answer.MemberAnswer.Value;
-                                sheet.Range[rowNumber, columnNumber].NumberFormat = "dd/MM/yy";
+                                sheet.Range[rowNumber, columnNumber].Text = answer.MemberAnswer;
 
                             }
                             else
@@ -1212,18 +1210,16 @@ namespace Topo.Services
                         {
                             if (answer.InputId == "logbook_up_to_date")
                             {
-                                sheet.Range[rowNumber, columnNumber].DateTime = answer.MemberAnswer.Value;
-                                sheet.Range[rowNumber, columnNumber].NumberFormat = "dd/MM/yy";
+                                sheet.Range[rowNumber, columnNumber].Text = answer.MemberAnswer;
                             }
                             sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                             sheet.Range[rowNumber, columnNumber].CellStyle.Color = Color.DarkSeaGreen;
                         }
                         else
                         {
-                            if (answer.MemberAnswer.HasValue)
+                            if (!string.IsNullOrEmpty(answer.MemberAnswer))
                             {
-                                sheet.Range[rowNumber, columnNumber].DateTime = answer.MemberAnswer.Value;
-                                sheet.Range[rowNumber, columnNumber].NumberFormat = "dd/MM/yy";
+                                sheet.Range[rowNumber, columnNumber].Text = answer.MemberAnswer;
                             }
                             else
                             {
