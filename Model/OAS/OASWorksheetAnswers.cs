@@ -10,7 +10,7 @@
         public int InputSortIndex { get; set; }
         public string MemberId { get; set; } = string.Empty;
         public string MemberName { get; set; } = string.Empty;
-        public DateTime? MemberAnswer { get; set; }
+        public string MemberAnswer { get; set; } = string.Empty;
         public string MemberPatrol { get; set; } = string.Empty;
         public bool Answered { get; set; }
         public bool Awarded { get; set; }
