@@ -123,6 +123,6 @@ namespace Topo.Services
             }
         }
 
-        public string Version = "1.58";
+        public string Version = "1.59";
     }
 }
