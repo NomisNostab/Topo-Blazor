@@ -843,8 +843,7 @@ namespace Topo.Services
             sheet.Range[rowNumber, columnNumber + 8, rowNumber, columnNumber + 10].CellStyle.ColorIndex = GetChallengeAreaColour("Growth");
             sheet.Range[rowNumber, columnNumber + 2, rowNumber, columnNumber + 10].CellStyle.Font.Bold = true;
             rowNumber++;
-            // Group attendance by member for youth
-            var groupedAttendances = attendanceReportData.attendanceReportItems.Where(m => m.IsAdultMember == 0).GroupBy(wa => wa.MemberName).ToList();
+
             var allEvents = attendanceReportData.attendanceReportItems.DistinctBy(i => i.EventNameDisplay).OrderBy(i => i.EventStartDate).ToList();
 
             // Add Event Details
@@ -906,6 +905,8 @@ namespace Topo.Services
 
 
             // Add youth member rows
+            // Group attendance by member for youth
+            var groupedAttendances = attendanceReportData.attendanceReportItems.Where(m => m.IsAdultMember == 0).GroupBy(wa => wa.MemberName).ToList();
             var sumStartRow = rowNumber + 1;
             foreach (var groupedAttendance in groupedAttendances.OrderBy(a => a.Key))
             {
@@ -972,7 +973,7 @@ namespace Topo.Services
 
             // Add adult member rows
             sumStartRow = rowNumber + 1;
-            foreach (var groupedAttendance in groupedAttendances)
+            foreach (var groupedAttendance in groupedAttendances.OrderBy(a => a.Key))
             {
                 rowNumber++;
                 columnNumber = 1;
@@ -989,8 +990,9 @@ namespace Topo.Services
                     sheet.Range[rowNumber, columnNumber].Text = groupedAttendance.FirstOrDefault().MemberLastName;
                     sheet.Range[rowNumber, columnNumber].BorderAround();
                 }
-                foreach (var eventAttendance in groupedAttendance)
+                foreach (var events in allEvents)
                 {
+                    var eventAttendance = groupedAttendance.Where(a => a.EventNameDisplay == events.EventNameDisplay).FirstOrDefault();
                     columnNumber++;
                     sheet.Range[rowNumber, columnNumber].Text = eventAttendance.Attended > 0 ? "Y" : "";
                     sheet.Range[rowNumber, columnNumber].BorderAround();
