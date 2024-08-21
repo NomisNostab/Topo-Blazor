@@ -1,4 +1,5 @@
-﻿using Topo.Model.Milestone;
+﻿using Newtonsoft.Json;
+using Topo.Model.Milestone;
 
 namespace Topo.Services
 {
@@ -83,34 +84,34 @@ namespace Topo.Services
                         memberName = $"{member.first_name} {member.last_name}",
                         currentLevel = currentLevel,
                         percentComplete = percentComplete,
-                        milestone1ParticipateCommunity = milestone1Skipped ? -1 : (milestone1Awarded ? 6 : (int)milestone1.event_count.participant.community),
-                        milestone1ParticipateOutdoors = milestone1Skipped ? -1 : (milestone1Awarded ? 6 : (int)milestone1.event_count.participant.outdoors),
-                        milestone1ParticipateCreative = milestone1Skipped ? -1 : (milestone1Awarded ? 6 : (int)milestone1.event_count.participant.creative),
-                        milestone1ParticipatePersonalGrowth = milestone1Skipped ? -1 : (milestone1Awarded ? 6 : (int)milestone1.event_count.participant.personal_growth),
-                        milestone1Assist = milestone1Skipped ? -1 : (milestone1Awarded ? 2 : (int)milestone1.event_count.assistant.community 
+                        milestone1ParticipateCommunity = milestone1Skipped ? 0 : (milestone1Awarded ? 6 : (int)milestone1.event_count.participant.community),
+                        milestone1ParticipateOutdoors = milestone1Skipped ? 0 : (milestone1Awarded ? 6 : (int)milestone1.event_count.participant.outdoors),
+                        milestone1ParticipateCreative = milestone1Skipped ? 0 : (milestone1Awarded ? 6 : (int)milestone1.event_count.participant.creative),
+                        milestone1ParticipatePersonalGrowth = milestone1Skipped ? 0 : (milestone1Awarded ? 6 : (int)milestone1.event_count.participant.personal_growth),
+                        milestone1Assist = milestone1Skipped ? 0 : (milestone1Awarded ? 2 : (int)milestone1.event_count.assistant.community 
                                                                                             + (int)milestone1.event_count.assistant.outdoors
                                                                                             + (int)milestone1.event_count.assistant.creative
                                                                                             + (int)milestone1.event_count.assistant.personal_growth),
-                        milestone1Lead = milestone1Skipped ? -1 : (milestone1Awarded ? 1 : (int)milestone1.event_count.leader.community
+                        milestone1Lead = milestone1Skipped ? 0 : (milestone1Awarded ? 1 : (int)milestone1.event_count.leader.community
                                                                                             + (int)milestone1.event_count.leader.outdoors
                                                                                             + (int)milestone1.event_count.leader.creative
                                                                                             + (int)milestone1.event_count.leader.personal_growth),
-                        milestone2ParticipateCommunity = milestone2Skipped ? -1 : (milestone2Awarded ? 5 : (int)milestone2.event_count.participant.community),
-                        milestone2ParticipateOutdoors = milestone2Skipped ? -1 : (milestone2Awarded ? 5 : (int)milestone2.event_count.participant.outdoors),
-                        milestone2ParticipateCreative = milestone2Skipped ? -1 : (milestone2Awarded ? 5 : (int)milestone2.event_count.participant.creative),
-                        milestone2ParticipatePersonalGrowth = milestone2Skipped ? -1 : (milestone2Awarded ? 5 : (int)milestone2.event_count.participant.personal_growth),
-                        milestone2Assist = milestone2Skipped ? -1 : (milestone2Awarded ? 3 : (int)milestone2.event_count.assistant.community
+                        milestone2ParticipateCommunity = milestone2Skipped ? 0 : (milestone2Awarded ? 5 : (int)milestone2.event_count.participant.community),
+                        milestone2ParticipateOutdoors = milestone2Skipped ? 0 : (milestone2Awarded ? 5 : (int)milestone2.event_count.participant.outdoors),
+                        milestone2ParticipateCreative = milestone2Skipped ? 0 : (milestone2Awarded ? 5 : (int)milestone2.event_count.participant.creative),
+                        milestone2ParticipatePersonalGrowth = milestone2Skipped ? 0 : (milestone2Awarded ? 5 : (int)milestone2.event_count.participant.personal_growth),
+                        milestone2Assist = milestone2Skipped ? 0 : (milestone2Awarded ? 3 : (int)milestone2.event_count.assistant.community
                                                                                             + (int)milestone2.event_count.assistant.outdoors
                                                                                             + (int)milestone2.event_count.assistant.creative
                                                                                             + (int)milestone2.event_count.assistant.personal_growth),
-                        milestone2Lead = milestone2Skipped ? -1 : (milestone2Awarded ? 2 : (int)milestone2.event_count.leader.community
+                        milestone2Lead = milestone2Skipped ? 0 : (milestone2Awarded ? 2 : (int)milestone2.event_count.leader.community
                                                                                             + (int)milestone2.event_count.leader.outdoors
                                                                                             + (int)milestone2.event_count.leader.creative
                                                                                             + (int)milestone2.event_count.leader.personal_growth),
-                        milestone3ParticipateCommunity = milestone3Skipped ? -1 : (milestone3Awarded ? 4 : (int)milestone3.event_count.participant.community),
-                        milestone3ParticipateOutdoors = milestone3Skipped ? -1 : (milestone3Awarded ? 4 : (int)milestone3.event_count.participant.outdoors),
-                        milestone3ParticipateCreative = milestone3Skipped ? -1 : (milestone3Awarded ? 4 : (int)milestone3.event_count.participant.creative),
-                        milestone3ParticipatePersonalGrowth = milestone3Skipped ? -1 : (milestone3Awarded ? 4 : (int)milestone3.event_count.participant.personal_growth),
+                        milestone3ParticipateCommunity = milestone3Skipped ? 0 : (milestone3Awarded ? 4 : (int)milestone3.event_count.participant.community),
+                        milestone3ParticipateOutdoors = milestone3Skipped ? 0 : (milestone3Awarded ? 4 : (int)milestone3.event_count.participant.outdoors),
+                        milestone3ParticipateCreative = milestone3Skipped ? 0 : (milestone3Awarded ? 4 : (int)milestone3.event_count.participant.creative),
+                        milestone3ParticipatePersonalGrowth = milestone3Skipped ? 0 : (milestone3Awarded ? 4 : (int)milestone3.event_count.participant.personal_growth),
                         milestone3Assist = milestone3Awarded ? 4 : (int)milestone3.event_count.assistant.community
                                                                 + (int)milestone3.event_count.assistant.outdoors
                                                                 + (int)milestone3.event_count.assistant.creative

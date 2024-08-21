@@ -206,7 +206,7 @@ namespace Topo.Services
                         MemberId = member.id,
                         MemberName = $"{member.first_name} {member.last_name}",
                         MemberPatrol = member.patrol_name,
-                        MemberAnswer = null,
+                        MemberAnswer = "",
                         Answered = false,
                         Awarded = false
                     };
@@ -234,10 +234,12 @@ namespace Topo.Services
                             {
                                 if (answer.Key == "logbook_up_to_date" && answer.Value == "true")
                                 {
+                                    worksheetAnswer.MemberAnswer = "Yes";
                                     worksheetAnswer.Answered = true;
                                 }
                                 else
                                 {
+                                    worksheetAnswer.MemberAnswer = answer.Value;
                                     worksheetAnswer.Answered = true;
                                 }
                             }
@@ -273,7 +275,7 @@ namespace Topo.Services
                         {
                             if (worksheetAnswer != null)
                             {
-                                worksheetAnswer.MemberAnswer = importedDate;
+                                worksheetAnswer.MemberAnswer = importedDate.ToString("dd/MM/yy");
                                 worksheetAnswer.Answered = true;
                                 worksheetAnswer.Awarded = true;
                             }
@@ -292,7 +294,7 @@ namespace Topo.Services
                             if (worksheetAnswer != null)
                             {
                                 {
-                                    worksheetAnswer.MemberAnswer = memberAchievement.status_updated;
+                                    worksheetAnswer.MemberAnswer = memberAchievement.status_updated.ToString("dd/MM/yy");
                                     worksheetAnswer.Answered = true;
                                     worksheetAnswer.Awarded = true;
                                 }
@@ -310,7 +312,7 @@ namespace Topo.Services
                                 .FirstOrDefault();
                             if (worksheetAnswer != null)
                             {
-                                worksheetAnswer.MemberAnswer = memberAchievement.status_updated;
+                                worksheetAnswer.MemberAnswer = memberAchievement.status_updated.ToString("dd/MM/yy");
                                 worksheetAnswer.Answered = true;
                                 worksheetAnswer.Awarded = true;
                             }
@@ -332,7 +334,7 @@ namespace Topo.Services
                         .FirstOrDefault();
                     if (logbookUpToDate != null)
                     {
-                        logbookUpToDate.MemberAnswer = memberAchievement.status_updated;
+                        logbookUpToDate.MemberAnswer = memberAchievement.status_updated.ToString("dd/MM/yy");
                         logbookUpToDate.Answered = true;
                         logbookUpToDate.Awarded = true;
                     }
