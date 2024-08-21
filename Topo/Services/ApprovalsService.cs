@@ -38,6 +38,22 @@ namespace Topo.Services
                 var member = members.Where(m => m.id == approval.member.id).FirstOrDefault();
                 if (member != null)
                 {
+                    DateTime? awardedDate;
+                    switch (approval.submission.type)
+                    {
+                        case "review":
+                            awardedDate = (approval.submission.status == "finalised" && approval.submission.outcome == "approved") ? approval.submission.date : null;
+                            break;
+                        case "award":
+                            if (approval.submission.actioned_by.Length != 0)
+                            {
+                                //awardedDate = approval.submission.actioned_by.OrderBy(m => m.id).FirstOrDefault().;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+
                     approvals.Add(new ApprovalsListModel()
                     {
                         member_id = approval.member.id,

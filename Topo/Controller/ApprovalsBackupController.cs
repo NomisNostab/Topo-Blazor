@@ -36,7 +36,7 @@ namespace Topo.Controller
                 NavigationManager.NavigateTo("index");
 
             model.Units = _storageService.Units;
-            if (_storageService.UnitId != null)
+            if (!string.IsNullOrEmpty(_storageService.UnitId))
             {
                 model.SelectedUnitId = _storageService.UnitId;
                 model.SelectedUnitName = _storageService.UnitName;
