@@ -148,7 +148,7 @@ namespace Topo.Services
             eventListModel.EventDisplay = $"{eventListModel.EventName} {eventListModel.EventDate}";
             eventListModel.attendees = eventAttendance;
 
-            if (getEventResultModel != null && getEventResultModel.attendance != null && getEventResultModel.attendance.attendee_members != null && getEventResultModel.attendance.attendee_members.Any())
+            if (getEventResultModel != null && getEventResultModel.attendance != null && (getEventResultModel.attendance.attendee_members != null || getEventResultModel.attendance.participant_members != null))
             {
                 foreach (var attended in getEventResultModel.attendance.attendee_members)
                 {
@@ -173,11 +173,27 @@ namespace Topo.Services
                         });
                     }
                 }
-                foreach (var participated in getEventResultModel.attendance.participant_members)
+                foreach (var attended in getEventResultModel.attendance.participant_members)
                 {
-                    if (eventAttendance.Any(a => a.member_number == participated.member_number))
+                    if (eventAttendance.Any(a => a.member_number == attended.member_number))
                     {
-                        eventAttendance.Where(a => a.member_number == participated.member_number).Single().pal = "P";
+                        eventAttendance.Where(a => a.member_number == attended.member_number).Single().pal = "P";
+                    }
+                    else
+                    {
+                        // for older events participant_members seems to be used, not attendee_members
+                        // Load out of unit members
+                        eventAttendance.Add(new EventAttendance
+                        {
+                            id = attended.id,
+                            first_name = attended.first_name,
+                            last_name = attended.last_name,
+                            member_number = attended.member_number,
+                            patrol_name = "",
+                            isAdultMember = false,
+                            attended = true,
+                            pal = "P"
+                        });
                     }
                 }
                 foreach (var assisted in getEventResultModel.attendance.assistant_members)
@@ -192,21 +208,6 @@ namespace Topo.Services
                     if (eventAttendance.Any(a => a.member_number == lead.member_number))
                     {
                         eventAttendance.Where(a => a.member_number == lead.member_number).Single().pal = "L";
-                    }
-                }
-                eventListModel.attendees = eventAttendance;
-                return eventListModel;
-            }
-
-            // for older events participant_members seems to be used, not attendee_members
-            if (getEventResultModel != null && getEventResultModel.attendance != null && getEventResultModel.attendance.participant_members != null && getEventResultModel.attendance.participant_members.Any())
-            {
-                foreach (var attended in getEventResultModel.attendance.participant_members)
-                {
-                    if (eventAttendance.Any(a => a.member_number == attended.member_number))
-                    {
-                        eventAttendance.Where(a => a.member_number == attended.member_number).Single().attended = true;
-                        eventAttendance.Where(a => a.member_number == attended.member_number).Single().pal = "P";
                     }
                 }
                 eventListModel.attendees = eventAttendance;
