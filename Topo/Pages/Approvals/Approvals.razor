@@ -71,28 +71,23 @@
         <div class="col-sm-3">
             <button type="submit" name="button" class="btn btn-primary" @onclick="RefreshApprovalsClick">Refresh list</button>
         </div>
-        <div class="col-sm-3">
-            <a href="approvals/backup" class="btn btn-primary">Backup/Restore</a>
-        </div>
-        <div class="col-sm-4">
+        <div class="col-sm-7">
         </div>
     </div>
 
     <SfGrid @ref="GridInstance" DataSource="@model.Approvals" AllowGrouping="true" AllowFiltering="true">
         <GridGroupSettings Columns="@(new string[] {"achievement_name"})"></GridGroupSettings>
         <GridFilterSettings Type="FilterType.Excel"></GridFilterSettings>
-        <GridEditSettings AllowEditing="true" Mode="EditMode.Normal">
+        <GridEditSettings AllowEditing="false" Mode="EditMode.Normal">
         </GridEditSettings>
-        <GridEvents OnActionBegin="ActionBeginHandler" TValue="Model.Approvals.ApprovalsListModel"></GridEvents>
+        @* <GridEvents OnActionBegin="ActionBeginHandler" TValue="Model.Approvals.ApprovalsListModel"></GridEvents> *@
         <GridColumns>
             <GridColumn Field="achievement_id" HeaderText="Name" IsPrimaryKey="true" Visible="false"></GridColumn>
             <GridColumn Field="member_display_name" HeaderText="Name" AllowEditing="false"></GridColumn>
             <GridColumn Field="achievement_name" HeaderText="Achievement" AllowEditing="false" AllowFiltering="false"></GridColumn>
             <GridColumn Field="submission_type" HeaderText="Type" AllowEditing="false" AllowFiltering="false" AllowGrouping="false"></GridColumn>
-            <GridColumn Field="submission_outcome" HeaderText="Outcome" AllowEditing="false" AllowFiltering="false" AllowGrouping="false"></GridColumn>
-            <GridColumn Field="submission_status" HeaderText="Status" AllowEditing="false" AllowFiltering="true" AllowGrouping="false"></GridColumn>
             <GridColumn Field="awarded_date" HeaderText="Awarded" Format="dd/MM/yyyy" EditType="EditType.DatePickerEdit" Type="ColumnType.Date" AllowEditing="false" AllowFiltering="false" AllowGrouping="false"></GridColumn>
-            <GridColumn Field="presented_date" HeaderText="Presented" Format="dd/MM/yyyy" EditType="EditType.DatePickerEdit" Type="ColumnType.Date" AllowEditing="true" AllowFiltering="false" AllowGrouping="false" EditorSettings="@DateEditParams"></GridColumn>
+            <GridColumn Field="presented_date" HeaderText="Presented" Format="dd/MM/yyyy" EditType="EditType.DatePickerEdit" Type="ColumnType.Date" AllowEditing="false" AllowFiltering="false" AllowGrouping="false"></GridColumn>
         </GridColumns>
     </SfGrid>
 
