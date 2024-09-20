@@ -20,7 +20,10 @@ namespace Topo.Model.OAS
         [Display(Name = "Break by Patrol")]
         public bool BreakByPatrol { get; set; } = false;
         public string StagesErrorMessage { get; set; } = "";
-        public bool FormatLikeTerrain { get; set; } = false;
+        public bool FormatLikeTerrain { get; set; } = true;
         public string GroupName { get; set; } = string.Empty;
+        public bool UseCore { get; set; } = false;
+        public bool[] CoreStages {  get; set; } = new bool[9];
     }
+
 }
