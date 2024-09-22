@@ -102,6 +102,13 @@
             <div class="col-sm">
                 <button type="submit" name="button" @onclick="PatrolSheetPdfClick" class="btn btn-primary">Generate Patrol sheets (pdf)</button>
                 <button type="submit" name="button" @onclick="PatrolSheetXlsxClick" class="btn btn-success">Generate Patrol sheets (xlsx)</button>
+                <div class="form-check-inline">
+                    <InputCheckbox id="suppressLastName" class="form-check-input"
+                                   @bind-Value="model.SuppressLastName" />
+                    <label class="form-check-label" for="suppressLastName">
+                        Suppress Last Name
+                    </label>
+                </div>
             </div>
         </div>
     }
