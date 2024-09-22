@@ -13,5 +13,6 @@ namespace Topo.Model.Members
         [Display(Name = "Include Leaders")]
         public bool IncludeLeaders { get; set; } = false;
         public string GroupName { get; set; } = string.Empty;
+        public bool SuppressLastName { get; set; }
     }
 }

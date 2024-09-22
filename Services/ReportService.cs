@@ -537,7 +537,7 @@ namespace Topo.Services
             //Adding cell style.               
             IStyle headingStyle = workbook.Styles.Add("headingStyle");
             headingStyle.Font.Bold = true;
-            headingStyle.Font.Size = 40;
+            headingStyle.Font.Size = 30;
             headingStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
             headingStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
             headingStyle.WrapText = true;
