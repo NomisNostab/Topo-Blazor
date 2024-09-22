@@ -49,6 +49,7 @@ namespace Topo.Controller
             model.GroupName = _storageService.GroupNameDisplay;
             model.Units = _storageService.Units;
             model.Stages = await _oasService.GetOASStagesList();
+            model.SuppressLastName = _storageService.SuppressLastName;
             if (!string.IsNullOrEmpty(_storageService.UnitId))
             {
                 await UnitChange(_storageService.UnitId);
@@ -94,6 +95,7 @@ namespace Topo.Controller
 
         private async Task<byte[]> OASWorksheet(OutputType outputType = OutputType.PDF)
         {
+            _storageService.SuppressLastName = model.SuppressLastName;
             var sortedAnswers = new List<OASWorksheetAnswers>();
             foreach (var selectedStageTemplate in model.SelectedStages)
             {

@@ -142,7 +142,7 @@ namespace Topo.Services
                 }
                 wallchartItem.OASStageProgressions = oasResults.results.Where(o => o.status == "awarded" && o.section == _storageService.Section).Count();
                 // Member
-                wallchartItem.MemberName = $"{member.first_name} {member.last_name}";
+                wallchartItem.MemberName = $"{member.first_name} {_membersService.GetMemberLastName(selectedUnitId, member.id).Result}";
                 wallchartItem.MemberPatrol = member.patrol_name;
                 wallchartItem.IntroToScouting = await GetIntroToScouting(member.id);
                 wallchartItem.IntroToSection = await GetIntroToSection(member.id);
