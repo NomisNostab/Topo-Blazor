@@ -11,5 +11,6 @@ namespace Topo.Model.Milestone
         public string UnitId { get; set; } = string.Empty;
         public string UnitName { get; set; } = string.Empty;
         public string GroupName { get; set; } = string.Empty;
+        public bool SuppressLastName { get; set; }
     }
 }

@@ -24,6 +24,7 @@ namespace Topo.Model.OAS
         public string GroupName { get; set; } = string.Empty;
         public bool UseCore { get; set; } = false;
         public bool[] CoreStages {  get; set; } = new bool[9];
+        public bool SuppressLastName { get; set; }
     }
 
 }

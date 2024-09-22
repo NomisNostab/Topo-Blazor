@@ -204,7 +204,7 @@ namespace Topo.Services
                         InputTitleSortIndex = item.InputGroupSort,
                         InputSortIndex = item.Id,
                         MemberId = member.id,
-                        MemberName = $"{member.first_name} {member.last_name}",
+                        MemberName = $"{member.first_name} {_membersService.GetMemberLastName(selectedUnitId, member.id).Result}",
                         MemberPatrol = member.patrol_name,
                         MemberAnswer = "",
                         Answered = false,

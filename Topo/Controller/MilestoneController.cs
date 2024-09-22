@@ -39,6 +39,7 @@ namespace Topo.Controller
             model.UnitName = _storageService.UnitName;
             model.GroupName = _storageService.GroupNameDisplay;
             model.Units = _storageService.Units;
+            model.SuppressLastName = _storageService.SuppressLastName;
         }
 
         internal async Task UnitChange(ChangeEventArgs e)
@@ -75,6 +76,7 @@ namespace Topo.Controller
 
         private async Task<byte[]> MilestoneReport(OutputType outputType = OutputType.PDF)
         {
+            _storageService.SuppressLastName = model.SuppressLastName;
             var milestoneSummaries = await _milestoneService.GetMilestoneSummaries(model.UnitId);
 
             var groupName = _storageService.GroupName ?? "";
