@@ -43,6 +43,7 @@ namespace Topo.Controller
 
             model.GroupName = _storageService.GroupNameDisplay;
             model.Units = _storageService.Units;
+            model.SuppressLastName = _storageService.SuppressLastName;
         }
 
         internal async Task UnitChange(ChangeEventArgs e)
@@ -90,6 +91,7 @@ namespace Topo.Controller
         private async Task<byte[]> WallchartReport(OutputType outputType = OutputType.PDF)
         {
             model.ErrorMessage = "";
+            _storageService.SuppressLastName = model.SuppressLastName;
             var wallchartItems = await _wallchartService.GetWallchartItems(model.UnitId);
             if (wallchartItems.Count == 0)
             {

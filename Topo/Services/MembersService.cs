@@ -8,6 +8,7 @@ namespace Topo.Services
         public Task<List<MemberListModel>> GetMembersAsync(string unitId);
         public void ClearMemberCache(string unitId);
         public Task<MemberListModel> GetMember(string unitId, string memberId);
+        public Task<string> GetMemberLastName(string unitId, string memberId);
     }
 
     public class MembersService : IMembersService
@@ -86,6 +87,25 @@ namespace Topo.Services
             var members = await GetMembersAsync(unitId);
             var member = members.Where(m => m.id == memberId).FirstOrDefault();
             return member ?? new MemberListModel();
+        }
+
+        public async Task<string> GetMemberLastName(string unitId, string memberId)
+        {
+            var members = await GetMembersAsync(unitId);
+            var member = members.Where(m => m.id == memberId).FirstOrDefault();
+            if (member == null || string.IsNullOrEmpty(member.last_name))
+            {
+                return "";
+            }
+            if (_storageService.SuppressLastName)
+            {
+                var lastName = member.last_name.Substring(0, 1).ToUpper();
+                return lastName;
+            }
+            else
+            {
+                return member.last_name;
+            }
         }
 
         private string GetAgeFromBirthdate(string dateOfBirth)

@@ -17,7 +17,7 @@ namespace Topo.Controller
         [Inject]
         public StorageService _storageService { get; set; }
 
-        [Inject] 
+        [Inject]
         IJSRuntime JS { get; set; }
 
         [Inject]
@@ -35,6 +35,7 @@ namespace Topo.Controller
 
             model.Units = _storageService.Units;
             model.GroupName = _storageService.GroupNameDisplay;
+            model.SuppressLastName = _storageService.SuppressLastName;
             if (!string.IsNullOrEmpty(_storageService.UnitId))
             {
                 await UnitChange(_storageService.UnitId);
@@ -55,7 +56,7 @@ namespace Topo.Controller
                 _storageService.UnitId = model.UnitId;
                 model.UnitName = _storageService.UnitName;
                 model.Members = new List<MemberListModel>();
-                return; 
+                return;
             }
             model.UnitId = unitId;
             _storageService.UnitId = model.UnitId;
@@ -151,7 +152,21 @@ namespace Topo.Controller
             var groupName = _storageService.GroupName ?? "Group Name";
             var unitName = _storageService.UnitName ?? "Unit Name";
             var section = _storageService.Section;
-            var sortedMemberList = model.Members.Where(m => m.isAdultLeader == 0).OrderBy(m => m.patrol_name).ToList();
+            _storageService.SuppressLastName = model.SuppressLastName;
+            List<MemberListModel> sortedMemberList = new List<MemberListModel>();
+            foreach (var member in model.Members.Where(m => m.isAdultLeader == 0).OrderBy(m => m.patrol_name))
+            {
+                string lastName = _storageService.SuppressLastName ? member.last_name.Substring(0, 1).ToUpper() : member.last_name;
+                MemberListModel memberCopy = new MemberListModel
+                {
+                    patrol_name = member.patrol_name,
+                    first_name = member.first_name,
+                    last_name = lastName,
+                    isAdultLeader = member.isAdultLeader,
+                    patrol_duty = member.patrol_duty
+                };
+                sortedMemberList.Add(memberCopy);
+            }
             var serialisedSortedMemberList = JsonConvert.SerializeObject(sortedMemberList);
 
             var report = await _reportService.GetPatrolSheetsReport(groupName, section, unitName, outputType, serialisedSortedMemberList);

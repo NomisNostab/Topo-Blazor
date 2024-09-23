@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Data.SqlTypes;
+using System.Reflection;
 using Topo.Model.AdditionalAwards;
 using Topo.Model.Login;
 using Topo.Model.Members;
@@ -14,6 +15,7 @@ namespace Topo.Services
         private bool _isAuthenticated;
         private bool _isYouthMember;
         private string _unitId = string.Empty;
+
         public bool IsAuthenticated
         {
             get { return _isAuthenticated; }
@@ -123,6 +125,8 @@ namespace Topo.Services
             }
         }
 
-        public string Version = "1.60";
+        public bool SuppressLastName { get; set; }
+
+        public string Version = "1.61";
     }
 }
