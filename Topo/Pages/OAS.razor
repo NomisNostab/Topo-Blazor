@@ -29,7 +29,7 @@
 
     <div class="form-group mb-3 row">
         <label for="stages" class="col-sm-2 col-form-label">Please select a Stage:</label>
-        <div class="col-sm-3 ">
+        <div class="col-sm-7 ">
             <select @ref="_select2Reference" id="stages" class="form-select select2" multiple @bind="model.SelectedStages">
                 @foreach (var groupedStage in @model.Stages.GroupBy(s => s.Stream))
                 {
@@ -42,7 +42,121 @@
             </select>
             <label class="col-form-label validation-message">@model.StagesErrorMessage</label>
         </div>
-        <div class="col-sm-7">
+        <div class="col-sm-3">
+        </div>
+    </div>
+
+    <div class="mt-3 mb-3 row">
+        <div class="col-sm-2">
+            <input class="form-check-input" type="checkbox" id="useCore"
+                   checked="@model.UseCore"
+                   @bind-value="model.UseCore"
+                   @bind-value:event="oninput"
+                   @onchange="GetCoreSelections" />
+            <label class="form-check-label" for="useCore">
+                Select Core OAS
+            </label>
+        </div>
+        <div class="col-sm-1">
+            <input class="form-check-input" type="checkbox" id="useCoreStage1"
+                   checked="@model.CoreStages[0]"
+                   @bind-value="model.CoreStages[0]"
+                   @bind-value:event="oninput"
+                   @onchange="GetCoreSelections"
+                   disabled="@(!model.UseCore)" />
+            <label class="form-check-label" for="useCoreStage1">
+                Stage 1
+            </label>
+        </div>
+        <div class="col-sm-1">
+            <input class="form-check-input" type="checkbox" id="useCoreStage2"
+                   checked="@model.CoreStages[1]"
+                   @bind-value="model.CoreStages[1]"
+                   @bind-value:event="oninput"
+                   @onchange="GetCoreSelections"
+                   disabled="@(!model.UseCore)" />
+            <label class="form-check-label" for="useCoreStage2">
+                Stage 2
+            </label>
+        </div>
+        <div class="col-sm-1">
+            <input class="form-check-input" type="checkbox" id="useCoreStage3"
+                   checked="@model.CoreStages[2]"
+                   @bind-value="model.CoreStages[2]"
+                   @bind-value:event="oninput"
+                   @onchange="GetCoreSelections"
+                   disabled="@(!model.UseCore)" />
+            <label class="form-check-label" for="useCoreStage3">
+                Stage 3
+            </label>
+        </div>
+        <div class="col-sm-1">
+            <input class="form-check-input" type="checkbox" id="useCoreStage4"
+                   checked="@model.CoreStages[3]"
+                   @bind-value="model.CoreStages[3]"
+                   @bind-value:event="oninput"
+                   @onchange="GetCoreSelections"
+                   disabled="@(!model.UseCore)" />
+            <label class="form-check-label" for="useCoreStage4">
+                Stage 4
+            </label>
+        </div>
+        <div class="col-sm-1">
+            <input class="form-check-input" type="checkbox" id="useCoreStage5"
+                   checked="@model.CoreStages[4]"
+                   @bind-value="model.CoreStages[4]"
+                   @bind-value:event="oninput"
+                   @onchange="GetCoreSelections"
+                   disabled="@(!model.UseCore)" />
+            <label class="form-check-label" for="useCoreStage5">
+                Stage 5
+            </label>
+        </div>
+        <div class="col-sm-1">
+            <input class="form-check-input" type="checkbox" id="useCoreStage6"
+                   checked="@model.CoreStages[5]"
+                   @bind-value="model.CoreStages[5]"
+                   @bind-value:event="oninput"
+                   @onchange="GetCoreSelections"
+                   disabled="@(!model.UseCore)" />
+            <label class="form-check-label" for="useCoreStage6">
+                Stage 6
+            </label>
+        </div>
+        <div class="col-sm-1">
+            <input class="form-check-input" type="checkbox" id="useCoreStage7"
+                   checked="@model.CoreStages[6]"
+                   @bind-value="model.CoreStages[6]"
+                   @bind-value:event="oninput"
+                   @onchange="GetCoreSelections"
+                   disabled="@(!model.UseCore)" />
+            <label class="form-check-label" for="useCoreStage7">
+                Stage 7
+            </label>
+        </div>
+        <div class="col-sm-1">
+            <input class="form-check-input" type="checkbox" id="useCoreStage8"
+                   checked="@model.CoreStages[7]"
+                   @bind-value="model.CoreStages[7]"
+                   @bind-value:event="oninput"
+                   @onchange="GetCoreSelections"
+                   disabled="@(!model.UseCore)" />
+            <label class="form-check-label" for="useCoreStage8">
+                Stage 8
+            </label>
+        </div>
+        <div class="col-sm-1">
+            <input class="form-check-input" type="checkbox" id="useCoreStage9"
+                   checked="@model.CoreStages[8]"
+                   @bind-value="model.CoreStages[8]"
+                   @bind-value:event="oninput"
+                   @onchange="GetCoreSelections"
+                   disabled="@(!model.UseCore)" />
+            <label class="form-check-label" for="useCoreStage9">
+                Stage 9
+            </label>
+        </div>
+        <div class="col-sm-1">
         </div>
     </div>
 
@@ -69,6 +183,11 @@
             </label>
         </div>
         <div class="col-sm-3">
+            <InputCheckbox id="suppressLastName" class="form-check-input"
+                           @bind-Value="model.SuppressLastName" />
+            <label class="form-check-label" for="suppressLastName">
+                Suppress Last Name
+            </label>
         </div>
     </div>
 

@@ -537,7 +537,7 @@ namespace Topo.Services
             //Adding cell style.               
             IStyle headingStyle = workbook.Styles.Add("headingStyle");
             headingStyle.Font.Bold = true;
-            headingStyle.Font.Size = 40;
+            headingStyle.Font.Size = 30;
             headingStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
             headingStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
             headingStyle.WrapText = true;
@@ -1111,7 +1111,16 @@ namespace Topo.Services
             foreach (var groupedAnswer in groupedAnswers.OrderBy(ga => ga.Key))
             {
                 columnNumber++;
-                sheet.Range[rowNumber, columnNumber].Text = groupedAnswer.Key;
+                string memberName;
+                if (groupedAnswer.Key.Contains('|'))
+                {
+                    memberName = groupedAnswer.Key.Split("|")[0];
+                }
+                else
+                {
+                    memberName = groupedAnswer.Key;
+                }
+                sheet.Range[rowNumber, columnNumber].Text = memberName;
                 sheet.Range[rowNumber, columnNumber].BorderAround();
                 sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, columnNumber].CellStyle.Rotation = 90;
@@ -1199,7 +1208,16 @@ namespace Topo.Services
             foreach (var groupedAnswer in groupedAnswers.OrderBy(ga => ga.Key))
             {
                 columnNumber++;
-                sheet.Range[rowNumber, columnNumber].Text = groupedAnswer.Key;
+                string memberName;
+                if (groupedAnswer.Key.Contains('|'))
+                {
+                    memberName = groupedAnswer.Key.Split("|")[0];
+                }
+                else
+                {
+                    memberName = groupedAnswer.Key;
+                }
+                sheet.Range[rowNumber, columnNumber].Text = memberName;
                 sheet.Range[rowNumber, columnNumber].BorderAround();
                 sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
 
@@ -1272,7 +1290,7 @@ namespace Topo.Services
                 sheet.SetRowHeight(rowNumber, 25);
 
                 rowNumber++;
-                IList<IGrouping<string, OASWorksheetAnswers>> groupedAnswers = templatAnswerGroup.GroupBy(x => x.MemberName).ToList();
+                IList<IGrouping<string, OASWorksheetAnswers>> groupedAnswers = templatAnswerGroup.GroupBy(x => x.MemberName + "|" + x.MemberId).ToList();
 
                 if (formatLikeTerrain)
                     GenerateOASWorksheetBodyLikeTerrain(sheet, groupedAnswers, ref rowNumber, ref columnNumber);

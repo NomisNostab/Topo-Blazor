@@ -28,6 +28,18 @@
     </div>
 
     <div class="mt-3 mb-3 row">
+        <div class="col-sm-3">
+            <InputCheckbox id="suppressLastName" class="form-check-input"
+                           @bind-Value="model.SuppressLastName" />
+            <label class="form-check-label" for="suppressLastName">
+                Suppress Last Name
+            </label>
+        </div>
+        <div class="col-sm-9">
+        </div>
+    </div>
+
+    <div class="mt-3 mb-3 row">
         <div class="col-sm">
             <button type="submit" name="button" @onclick="MilestoneReportPdfClick" class="btn btn-primary">Milestone Report (pdf)</button>
             <button type="submit" name="button" @onclick="MilestoneReportXlsxClick" class="btn btn-success">Milestone Report (xlsx)</button>
