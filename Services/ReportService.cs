@@ -1761,7 +1761,7 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 43].Text = " PEAK AWARD";
                 sheet.SetRowHeight(rowNumber, 120);
 
-                foreach (var wallchartEntry in templatAnswerGroup)
+                foreach (var wallchartEntry in templatAnswerGroup.OrderBy(x => x.MemberName))
                 {
                     rowNumber++;
                     sheet.Range[rowNumber, 1].Text = wallchartEntry.MemberName;
