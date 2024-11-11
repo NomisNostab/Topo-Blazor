@@ -47,7 +47,7 @@ namespace Topo.Controller
             model.Units = _storageService.Units;
             model.ApprovalSearchFromDate = DateTime.Now.AddMonths(-2);
             model.ApprovalSearchToDate = DateTime.Now;
-            if (_storageService.UnitId != null)
+            if (!string.IsNullOrEmpty(_storageService.UnitId))
             {
                 model.UnitId = _storageService.UnitId;
                 model.UnitName = _storageService.UnitName;
@@ -70,7 +70,7 @@ namespace Topo.Controller
                 model.Approvals = await _approvalsService.GetApprovalListItems(_storageService.UnitId);
                 model.Approvals = model.Approvals?.Where(a => a.submission_date >= model.ApprovalSearchFromDate && a.submission_date <= model.ApprovalSearchToDate.AddDays(1)).ToList() ?? new List<ApprovalsListModel>();
                 if (model.ToBePresented)
-                    model.Approvals = model.Approvals.Where(a => !string.IsNullOrEmpty(a.submission_outcome) && !a.presented_date.HasValue).ToList();
+                    model.Approvals = model.Approvals.Where(a => a.submission_type == "Award" && !a.presented_date.HasValue).ToList();
                 if (model.IsPresented)
                     model.Approvals = model.Approvals.Where(a => a.presented_date.HasValue && a.presented_date != a.awarded_date).ToList();
                 if (!model.ShowRejected)

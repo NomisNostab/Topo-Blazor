@@ -26,6 +26,7 @@
         public string branch { get; set; } = string.Empty;
         public int stage { get; set; }
         public string stream { get; set; } = string.Empty;
+        public string sia_area {  get; set; } = string.Empty;
     }
 
     public class Submission
@@ -40,9 +41,12 @@
 
     public class Actioned_By
     {
-        public string id { get; set; } = string.Empty;
-        public string first_name { get; set; } = string.Empty;
-        public string last_name { get; set; } = string.Empty;
+        public string member_id { get; set; } = string.Empty;
+        public string member_first_name { get; set; } = string.Empty;
+        public string member_last_name { get; set; } = string.Empty;
+        public string outcome { get; set; } = string.Empty;
+        public DateTime time{ get; set; }
+        public string date_awarded { get; set; }
     }
 
     public class Unit_Permissions
