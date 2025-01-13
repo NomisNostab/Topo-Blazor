@@ -92,10 +92,12 @@ namespace Topo.Services
                                                                                             + (int)milestone1.event_count.assistant.outdoors
                                                                                             + (int)milestone1.event_count.assistant.creative
                                                                                             + (int)milestone1.event_count.assistant.personal_growth),
+                        milestone1AssistArea = milestone1Skipped ? "" : FormatMilestoneChallengeArea(milestone1.event_count.assistant),
                         milestone1Lead = milestone1Skipped ? 0 : (milestone1Awarded ? 1 : (int)milestone1.event_count.leader.community
                                                                                             + (int)milestone1.event_count.leader.outdoors
                                                                                             + (int)milestone1.event_count.leader.creative
                                                                                             + (int)milestone1.event_count.leader.personal_growth),
+                        milestone1LeadArea = milestone1Skipped ? "" : FormatMilestoneChallengeArea(milestone1.event_count.leader),
                         milestone2ParticipateCommunity = milestone2Skipped ? 0 : (milestone2Awarded ? 5 : (int)milestone2.event_count.participant.community),
                         milestone2ParticipateOutdoors = milestone2Skipped ? 0 : (milestone2Awarded ? 5 : (int)milestone2.event_count.participant.outdoors),
                         milestone2ParticipateCreative = milestone2Skipped ? 0 : (milestone2Awarded ? 5 : (int)milestone2.event_count.participant.creative),
@@ -104,10 +106,12 @@ namespace Topo.Services
                                                                                             + (int)milestone2.event_count.assistant.outdoors
                                                                                             + (int)milestone2.event_count.assistant.creative
                                                                                             + (int)milestone2.event_count.assistant.personal_growth),
+                        milestone2AssistArea = milestone2Skipped ? "" : FormatMilestoneChallengeArea(milestone2.event_count.assistant),
                         milestone2Lead = milestone2Skipped ? 0 : (milestone2Awarded ? 2 : (int)milestone2.event_count.leader.community
                                                                                             + (int)milestone2.event_count.leader.outdoors
                                                                                             + (int)milestone2.event_count.leader.creative
                                                                                             + (int)milestone2.event_count.leader.personal_growth),
+                        milestone2LeadArea = milestone2Skipped ? "" : FormatMilestoneChallengeArea(milestone2.event_count.leader),
                         milestone3ParticipateCommunity = milestone3Skipped ? 0 : (milestone3Awarded ? 4 : (int)milestone3.event_count.participant.community),
                         milestone3ParticipateOutdoors = milestone3Skipped ? 0 : (milestone3Awarded ? 4 : (int)milestone3.event_count.participant.outdoors),
                         milestone3ParticipateCreative = milestone3Skipped ? 0 : (milestone3Awarded ? 4 : (int)milestone3.event_count.participant.creative),
@@ -116,13 +120,24 @@ namespace Topo.Services
                                                                 + (int)milestone3.event_count.assistant.outdoors
                                                                 + (int)milestone3.event_count.assistant.creative
                                                                 + (int)milestone3.event_count.assistant.personal_growth,
+                        milestone3AssistArea = milestone3Skipped ? "" : FormatMilestoneChallengeArea(milestone3.event_count.assistant),
                         milestone3Lead = milestone3Awarded ? 4 : (int)milestone3.event_count.leader.community
                                                                 + (int)milestone3.event_count.leader.outdoors
                                                                 + (int)milestone3.event_count.leader.creative
                                                                 + (int)milestone3.event_count.leader.personal_growth,
+                        milestone3LeadArea = milestone3Skipped ? "" : FormatMilestoneChallengeArea(milestone3.event_count.leader)
                     });
             }
             return unitMilestoneSummary;
+        }
+
+        private string FormatMilestoneChallengeArea(PALEventCount eventCount)
+        {
+            var community = (int)eventCount.community == 1 ? "Co " : (int)eventCount.community > 1 ? $"Co-{(int)eventCount.community} " : "";
+            var outdoors = (int)eventCount.outdoors == 1 ? "O " : (int)eventCount.outdoors > 1 ? $"O-{(int)eventCount.outdoors} " : "";
+            var creative = (int)eventCount.creative == 1 ? "Cr " : (int)eventCount.creative > 1 ? $"Cr-{(int)eventCount.creative} " : "";
+            var personalGrowth = (int)eventCount.personal_growth == 1 ? "PG " : (int)eventCount.personal_growth > 1 ? $"PG-{(int)eventCount.personal_growth} " : "";
+            return  (community + outdoors + creative + personalGrowth).TrimEnd();
         }
 
         private int CalculateMilestonePercentComplete(int currentLevel, Event_Count eventCount)
