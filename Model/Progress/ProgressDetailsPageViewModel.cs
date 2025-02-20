@@ -39,6 +39,8 @@ namespace Topo.Model.Progress
         public string ChallengeArea { get; set; } = string.Empty;
         public string EventName { get; set; } = string.Empty;
         public DateTime EventDate { get; set; }
+
+        public string ChallengeAreaAbbrev => ChallengeArea == "community" ? "(Co)" : ChallengeArea == "creative" ? "(Cr)" : ChallengeArea == "outdoors" ? "(O)" : ChallengeArea == "personal_growth" ? "(PG)" : "";
     }
 
     public class OASSummary

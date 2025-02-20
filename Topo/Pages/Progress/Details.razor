@@ -129,7 +129,7 @@
                                     @foreach (var milestoneEvent in milestone.AssistLogs)
                                     {
                                         <div class="col-sm-2">
-                                            <span>@milestoneEvent.EventName</span><span><br />@milestoneEvent.EventDate.ToString("dd/MM/yy")</span>
+                                            <span>@milestoneEvent.EventName</span><span><br />@milestoneEvent.EventDate.ToString("dd/MM/yy") @milestoneEvent.ChallengeAreaAbbrev</span>
                                         </div>
                                     }
                                 </div>
@@ -144,7 +144,7 @@
                                     @foreach (var milestoneEvent in milestone.LeadLogs)
                                     {
                                         <div class="col-sm-2">
-                                            <span>@milestoneEvent.EventName</span><span><br />@milestoneEvent.EventDate.ToString("dd/MM/yy")</span>
+                                            <span>@milestoneEvent.EventName</span><span><br />@milestoneEvent.EventDate.ToString("dd/MM/yy") @milestoneEvent.ChallengeAreaAbbrev</span>
                                         </div>
                                     }
                                 </div>
