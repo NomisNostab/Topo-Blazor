@@ -1410,9 +1410,9 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 3].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, 3].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
                 sheet.Range[rowNumber, 3].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                sheet.Range[rowNumber, 3, rowNumber, 8].Merge();
-                sheet.Range[rowNumber, 3, rowNumber, 8].BorderAround();
-                sheet.Range[rowNumber, 3, rowNumber, 8].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                sheet.Range[rowNumber, 3, rowNumber, 10].Merge();
+                sheet.Range[rowNumber, 3, rowNumber, 10].BorderAround();
+                sheet.Range[rowNumber, 3, rowNumber, 10].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
                 sheet.SetRowHeight(rowNumber, 20);
 
                 rowNumber++;
@@ -1452,16 +1452,30 @@ namespace Topo.Services
                 sheet.Range[rowNumber - 1, 7, rowNumber, 7].Merge();
                 sheet.Range[rowNumber - 1, 7, rowNumber, 7].BorderAround();
                 sheet.Range[rowNumber - 1, 7, rowNumber, 7].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
-                sheet.Range[rowNumber, 8].Text = GetLeadHeadingText(milestoneSummary.Key);
+                sheet.Range[rowNumber, 8].Text = GetAssistHeadingText(milestoneSummary.Key) + " Areas";
                 sheet.Range[rowNumber, 8].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, 8].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                sheet.Range[rowNumber, 8].CellStyle.WrapText = true;
                 sheet.Range[rowNumber - 1, 8, rowNumber, 8].Merge();
                 sheet.Range[rowNumber - 1, 8, rowNumber, 8].BorderAround();
                 sheet.Range[rowNumber - 1, 8, rowNumber, 8].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                sheet.Range[rowNumber, 9].Text = GetLeadHeadingText(milestoneSummary.Key);
+                sheet.Range[rowNumber, 9].CellStyle.Font.Bold = true;
+                sheet.Range[rowNumber, 9].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                sheet.Range[rowNumber - 1, 9, rowNumber, 9].Merge();
+                sheet.Range[rowNumber - 1, 9, rowNumber, 9].BorderAround();
+                sheet.Range[rowNumber - 1, 9, rowNumber, 9].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                sheet.Range[rowNumber, 10].Text = GetLeadHeadingText(milestoneSummary.Key) + " Areas";
+                sheet.Range[rowNumber, 10].CellStyle.Font.Bold = true;
+                sheet.Range[rowNumber, 10].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                sheet.Range[rowNumber, 10].CellStyle.WrapText = true;
+                sheet.Range[rowNumber - 1, 10, rowNumber, 10].Merge();
+                sheet.Range[rowNumber - 1, 10, rowNumber, 10].BorderAround();
+                sheet.Range[rowNumber - 1, 10, rowNumber, 10].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
 
-                sheet.Range[rowNumber, 1, rowNumber, 8].CellStyle.VerticalAlignment = ExcelVAlign.VAlignBottom;
-                sheet.Range[rowNumber, 1, rowNumber, 8].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                sheet.Range[rowNumber, 1, rowNumber, 8].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                sheet.Range[rowNumber, 1, rowNumber, 10].CellStyle.VerticalAlignment = ExcelVAlign.VAlignBottom;
+                sheet.Range[rowNumber, 1, rowNumber, 10].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                sheet.Range[rowNumber, 1, rowNumber, 10].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
                 sheet.SetRowHeight(rowNumber, 35);
 
                 averageStartRow = rowNumber + 1;
@@ -1482,7 +1496,9 @@ namespace Topo.Services
                             SetMilestoneCell(sheet.Range[rowNumber, 5], 1, participateAssistLead.participate, memberSummary.milestone1ParticipateCreative);
                             SetMilestoneCell(sheet.Range[rowNumber, 6], 1, participateAssistLead.participate, memberSummary.milestone1ParticipatePersonalGrowth);
                             SetMilestoneCell(sheet.Range[rowNumber, 7], 1, participateAssistLead.assist, memberSummary.milestone1Assist);
-                            SetMilestoneCell(sheet.Range[rowNumber, 8], 1, participateAssistLead.lead, memberSummary.milestone1Lead);
+                            SetMilestoneCell(sheet.Range[rowNumber, 8], 1, participateAssistLead.assist, memberSummary.milestone1Assist, memberSummary.milestone1AssistArea);
+                            SetMilestoneCell(sheet.Range[rowNumber, 9], 1, participateAssistLead.lead, memberSummary.milestone1Lead);
+                            SetMilestoneCell(sheet.Range[rowNumber, 10], 1, participateAssistLead.lead, memberSummary.milestone1Lead, memberSummary.milestone1LeadArea);
                             break;
                         case 2:
                             SetMilestoneCell(sheet.Range[rowNumber, 3], 2, participateAssistLead.participate, memberSummary.milestone2ParticipateCommunity);
@@ -1490,7 +1506,9 @@ namespace Topo.Services
                             SetMilestoneCell(sheet.Range[rowNumber, 5], 2, participateAssistLead.participate, memberSummary.milestone2ParticipateCreative);
                             SetMilestoneCell(sheet.Range[rowNumber, 6], 2, participateAssistLead.participate, memberSummary.milestone2ParticipatePersonalGrowth);
                             SetMilestoneCell(sheet.Range[rowNumber, 7], 2, participateAssistLead.assist, memberSummary.milestone2Assist);
-                            SetMilestoneCell(sheet.Range[rowNumber, 8], 2, participateAssistLead.lead, memberSummary.milestone2Lead);
+                            SetMilestoneCell(sheet.Range[rowNumber, 8], 2, participateAssistLead.assist, memberSummary.milestone2Assist, memberSummary.milestone2AssistArea);
+                            SetMilestoneCell(sheet.Range[rowNumber, 9], 2, participateAssistLead.lead, memberSummary.milestone2Lead);
+                            SetMilestoneCell(sheet.Range[rowNumber, 10], 2, participateAssistLead.lead, memberSummary.milestone2Lead, memberSummary.milestone2LeadArea);
                             break;
                         case 3:
                             SetMilestoneCell(sheet.Range[rowNumber, 3], 3, participateAssistLead.participate, memberSummary.milestone3ParticipateCommunity);
@@ -1498,7 +1516,9 @@ namespace Topo.Services
                             SetMilestoneCell(sheet.Range[rowNumber, 5], 3, participateAssistLead.participate, memberSummary.milestone3ParticipateCreative);
                             SetMilestoneCell(sheet.Range[rowNumber, 6], 3, participateAssistLead.participate, memberSummary.milestone3ParticipatePersonalGrowth);
                             SetMilestoneCell(sheet.Range[rowNumber, 7], 3, participateAssistLead.assist, memberSummary.milestone3Assist);
-                            SetMilestoneCell(sheet.Range[rowNumber, 8], 3, participateAssistLead.lead, memberSummary.milestone3Lead);
+                            SetMilestoneCell(sheet.Range[rowNumber, 8], 3, participateAssistLead.assist, memberSummary.milestone3Assist, memberSummary.milestone3AssistArea);
+                            SetMilestoneCell(sheet.Range[rowNumber, 9], 3, participateAssistLead.lead, memberSummary.milestone3Lead);
+                            SetMilestoneCell(sheet.Range[rowNumber, 10], 3, participateAssistLead.lead, memberSummary.milestone3Lead, memberSummary.milestone3LeadArea);
                             break;
                     }
                     sheet.Range[rowNumber, 3].BorderAround();
@@ -1507,7 +1527,9 @@ namespace Topo.Services
                     sheet.Range[rowNumber, 6].BorderAround();
                     sheet.Range[rowNumber, 7].BorderAround();
                     sheet.Range[rowNumber, 8].BorderAround();
-                    sheet.Range[rowNumber, 2, rowNumber, 8].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                    sheet.Range[rowNumber, 9].BorderAround();
+                    sheet.Range[rowNumber, 10].BorderAround();
+                    sheet.Range[rowNumber, 2, rowNumber, 10].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 }
 
                 // Add average row
@@ -1515,16 +1537,19 @@ namespace Topo.Services
                 rowNumber++;
                 sheet.Range[rowNumber, 2].Text = "Average";
                 sheet.Range[rowNumber, 2].BorderAround();
-                for (int i = 3; i <= 8; i++)
+                for (int i = 3; i <= 10; i++)
                 {
-                    var avgRange = sheet.Range[averageStartRow, i, averageEndRow, i].AddressLocal;
-                    sheet.Range[rowNumber, i].Formula = $"=AVERAGE({avgRange})";
-                    sheet.Range[rowNumber, i].NumberFormat = "0.0";
+                    if (!(i == 8 || i == 10)) // Don't total area text cols
+                    {
+                        var avgRange = sheet.Range[averageStartRow, i, averageEndRow, i].AddressLocal;
+                        sheet.Range[rowNumber, i].Formula = $"=AVERAGE({avgRange})";
+                        sheet.Range[rowNumber, i].NumberFormat = "0.0";
+                    }
                     sheet.Range[rowNumber, i].BorderAround();
                     sheet.Range[rowNumber, i].CellStyle.Font.Bold = true;
                     sheet.Range[rowNumber, i].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 }
-                sheet.Range[rowNumber, 2, rowNumber, 8].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                sheet.Range[rowNumber, 2, rowNumber, 10].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
 
                 rowNumber++;
                 rowNumber++;
@@ -1538,6 +1563,8 @@ namespace Topo.Services
             sheet.SetColumnWidth(6, 10);
             sheet.SetColumnWidth(7, 10);
             sheet.SetColumnWidth(8, 10);
+            sheet.SetColumnWidth(9, 10);
+            sheet.SetColumnWidth(10, 10);
 
             sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
             sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
@@ -2063,7 +2090,7 @@ namespace Topo.Services
                 foreach (var milestoneEvent in milestone.AssistLogs)
                 {
                     cellNumber++;
-                    sheet.Range[rowNumber, cellNumber].Text = milestoneEvent.EventName;
+                    sheet.Range[rowNumber, cellNumber].Text = $"{milestoneEvent.EventName} {milestoneEvent.ChallengeAreaAbbrev}";
                     sheet.Range[rowNumber + 1, cellNumber].DateTime = milestoneEvent.EventDate;
                     sheet.Range[rowNumber + 1, cellNumber].HorizontalAlignment = ExcelHAlign.HAlignLeft;
                 }
@@ -2075,7 +2102,7 @@ namespace Topo.Services
                 foreach (var milestoneEvent in milestone.LeadLogs)
                 {
                     cellNumber++;
-                    sheet.Range[rowNumber, cellNumber].Text = milestoneEvent.EventName;
+                    sheet.Range[rowNumber, cellNumber].Text = $"{milestoneEvent.EventName} {milestoneEvent.ChallengeAreaAbbrev}";
                     sheet.Range[rowNumber + 1, cellNumber].DateTime = milestoneEvent.EventDate;
                     sheet.Range[rowNumber + 1, cellNumber].HorizontalAlignment = ExcelHAlign.HAlignLeft;
                 }
@@ -2599,6 +2626,13 @@ namespace Topo.Services
             cell.Number = count;
             cell.CellStyle.Color = GetMilestoneProgressColour(currentLevel, pal, count);
         }
+
+        private void SetMilestoneCell(IRange cell, int currentLevel, participateAssistLead pal, int count, string areas)
+        {
+            cell.Text = areas;
+            cell.CellStyle.Color = GetMilestoneProgressColour(currentLevel, pal, count);
+        }
+
         private Color GetMilestoneProgressColour(int currentLevel, participateAssistLead pal, int count)
         {
             // Skipped milestones have a count of -1
