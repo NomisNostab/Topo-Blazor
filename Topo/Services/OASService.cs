@@ -248,7 +248,7 @@ namespace Topo.Services
                 }
 
                 // Awarded
-                if (memberAchievement.status == "awarded")
+                if (memberAchievement.status == "awarded" || memberAchievement.status == "approved")
                 {
                     if (hideCompletedMembers)
                     {

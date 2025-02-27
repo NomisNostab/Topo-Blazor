@@ -117,13 +117,13 @@ namespace Topo.Controller
 
         private async Task<byte[]> StartedOASWorksheet(OutputType outputType = OutputType.PDF)
         {
-            var startedOASStages = model.OASSummaries.Where(o => o.Awarded == DateTime.MinValue).ToList();
+            var startedOASStages = model.OASSummaries.Where(o => o.Awarded == DateTime.MinValue || o.Approved == DateTime.MinValue).ToList();
             return await OASWorksheet(startedOASStages, outputType);
         }
 
         private async Task<byte[]> StartedCoreOASWorksheet(OutputType outputType = OutputType.PDF)
         {
-            var startedOASStages = model.OASSummaries.Where(o => o.Awarded == DateTime.MinValue)
+            var startedOASStages = model.OASSummaries.Where(o => o.Awarded == DateTime.MinValue || o.Approved == DateTime.MinValue)
                                                 .Where(o => o.Stream == "bushcraft" || o.Stream == "bushwalking" || o.Stream == "camping")
                                                 .ToList();
             return await OASWorksheet(startedOASStages, outputType);
@@ -161,6 +161,12 @@ namespace Topo.Controller
             {
                 var summary = model.OASSummaries.Where(o => o.Stream == stream && o.Stage == stage).OrderByDescending(o => o.Awarded).FirstOrDefault();
                 return $"{summary.Awarded.ToString("dd/MM/yy")} {summary.Section}";
+            }
+            else if (model.OASSummaries.Where(o => o.Stream == stream && o.Stage == stage && o.Approved > DateTime.MinValue).OrderByDescending(o => o.Approved).FirstOrDefault() != null)
+            {
+                var summary = model.OASSummaries.Where(o => o.Stream == stream && o.Stage == stage).OrderByDescending(o => o.Approved).FirstOrDefault();
+                return "Approved";
+//return $"{summary.Awarded.ToString("dd/MM/yy")} {summary.Section}";
             }
             else
             {
