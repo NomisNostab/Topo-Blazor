@@ -293,6 +293,7 @@ namespace Topo.Services
             foreach (var oasResult in oasResults.results.OrderBy(o => o.achievement_meta.stream).ThenBy(o => o.achievement_meta.stage).ThenBy(o => o.status_updated))
             {
                 var awardedDate = new DateTime();
+                var approvedDate = new DateTime();
                 if (oasResult.status == "awarded")
                 {
                     awardedDate = oasResult.status_updated;
@@ -300,12 +301,18 @@ namespace Topo.Services
                     {
                         awardedDate = ConvertStringToDate(oasResult.imported?.date_awarded, "yyyy-MM-dd");
                     }
+                } 
+                else if (oasResult.status == "approved")
+                {
+                    approvedDate = oasResult.status_updated;
                 }
+
                 oasSummaries.Add(new OASSummary
                 {
                     Stream = oasResult.achievement_meta.stream,
                     Stage = oasResult.achievement_meta.stage,
                     Awarded = awardedDate,
+                    Approved = approvedDate,
                     Section = oasResult.section.ToLower().Substring(0,1),
                     Template = oasResult.template
                 });
