@@ -5,16 +5,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
-    <PackageReference Include="Faso.Blazor.SpinKit" Version="1.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.4" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.4" PrivateAssets="all" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Syncfusion.Blazor.Grid" Version="24.2.8" />
-    <PackageReference Include="Syncfusion.Blazor.Themes" Version="24.2.8" />
-    <PackageReference Include="Syncfusion.Licensing" Version="24.2.8" />
-    <PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.4" />
-    <PackageReference Include="Microsoft.JSInterop" Version="8.0.4" />
+    <PackageReference Include="Blazored.LocalStorage" />
+    <PackageReference Include="Faso.Blazor.SpinKit" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Syncfusion.Blazor.Grid" />
+    <PackageReference Include="Syncfusion.Blazor.Themes" />
+    <PackageReference Include="Syncfusion.Licensing" />
+    <PackageReference Include="Microsoft.AspNetCore.Components" />
+    <PackageReference Include="Microsoft.JSInterop" />
   </ItemGroup>
 
   <ItemGroup>
