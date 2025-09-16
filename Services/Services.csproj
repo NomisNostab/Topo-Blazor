@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>Topo.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Syncfusion.EJ2.AspNet.Core" Version="20.2.0.38" />
-    <PackageReference Include="Syncfusion.Licensing" Version="20.2.0.38" />
-    <PackageReference Include="Syncfusion.XlsIO.Net.Core" Version="20.2.0.38" />
-    <PackageReference Include="Syncfusion.XlsIORenderer.Net.Core" Version="20.2.0.38" />
+    <PackageReference Include="Syncfusion.EJ2.AspNet.Core" Version="24.2.8" />
+    <PackageReference Include="Syncfusion.Licensing" Version="24.2.8" />
+    <PackageReference Include="Syncfusion.XlsIO.Net.Core" Version="24.2.8" />
+    <PackageReference Include="Syncfusion.XlsIORenderer.Net.Core" Version="24.2.8" />
   </ItemGroup>
 
   <ItemGroup>
