@@ -17,6 +17,7 @@ using Topo.Model.AdditionalAwards;
 using Topo.Services;
 using Topo.Model.Approvals;
 using Topo.Model.Progress;
+using System;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
@@ -45,8 +46,8 @@ public class Function
             CultureInfo cultureInfo = new("en-AU");
             CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
             CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
-
-            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Mgo+DSMBMAY9C3t2VVhiQlFadVdJXGFWfVJpTGpQdk5xdV9DaVZUTWY/P1ZhSXxRdkJiUX9YdHZRRGheVkQ=");
+            string? syncfusionLicense = Environment.GetEnvironmentVariable("SyncfusionLicense");
+            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(syncfusionLicense ?? "");
 
             var requestBody = request.Body;
             Console.WriteLine(requestBody);
