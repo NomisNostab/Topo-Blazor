@@ -19,6 +19,7 @@ namespace TopoReportFunctionTest
         [TestInitialize]
         public void SetUp()
         {
+            SetEnvironment.SetSyncfusionLicense();
             _function = new Function();
             _reportGenerationRequest = new ReportGenerationRequest()
             {
