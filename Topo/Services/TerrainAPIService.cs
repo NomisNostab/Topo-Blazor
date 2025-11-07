@@ -20,6 +20,7 @@ namespace Topo.Services
         public Task<GetUserResultModel?> GetUserAsync();
         public Task<GetProfilesResultModel> GetProfilesAsync();
         public Task<GetMembersResultModel?> GetMembersAsync(string selectedUnitId);
+        public Task<GetMembersResultModel?> GetMembersForPatrolAsync(string patrolId);
         public Task<GetCalendarsResultModel?> GetCalendarsAsync(string userId);
         public Task PutCalendarsAsync(string userId, GetCalendarsResultModel putCalendarsResultModel);
         public Task<GetEventsResultModel?> GetEventsAsync(string userId, DateTime fromDate, DateTime toDate);
@@ -175,6 +176,17 @@ namespace Topo.Services
             await RefreshTokenAsync();
 
             string requestUri = $"{membersAddress}units/{selectedUnitId}/members";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var getMembersResultModel = DeserializeObject<GetMembersResultModel>(result);
+
+            return getMembersResultModel;
+        }
+
+        public async Task<GetMembersResultModel?> GetMembersForPatrolAsync(string patrolId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{membersAddress}patrols/{patrolId}/members";
             var result = await SendRequest(HttpMethod.Get, requestUri);
             var getMembersResultModel = DeserializeObject<GetMembersResultModel>(result);
 

@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System.Globalization;
 using Topo.Model.Program;
 using System;
+using Topo.Model.Members;
 
 namespace Topo.Services
 {
@@ -10,10 +11,12 @@ namespace Topo.Services
     {
         public Task<Dictionary<string, string>> GetCalendars();
         public Task SetCalendar(string calendarId);
+        public Task SetCalendar(string[] calendarIds);
         public Task ResetCalendar();
         public Task<List<EventListModel>> GetEventsForDates(DateTime fromDate, DateTime toDate);
         public Task<EventListModel> GetAttendanceForEvent(string eventId);
-        public Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string selectedCalendar, string groupCalendar);
+        public Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string[] selectedCalendars);
+        public Task<List<MemberListModel>> GetInviteesForEvent(string eventId);
     }
 
     public class ProgramService : IProgramService
@@ -22,7 +25,7 @@ namespace Topo.Services
         private readonly ITerrainAPIService _terrainAPIService;
         private readonly IMembersService _memberService;
 
-        private GetCalendarsResultModel getCalendarsResultModel;
+        private GetCalendarsResultModel _getCalendarsResultModel;
 
         public ProgramService(StorageService storageService, ITerrainAPIService terrainAPIService, IMembersService membersService)
         {
@@ -43,11 +46,14 @@ namespace Topo.Services
 
         public async Task<Dictionary<string, string>> GetCalendars()
         {
-            getCalendarsResultModel = await _terrainAPIService.GetCalendarsAsync(GetUser());
-            if (getCalendarsResultModel != null && getCalendarsResultModel.own_calendars != null)
+            _getCalendarsResultModel = await _terrainAPIService.GetCalendarsAsync(GetUser());
+            if (_getCalendarsResultModel != null && _getCalendarsResultModel.own_calendars != null)
             {
-                var calendars = getCalendarsResultModel.own_calendars.Where(c => c.type == "unit")
+                var own_calendars = _getCalendarsResultModel.own_calendars.Where(c => c.selected)
                     .ToDictionary(x => x.id, x => x.title);
+                var others_calendars = _getCalendarsResultModel.other_calendars.Where(c => c.selected)
+                    .ToDictionary(x => x.id, x => x.title);
+                var calendars = own_calendars.Concat(others_calendars).ToDictionary();
                 return calendars;
             }
             return new Dictionary<string, string>();
@@ -56,7 +62,7 @@ namespace Topo.Services
         public async Task SetCalendar(string calendarId)
         {
             //Deep copy calendar to allow reset
-            var serialisedCalendar = JsonConvert.SerializeObject(getCalendarsResultModel);
+            var serialisedCalendar = JsonConvert.SerializeObject(_getCalendarsResultModel);
             var calendars = JsonConvert.DeserializeObject<GetCalendarsResultModel>(serialisedCalendar);
 
             foreach (var calendar in calendars.own_calendars)
@@ -72,9 +78,28 @@ namespace Topo.Services
             await _terrainAPIService.PutCalendarsAsync(GetUser(), calendars);
         }
 
+        public async Task SetCalendar(string[] calendarIds)
+        {
+            //Deep copy calendar to allow reset
+            var serialisedCalendar = JsonConvert.SerializeObject(_getCalendarsResultModel);
+            var calendars = JsonConvert.DeserializeObject<GetCalendarsResultModel>(serialisedCalendar);
+
+            foreach (var calendar in calendars.own_calendars)
+            {
+                calendar.selected = calendarIds.Contains(calendar.id);
+            }
+
+            foreach (var calendar in calendars.other_calendars)
+            {
+                calendar.selected = calendarIds.Contains(calendar.id);
+            }
+
+            await _terrainAPIService.PutCalendarsAsync(GetUser(), calendars);
+        }
+
         public async Task ResetCalendar()
         {
-            await _terrainAPIService.PutCalendarsAsync(GetUser(), getCalendarsResultModel);
+            await _terrainAPIService.PutCalendarsAsync(GetUser(), _getCalendarsResultModel);
         }
 
         public async Task<List<EventListModel>> GetEventsForDates(DateTime fromDate, DateTime toDate)
@@ -93,6 +118,25 @@ namespace Topo.Services
                     var assistNames = string.Join(", ", assists);
                     var organisers = getEventResultModel.organisers.Select(a => string.Concat(a.first_name, " ", a.last_name.AsSpan(0, 1)));
                     var organiserNames = string.Join(", ", organisers);
+                    var eventScope = "";
+                    switch (eventResult.invitee_type)
+                    {
+                        case "group":
+                            eventScope = "Group";
+                            break;
+                        case "unit":
+                            eventScope = "Unit";
+                            break;
+                        case "member":
+                            eventScope = "Project";
+                            break;
+                        case "patrol":
+                            eventScope = "Patrol";
+                            break;
+                        default:
+                            eventScope = "Unit";
+                            break;
+                    }
                     eventList.Add(new EventListModel()
                     {
                         Id = eventResult.id,
@@ -106,7 +150,7 @@ namespace Topo.Services
                             : $"{eventResult.start_datetime:ddd h:mm tt} - {eventResult.end_datetime:ddd h:mm tt}",
                         ChallengeArea = myTI.ToTitleCase(eventResult.challenge_area.Replace("_", " ").Replace("personal ", "")),
                         EventStatus = myTI.ToTitleCase(eventResult.status),
-                        IsUnitEvent = eventResult.invitee_type == "unit",
+                        EventScope = eventScope,
                         EventDisplay = $"{eventResult.title} {eventResult.start_datetime.ToShortDateString()}",
                         Organiser = organiserNames,
                         Lead = leadNames,
@@ -118,6 +162,40 @@ namespace Topo.Services
                 return eventList;
             }
             return new List<EventListModel>();
+        }
+
+        public async Task<List<MemberListModel>> GetInviteesForEvent(string eventId)
+        {
+            List<MemberListModel> members = new List<MemberListModel>();
+            var getEventResultModel = await _terrainAPIService.GetEventAsync(eventId);
+            if (getEventResultModel != null && getEventResultModel.invitees.Length != 0)
+            {
+                if (getEventResultModel.invitees[0].invitee_type == "unit")
+                {
+                    members = await _memberService.GetMembersAsync(_storageService.UnitId);
+                }
+                if (getEventResultModel.invitees[0].invitee_type == "patrol")
+                {
+                    members = await _memberService.GetMembersForPatrol(getEventResultModel.invitees[0].invitee_id, getEventResultModel.invitees[0].invitee_name);
+                }
+                if (getEventResultModel.invitees[0].invitee_type == "member")
+                {
+                    for (int i = 0; i < getEventResultModel.invitees.Count(); i++)
+                    {
+                        int isAdultLeader = getEventResultModel.organiser.id == getEventResultModel.invitees[i].invitee_id ? 1 : 0;
+                        MemberListModel memberListModel = new MemberListModel
+                        {
+                            id = getEventResultModel.invitees[i].invitee_id,
+                            member_number = getEventResultModel.invitees[i].member_number,
+                            first_name = getEventResultModel.invitees[i].first_name,
+                            last_name = getEventResultModel.invitees[i].last_name,
+                            isAdultLeader = isAdultLeader
+                        };
+                        members.Add(memberListModel);
+                    }
+                }
+            }
+            return members;
         }
 
         public async Task<EventListModel> GetAttendanceForEvent(string eventId)
@@ -217,21 +295,14 @@ namespace Topo.Services
             return eventListModel;
         }
 
-        public async Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string selectedCalendar, string groupCalendar)
+        public async Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string[] selectedCalendars)
         {
             var attendanceReport = new AttendanceReportModel();
             var attendanceReportItems = new List<AttendanceReportItemModel>();
-            await SetCalendar(selectedCalendar);
+            await SetCalendar(selectedCalendars);
 
             var programEvents = await GetEventsForDates(fromDate, toDate);
             await ResetCalendar();
-            if (!string.IsNullOrEmpty(groupCalendar))
-            {
-                await SetCalendar(groupCalendar);
-                var groupProgramEvents = await GetEventsForDates(fromDate, toDate);
-                await ResetCalendar();
-                programEvents = programEvents.Concat(groupProgramEvents).ToList();
-            }
             foreach (var programEvent in programEvents.OrderBy(pe => pe.StartDateTime))
             {
                 var eventListModel = await GetAttendanceForEvent(programEvent.Id);

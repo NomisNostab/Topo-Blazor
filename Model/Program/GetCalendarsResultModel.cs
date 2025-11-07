@@ -12,7 +12,7 @@
         public string id { get; set; } = "";
         public string type { get; set; } = "";
         public string title { get; set; } = "";
-        public bool selected { get; set; } = false;
+        public bool selected { get; set; } 
         public string section { get; set; } = "";
     }
 
@@ -21,7 +21,7 @@
         public string id { get; set; } = "";
         public string type { get; set; } = "";
         public string title { get; set; } = "";
-        public bool selected { get; set; } = false;
+        public bool selected { get; set; }
         public string section { get; set; } = "";
     }
 }
