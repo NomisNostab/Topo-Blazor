@@ -670,37 +670,40 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 8].BorderAround();
             }
 
-            rowNumber++;
-            // Add Header
-            rowNumber++;
-            sheet.Range[rowNumber, 1].Text = "Name";
-            sheet.Range[rowNumber, 2].Text = "Patrol";
-            sheet.Range[rowNumber, 3].Text = "Role";
-            sheet.Range[rowNumber, 4].Text = " Registered";
-            sheet.Range[rowNumber, 5].Text = " Paid";
-            sheet.Range[rowNumber, 6].Text = " Attended";
-            sheet.Range[rowNumber, 4, rowNumber, 6].CellStyle.Rotation = 90;
-            sheet.Range[rowNumber, 4, rowNumber, 6].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-            sheet.Range[rowNumber, 7].Text = "Name";
-            sheet.Range[rowNumber, 1, rowNumber, 7].CellStyle.Font.Bold = true;
-
-            foreach (var member in memberListModel.Where(m => m.isAdultLeader == 1))
+            if (memberListModel.Where(m => m.isAdultLeader == 1).Any())
             {
                 rowNumber++;
-                sheet.Range[rowNumber, 1].Text = $"{member.first_name} {member.last_name}";
-                sheet.Range[rowNumber, 1].BorderAround();
-                sheet.Range[rowNumber, 2].Text = "";
-                sheet.Range[rowNumber, 2].BorderAround();
-                sheet.Range[rowNumber, 3].Text = member.patrol_duty;
-                sheet.Range[rowNumber, 3].BorderAround();
-                sheet.Range[rowNumber, 4].Text = "";
-                sheet.Range[rowNumber, 4].BorderAround();
-                sheet.Range[rowNumber, 5].Text = "";
-                sheet.Range[rowNumber, 5].BorderAround();
-                sheet.Range[rowNumber, 6].Text = "";
-                sheet.Range[rowNumber, 6].BorderAround();
-                sheet.Range[rowNumber, 7].Text = member.first_name;
-                sheet.Range[rowNumber, 7].BorderAround();
+                // Add Header
+                rowNumber++;
+                sheet.Range[rowNumber, 1].Text = "Name";
+                sheet.Range[rowNumber, 2].Text = "Patrol";
+                sheet.Range[rowNumber, 3].Text = "Role";
+                sheet.Range[rowNumber, 4].Text = " Registered";
+                sheet.Range[rowNumber, 5].Text = " Paid";
+                sheet.Range[rowNumber, 6].Text = " Attended";
+                sheet.Range[rowNumber, 4, rowNumber, 6].CellStyle.Rotation = 90;
+                sheet.Range[rowNumber, 4, rowNumber, 6].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                sheet.Range[rowNumber, 7].Text = "Name";
+                sheet.Range[rowNumber, 1, rowNumber, 7].CellStyle.Font.Bold = true;
+
+                foreach (var member in memberListModel.Where(m => m.isAdultLeader == 1))
+                {
+                    rowNumber++;
+                    sheet.Range[rowNumber, 1].Text = $"{member.first_name} {member.last_name}";
+                    sheet.Range[rowNumber, 1].BorderAround();
+                    sheet.Range[rowNumber, 2].Text = "";
+                    sheet.Range[rowNumber, 2].BorderAround();
+                    sheet.Range[rowNumber, 3].Text = member.patrol_duty;
+                    sheet.Range[rowNumber, 3].BorderAround();
+                    sheet.Range[rowNumber, 4].Text = "";
+                    sheet.Range[rowNumber, 4].BorderAround();
+                    sheet.Range[rowNumber, 5].Text = "";
+                    sheet.Range[rowNumber, 5].BorderAround();
+                    sheet.Range[rowNumber, 6].Text = "";
+                    sheet.Range[rowNumber, 6].BorderAround();
+                    sheet.Range[rowNumber, 7].Text = member.first_name;
+                    sheet.Range[rowNumber, 7].BorderAround();
+                }
             }
 
             sheet.UsedRange.AutofitColumns();
@@ -2270,7 +2273,7 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
             sheet.Range[rowNumber, 2].Text = "Project";
             sheet.Range[rowNumber, 2].CellStyle.Font.Bold = true;
-            sheet.Range[rowNumber, 2, rowNumber, 8].Merge(); 
+            sheet.Range[rowNumber, 2, rowNumber, 8].Merge();
             sheet.Range[rowNumber, 9].Text = "Status";
             sheet.Range[rowNumber, 9].CellStyle.Font.Bold = true;
             sheet.Range[rowNumber, 10].Text = "Date";
@@ -2328,7 +2331,7 @@ namespace Topo.Services
         {
             if (oas != null)
             {
-                if (oas.Awarded == DateTime.MinValue || oas.Awarded < new DateTime(2000,1,1))
+                if (oas.Awarded == DateTime.MinValue || oas.Awarded < new DateTime(2000, 1, 1))
                     oasText = "Started";
                 else
                     oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
@@ -2480,8 +2483,8 @@ namespace Topo.Services
                 sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
 
                 sheet.Range[rowNumber, 1, rowNumber, columnNumber].CellStyle.Font.Bold = true;
-                if (eventEntry.StartDateTime.Date != eventEntry.EndDateTime.Date 
-                    || eventEntry.StartDateTime.DayOfWeek == DayOfWeek.Saturday 
+                if (eventEntry.StartDateTime.Date != eventEntry.EndDateTime.Date
+                    || eventEntry.StartDateTime.DayOfWeek == DayOfWeek.Saturday
                     || eventEntry.StartDateTime.DayOfWeek == DayOfWeek.Sunday)
                     sheet.Range[rowNumber, 1, rowNumber, columnNumber].CellStyle.Font.Color = ExcelKnownColors.Red;
             }
@@ -2508,7 +2511,7 @@ namespace Topo.Services
             return dateTime.AddHours(CurrentUtcOffset.Hours).AddMinutes(CurrentUtcOffset.Minutes);
         }
 
-        private string FormatEventDate (DateTime startDateTime, DateTime endDateTime)
+        private string FormatEventDate(DateTime startDateTime, DateTime endDateTime)
         {
             if (startDateTime.Date == endDateTime.Date)
                 return startDateTime.ToString("ddd d");

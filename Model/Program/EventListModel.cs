@@ -32,7 +32,7 @@ namespace Topo.Model.Program
 
         [Display(Name = "Status")]
         public string EventStatus { get; set; } = string.Empty;
-        public bool IsUnitEvent { get; set; }
+        public string EventScope { get; set; } = string.Empty;
         public string Organiser { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
         public string Lead { get; set; } = string.Empty;
