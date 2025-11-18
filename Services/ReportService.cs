@@ -215,6 +215,7 @@ namespace Topo.Services
             var workbook = CreateWorkbookWithLogo(groupName, section, 16);
             IWorksheet sheet = workbook.Worksheets[0];
             int rowNumber = 1;
+            int columnOffset = 3;
 
             IStyle headingStyle = workbook.Styles["headingStyle"];
 
@@ -239,11 +240,15 @@ namespace Topo.Services
             var columnNumber = 1;
             sheet.Range[rowNumber, 1].Text = "Scout";
             sheet.Range[rowNumber, 1].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+            sheet.Range[rowNumber, 2].Text = "KMs";
+            sheet.Range[rowNumber, 2].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+            sheet.Range[rowNumber, 3].Text = "Nights";
+            sheet.Range[rowNumber, 3].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
             var usedAwards = awardSpecificationsList.Where(x => distinctAwards.Contains(x.id));
             foreach (var award in usedAwards.OrderBy(x => x.additionalAwardSortIndex))
             {
-                columnNumber = distinctAwards.IndexOf(award.id) + 1;
-                var cell = sheet.Range[rowNumber, columnNumber + 1];
+                columnNumber = distinctAwards.IndexOf(award.id) + columnOffset;
+                var cell = sheet.Range[rowNumber, columnNumber];
                 cell.Text = " " + award.name;
                 cell.CellStyle.Rotation = 90;
                 cell.CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
@@ -258,10 +263,16 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 1].Text = additionalAward.Key;
                 sheet.Range[rowNumber, 1].BorderAround();
                 sheet.Range[rowNumber, 1].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+                sheet.Range[rowNumber, 2].Text = additionalAward.FirstOrDefault().KMsHiked.ToString();
+                sheet.Range[rowNumber, 2].BorderAround();
+                sheet.Range[rowNumber, 2].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+                sheet.Range[rowNumber, 3].Text = additionalAward.FirstOrDefault().NightsCamped.ToString();
+                sheet.Range[rowNumber, 3].BorderAround();
+                sheet.Range[rowNumber, 3].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
                 // Set style for date boxes
                 for (int i = 0; i < distinctAwards.Count(); i++)
                 {
-                    var cell = sheet.Range[rowNumber, i + 2];
+                    var cell = sheet.Range[rowNumber, i + columnOffset];
                     cell.CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                     cell.CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
                     cell.BorderAround();
@@ -269,8 +280,8 @@ namespace Topo.Services
                 // Populate award dates
                 foreach (var x in additionalAward)
                 {
-                    columnNumber = distinctAwards.IndexOf(x.AwardId) + 1;
-                    var cell = sheet.Range[rowNumber, columnNumber + 1];
+                    columnNumber = distinctAwards.IndexOf(x.AwardId) + columnOffset;
+                    var cell = sheet.Range[rowNumber, columnNumber];
                     if (x.AwardDate.HasValue)
                     {
                         cell.DateTime = x.AwardDate.Value;
@@ -282,9 +293,51 @@ namespace Topo.Services
                         }
                         cell.NumberFormat = "dd/MM/yy";
                     }
+                    else
+                    {
+                        if (x.AwardId.StartsWith("walkabout"))
+                        {
+                            if (x.KMsHiked > x.AwardUnits)
+                            {
+                                cell.CellStyle.Color = Color.Red;
+                                sheet.Range[rowNumber, 2].CellStyle.Color = Color.Red;
+                            }
+                        }
+                        if (x.AwardId.StartsWith("camper"))
+                        {
+                            if (x.NightsCamped > x.AwardUnits)
+                            {
+                                cell.CellStyle.Color = Color.Red;
+                                sheet.Range[rowNumber, 3].CellStyle.Color = Color.Red;
+                            }
+                        }
+                    }
                 }
                 rowNumber++;
             }
+
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Not awarded";
+            sheet.Range[rowNumber, 1].BorderAround();
+            sheet.Range[rowNumber, 1].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+            sheet.Range[rowNumber, 2].BorderAround();
+            sheet.Range[rowNumber, 2].CellStyle.Color = Color.Red;
+
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Awarded";
+            sheet.Range[rowNumber, 1].BorderAround();
+            sheet.Range[rowNumber, 1].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+            sheet.Range[rowNumber, 2].BorderAround();
+            sheet.Range[rowNumber, 2].CellStyle.Color = Color.Orange;
+
+            rowNumber++;
+            sheet.Range[rowNumber, 1].Text = "Presented";
+            sheet.Range[rowNumber, 1].BorderAround();
+            sheet.Range[rowNumber, 1].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+            sheet.Range[rowNumber, 2].BorderAround();
+            sheet.Range[rowNumber, 2].CellStyle.Color = Color.LightGreen;
+
+
             sheet.UsedRange.AutofitColumns();
 
             sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA3;
