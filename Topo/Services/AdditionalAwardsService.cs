@@ -37,6 +37,7 @@ namespace Topo.Services
                         id = x.id,
                         name = x.title,
                         additionalAwardSortIndex = additionalAwardSortIndex++,
+                        additionalAwardValue = GetAwardValue(x.id)
                     })
                     .ToList();
                 _storageService.AdditionalAwardSpecifications = awardSpecificationsList;
@@ -46,7 +47,7 @@ namespace Topo.Services
             var additionalAwardsList = new List<AdditionalAwardListModel>();
             var lastMemberProcessed = "";
             var memberName = "";
-            foreach(var memberKVP in selectedMembers)
+            foreach (var memberKVP in selectedMembers)
             {
                 await _terrainAPIService.RevokeAssumedProfiles();
                 await _terrainAPIService.AssumeProfile(memberKVP.Key);
@@ -58,12 +59,15 @@ namespace Topo.Services
 
                 additionalAwardsList.Add(new AdditionalAwardListModel
                 {
-                    MemberName = memberName,
+                    MemberName = memberKVP.Value,
+                    NightsCamped = (int)totalNightsCamped,
+                    KMsHiked = (int)totalKmsHiked,
                     AwardId = "",
                     AwardName = "",
                     AwardSortIndex = 0,
                     AwardDate = null,
-                    PresentedDate = null
+                    PresentedDate = null,
+                    AwardUnits = 0
                 });
 
                 foreach (var result in unitAchievementsResult.results.Where(r => r.member_id == memberKVP.Key))
@@ -84,17 +88,59 @@ namespace Topo.Services
                     }
                     additionalAwardsList.Add(new AdditionalAwardListModel
                     {
-                        MemberName = memberName,
+                        MemberName = memberKVP.Value,
+                        NightsCamped = (int)totalNightsCamped,
+                        KMsHiked = (int)totalKmsHiked,
                         AwardId = awardSpecification?.id ?? "",
                         AwardName = awardSpecification?.name ?? "",
                         AwardSortIndex = awardSpecification?.additionalAwardSortIndex ?? 0,
                         AwardDate = awardStatusDate,
-                        PresentedDate = awardPresentedDate ?? awardStatusDate //null
+                        PresentedDate = awardPresentedDate ?? awardStatusDate, //null
+                        AwardUnits = awardSpecification?.additionalAwardValue ?? 0
                     });
-               }
+                }
+
+                // Get Next Camper/Walkabout Award
+                var highestCamperAward = additionalAwardsList.Where(a => a.MemberName == memberKVP.Value && a.AwardId.StartsWith("camper"))
+                    .OrderByDescending(a => a.AwardSortIndex)
+                    .FirstOrDefault();
+                var nextCamperAward = awardSpecificationsList.Where(a => a.additionalAwardSortIndex == highestCamperAward?.AwardSortIndex + 1)
+                    .FirstOrDefault();
+                additionalAwardsList.Add(new AdditionalAwardListModel
+                {
+                    MemberName = memberKVP.Value,
+                    NightsCamped = (int)totalNightsCamped,
+                    KMsHiked = (int)totalKmsHiked,
+                    AwardId = nextCamperAward?.id ?? "",
+                    AwardName = nextCamperAward?.name ?? "",
+                    AwardSortIndex = nextCamperAward?.additionalAwardSortIndex ?? 0,
+                    AwardDate = null,
+                    PresentedDate = null,
+                    AwardUnits = nextCamperAward?.additionalAwardValue ?? 0
+                });
+
+                var highestWalkaboutAward = additionalAwardsList.Where(a => a.MemberName == memberKVP.Value && a.AwardId.StartsWith("walkabout"))
+                    .OrderByDescending(a => a.AwardSortIndex)
+                    .FirstOrDefault();
+                var nextWalkaboutAward = awardSpecificationsList.Where(a => a.additionalAwardSortIndex == highestWalkaboutAward?.AwardSortIndex + 1)
+                    .FirstOrDefault();
+                additionalAwardsList.Add(new AdditionalAwardListModel
+                {
+                    MemberName = memberKVP.Value,
+                    NightsCamped = (int)totalNightsCamped,
+                    KMsHiked = (int)totalKmsHiked,
+                    AwardId = nextWalkaboutAward?.id ?? "",
+                    AwardName = nextWalkaboutAward?.name ?? "",
+                    AwardSortIndex = nextWalkaboutAward?.additionalAwardSortIndex ?? 0,
+                    AwardDate = null,
+                    PresentedDate = null,
+                    AwardUnits = nextWalkaboutAward?.additionalAwardValue ?? 0
+                });
+
             }
 
             await _terrainAPIService.RevokeAssumedProfiles();
+
             var sortedAdditionalAwardsList = additionalAwardsList.OrderBy(a => a.MemberName).ThenBy(a => a.AwardSortIndex).ToList();
             var distinctAwards = sortedAdditionalAwardsList.OrderBy(x => x.AwardSortIndex).Select(x => x.AwardId).Distinct().ToList();
 
@@ -104,6 +150,32 @@ namespace Topo.Services
             reportData.SortedAdditionalAwardsList = sortedAdditionalAwardsList;
 
             return reportData;
+        }
+
+        private int GetAwardValue(string awardId)
+        {
+            if (string.IsNullOrWhiteSpace(awardId))
+            {
+                return 0;
+            }
+            string[] awardBits = awardId.Split('_');
+            if (awardBits[0] == "camper")
+            {
+                bool isInt = int.TryParse(awardBits[2], out int awardUnit);
+                if (isInt)
+                {
+                    return awardUnit;
+                }
+            }
+            if (awardBits[0] == "walkabout")
+            {
+                bool isInt = int.TryParse(awardBits[1], out int awardUnit);
+                if (isInt)
+                {
+                    return awardUnit;
+                }
+            }
+            return 0;
         }
     }
 }
