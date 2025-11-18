@@ -28,13 +28,25 @@ namespace Topo.Controller
         [Inject]
         public IMembersService _membersService { get; set; }
 
+        public ElementReference _select2Reference;
+
+
         public ProgramPageViewModel model = new ProgramPageViewModel();
         private string groupCalendarId = string.Empty;
+        private string projectPatrolCalendarId = string.Empty;
 
         private JsonSerializerSettings _settings = new JsonSerializerSettings
         {
             DateParseHandling = DateParseHandling.None
         };
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                await JS.InvokeVoidAsync("BindSelect2");
+            }
+        }
 
         protected override async Task OnInitializedAsync()
         {
@@ -42,46 +54,64 @@ namespace Topo.Controller
                 NavigationManager.NavigateTo("index");
 
             model.GroupName = _storageService.GroupNameDisplay;
-            await _programService.GetCalendars();
-            model.Calendars = _storageService.Units;
+            model.Units = _storageService.Units;
+            var calendars = await _programService.GetCalendars();
+            model.Calendars = calendars;
             var quarter = (DateTime.Now.Month + 2) / 3;
             var quarterStartMonth = (quarter - 1) * 3 + 1;
             model.CalendarSearchFromDate = new DateTime(DateTime.Now.Year, quarterStartMonth, 1);
             model.CalendarSearchToDate = model.CalendarSearchFromDate.AddMonths(4).AddDays(-1);
             model.DateErrorMessage = "";
-            groupCalendarId = _storageService.GroupId ?? "";
-            model.CalendarId = _storageService.UnitId;
+            if (!string.IsNullOrEmpty(_storageService.UnitId))
+            {
+                await UnitChange(_storageService.UnitId);
+            }
         }
 
-        internal void CalendarChange(ChangeEventArgs e)
+        internal async Task UnitChange(ChangeEventArgs e)
         {
-            var calendarId = e.Value?.ToString() ?? "";
-            model.CalendarId = calendarId;
-            _storageService.UnitId = calendarId;
+            var unitId = e.Value?.ToString() ?? "";
+            await UnitChange(unitId);
+        }
+
+        internal async Task UnitChange(string unitId)
+        {
+            model.UnitId = unitId;
+            _storageService.UnitId = model.UnitId;
+            model.UnitName = _storageService.UnitName;
+        }
+
+        public async Task<bool> GetSelections(ElementReference elementReference)
+        {
+            model.SelectedCalendars = (await JS.InvokeAsync<List<string>>("getSelectedValues", _select2Reference)).ToArray<string>();
+            model.CalendarErrorMessage = "";
+
+            if (model.SelectedCalendars == null || model.SelectedCalendars.Length == 0)
+            {
+                model.CalendarErrorMessage = "Please select at least one calendar";
+                return false;
+            }
+            return true;
         }
 
         internal async Task ShowUnitCalendarClick()
         {
+            if (!await GetSelections(_select2Reference))
+                return;
+
             model.DateErrorMessage = "";
             if (model.CalendarSearchToDate < model.CalendarSearchFromDate)
             {
                 model.DateErrorMessage = "The search to date must be after the search from date.";
                 return;
             }
-            if (!string.IsNullOrEmpty(model.CalendarId))
+            if (!(model.SelectedCalendars == null || model.SelectedCalendars.Length == 0))
             {
-                _storageService.UnitId = model.CalendarId;
-                await _programService.SetCalendar(model.CalendarId);
+                //_storageService.UnitId = model.CalendarId;
+                await _programService.SetCalendar(model.SelectedCalendars);
                 var events = await _programService.GetEventsForDates(model.CalendarSearchFromDate, model.CalendarSearchToDate);
                 await _programService.ResetCalendar();
-                if (model.IncludeGroupEvents)
-                {
-                    await _programService.SetCalendar(groupCalendarId);
-                    var groupEvents = await _programService.GetEventsForDates(model.CalendarSearchFromDate, model.CalendarSearchToDate);
-                    await _programService.ResetCalendar();
-                    events = events.Concat(groupEvents).OrderBy(e => e.StartDateTime).ToList();
-                }
-                model.Events = events;
+                model.Events = events.OrderBy(e => e.StartDateTime).ToList();
             }
         }
 
@@ -92,7 +122,7 @@ namespace Topo.Controller
             var unitName = _storageService.UnitName ?? "Unit Name";
             var section = _storageService.Section;
 
-            var members = await _membersService.GetMembersAsync(model.CalendarId);
+            var members = await _programService.GetInviteesForEvent(eventId);
             var serialisedSortedMemberList = JsonConvert.SerializeObject(members.OrderBy(m => m.first_name).ThenBy(m => m.last_name));
             var report = await _reportService.GetSignInSheetReport(groupName, section, unitName, OutputType.PDF, serialisedSortedMemberList, eventName);
 
@@ -142,7 +172,7 @@ namespace Topo.Controller
             var unitName = _storageService.UnitName ?? "Unit Name";
             var section = _storageService.Section;
 
-            var attendanceReportData = await _programService.GenerateAttendanceReportData(model.CalendarSearchFromDate, model.CalendarSearchToDate, model.CalendarId, model.IncludeGroupEvents ? groupCalendarId : "");
+            var attendanceReportData = await _programService.GenerateAttendanceReportData(model.CalendarSearchFromDate, model.CalendarSearchToDate, model.SelectedCalendars);
             var serialisedAttendanceReportData = JsonConvert.SerializeObject(attendanceReportData);
             var report = await _reportService.GetAttendanceReport(groupName, section, unitName, outputType, serialisedAttendanceReportData, model.CalendarSearchFromDate, model.CalendarSearchToDate);
 
@@ -169,6 +199,8 @@ namespace Topo.Controller
 
             return report;
         }
+
+
     }
 
 }

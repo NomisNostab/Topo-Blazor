@@ -14,16 +14,33 @@
             Select Unit
         </label>
         <div class="col-sm-3">
-            <select id="unit" class="form-select" value="@model.CalendarId" @onchange="CalendarChange">
+            <select id="unit" class="form-select" value="@model.UnitId" @onchange="UnitChange">
                 <option value="">Select unit</option>
+                @foreach (var unit in model.Units)
+                {
+                    <option value="@unit.Key">@unit.Value</option>
+                }
+            </select>
+            <ValidationMessage For="@(() => model.UnitId)" />
+        </div>
+        <div class="col-sm-7">
+        </div>
+    </div>
+
+    <div class="form-group mb-3 row">
+        <label for="unit" class="col-sm-2 col-form-label">
+            Select Calendars
+        </label>
+        <div class="col-sm-8">
+            <select @ref="_select2Reference" id="calendars" class="form-select select2" multiple @bind="model.SelectedCalendars" title="Select one or more calendars to view">
                 @foreach (var calendar in model.Calendars)
                 {
                     <option value="@calendar.Key">@calendar.Value</option>
                 }
             </select>
-            <ValidationMessage For="@(() => model.CalendarId)"/>
+            <label class="col-form-label validation-message">@model.CalendarErrorMessage</label>
         </div>
-        <div class="col-sm-7">
+        <div class="col-sm-2">
         </div>
     </div>
 
@@ -47,14 +64,7 @@
         <div class="col-sm-3">
             <button type="submit" name="button" class="btn btn-primary" @onclick="ShowUnitCalendarClick">Show Unit Calendar</button>
         </div>
-        <div class="form-check-inline col-sm-4">
-            <InputCheckbox id="includeLeaders" class="form-check-input"
-                           @bind-Value="model.IncludeGroupEvents" />
-            <label for="unit" class="form-check-label">
-                Include Group Events
-            </label>
-        </div>
-        <div class="col-sm-3">
+        <div class="col-sm-7">
         </div>
     </div>
 
@@ -111,7 +121,7 @@
                     @item.ChallengeArea
                 </div>
                 <div class="col-sm-1">
-                    @(item.IsUnitEvent ? "Unit" : "Group")
+                    @item.EventScope
                 </div>
                 <div class="col-sm-1">
                     @item.EventStatus
