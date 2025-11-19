@@ -26,7 +26,7 @@ jobs:
     - name: Replace Syncfusion key
       run: |
         SYNCFUSION_KEY="${{ secrets.SYNCFUSION_KEY }}"
-        sed -i "s/__SYNCFUSION-KEY__/$SYNCFUSION_KEY/g" ./Topo/Program.cs
+        sed -i 's/__SYNCFUSION-KEY__/$SYNCFUSION_KEY/g' ./Topo/Program.cs
         cat ./Topo/Program.cs
     # publishes Blazor project to the release-folder
     - name: Publish .NET Core Project
