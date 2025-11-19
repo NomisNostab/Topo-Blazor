@@ -25,7 +25,7 @@ jobs:
     # Replace Syncfusion key
     - name: Replace Syncfusion key
       run: |
-        TEMP: "temp string"
+        TEMP="temp string"
         sed -i "s/__SYNCFUSION-KEY__/$TEMP/g" ./Topo/Program.cs
         cat ./Topo/Program.cs
     # publishes Blazor project to the release-folder
