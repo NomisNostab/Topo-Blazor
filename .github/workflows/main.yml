@@ -24,9 +24,10 @@ jobs:
         dotnet-version: 8.0.x
     # Replace Syncfusion key
     - name: Replace Syncfusion key
-      run: sed -i "s/__SYNCFUSION-KEY__/${{ secrets.SYNCFUSION_KEY }}/g" ./Topo/Program.cs
-    - name: Cat program.cs
-      run: cat ./Topo/Program.cs
+      run: |
+        TEMP: "temp string"
+        sed -i "s/__SYNCFUSION-KEY__/$TEMP/g" ./Topo/Program.cs
+        cat ./Topo/Program.cs
     # publishes Blazor project to the release-folder
     - name: Publish .NET Core Project
       run: dotnet publish ./Topo/Topo.csproj -c Release -o release --nologo
