@@ -42,9 +42,13 @@ builder.Services.AddScoped(s =>
 
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddSyncfusionBlazor();
-Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Mgo+DSMBMAY9C3t2VVhiQlFadVdJXGFWfVJpTGpQdk5xdV9DaVZUTWY/P1ZhSXxRdkJiUX9YdHZRRGheVkQ=");
+#if DEBUG
+Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("");
+#else
+Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("__SYNCFUSION-KEY__");
+#endif
 
-System.Globalization.CultureInfo cultureInfo = new System.Globalization.CultureInfo("en-AU");
+CultureInfo cultureInfo = new CultureInfo("en-AU");
 CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
 CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
