@@ -14,10 +14,6 @@ jobs:
     - name: Checkout main
       uses: actions/checkout@v2
     # Install .NET SDKs
-    #- name: Setup .NET Core 3.1
-    #  uses: actions/setup-dotnet@v1
-    #  with:
-    #    dotnet-version: 3.1.x
     - name: Setup .NET 8.0
       uses: actions/setup-dotnet@v1
       with:
@@ -27,7 +23,7 @@ jobs:
       run: |
         SYNCFUSION_KEY="${{ secrets.SYNCFUSION_KEY}}"
         sed -i "s@__SYNCFUSION-KEY__@$SYNCFUSION_KEY@g" ./Topo/Program.cs
-        cat ./Topo/Program.cs
+    #   cat ./Topo/Program.cs
     # publishes Blazor project to the release-folder
     - name: Publish .NET Core Project
       run: dotnet publish ./Topo/Topo.csproj -c Release -o release --nologo
@@ -41,9 +37,9 @@ jobs:
     - name: Add .nojekyll file
       run: touch release/wwwroot/.nojekyll
 
-    #- name: Commit wwwroot to GitHub Pages
-    #  uses: JamesIves/github-pages-deploy-action@3.7.1
-    #  with:
-    #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    #    BRANCH: gh-pages
-    #    FOLDER: release/wwwroot
+    - name: Commit wwwroot to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@3.7.1
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH: gh-pages
+        FOLDER: release/wwwroot
