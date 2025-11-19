@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "Topo",
   "resources": {
-    "hash": "sha256-8d/TMAKiV1hfhsIXIRIZ2ZQRgPHokiIQ0qRvUu4nnAo=",
+    "hash": "sha256-Uz5jYIcFidDzpQ310v+EschWsHdXXhHh8KaPvqPsCkE=",
     "jsModuleNative": {
       "dotnet.native.8.0.22.te9w5f1aae.js": "sha256-vtotCeXt2UD6oc459laJT32vBgigZ+eLoUmdeFkvYDk="
     },
@@ -39,7 +39,7 @@
       "Microsoft.JSInterop.wasm": "sha256-T340098dmpEGkjguxIATs3Bm4G5nq3H8kTi3rLOzOmw=",
       "Microsoft.JSInterop.WebAssembly.wasm": "sha256-i8yLC1pzEZMAPAHK2MyunJW81S6Tpyvwka9LDZSylx8=",
       "Microsoft.Net.Http.Headers.wasm": "sha256-b59APrldqivzbOYVb0CV+lGgWn4HyUPjMa/cplEp2x8=",
-      "Model.wasm": "sha256-yt7lObclNrOsenGrlToW9c+gRpzcERio5IdEEmSv/A8=",
+      "Model.wasm": "sha256-Dcf30nqDYs//oPS9ZSaKyvHIfhFQm1PLPbna+qfiyLY=",
       "netstandard.wasm": "sha256-1DofvjzMRC49w/HCk5CJ1JknKusW59nuJlAFsqjn3ik=",
       "Newtonsoft.Json.wasm": "sha256-GlXMWKvDs45M2pACoR3Y4Qh8mcrOZGljqmvJY+6JZ5s=",
       "Syncfusion.Blazor.Buttons.wasm": "sha256-xeJGFMeVZseFQ2zP9AO7Q9bdlFYB/llAwOtyDw+mnCQ=",
@@ -114,7 +114,7 @@
       "System.Xml.Linq.wasm": "sha256-QZ1dIOmdH1vW7cZpsrgmK5NLfyOqzbCIMKMQkTrG71k=",
       "System.Xml.ReaderWriter.wasm": "sha256-/Q9IT2FAaAqyWaceob7fEJEprOrizUu+f4BfFY78WHA=",
       "System.Xml.XDocument.wasm": "sha256-yVgP+FfcRnt8G50kD3QiKtyjsriuGJ4wFPTTNsvTNVE=",
-      "Topo.wasm": "sha256-lidnvigiSiSnLDXU9yNpQegGwi83o+yy8K087hdXGJg="
+      "Topo.wasm": "sha256-4ev5g1w+k3dDeMvDCod0y1VCrB89k5nDRZZsNvP6wC8="
     }
   },
   "cacheBootResources": true,
