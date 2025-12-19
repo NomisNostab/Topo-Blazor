@@ -297,7 +297,7 @@ namespace Topo.Services
                     {
                         if (x.AwardId.StartsWith("walkabout"))
                         {
-                            if (x.KMsHiked > x.AwardUnits)
+                            if (x.KMsHiked >= x.AwardUnits)
                             {
                                 cell.CellStyle.Color = Color.Red;
                                 sheet.Range[rowNumber, 2].CellStyle.Color = Color.Red;
@@ -305,7 +305,7 @@ namespace Topo.Services
                         }
                         if (x.AwardId.StartsWith("camper"))
                         {
-                            if (x.NightsCamped > x.AwardUnits)
+                            if (x.NightsCamped >= x.AwardUnits)
                             {
                                 cell.CellStyle.Color = Color.Red;
                                 sheet.Range[rowNumber, 3].CellStyle.Color = Color.Red;
@@ -322,13 +322,6 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
             sheet.Range[rowNumber, 2].BorderAround();
             sheet.Range[rowNumber, 2].CellStyle.Color = Color.Red;
-
-            rowNumber++;
-            sheet.Range[rowNumber, 1].Text = "Awarded";
-            sheet.Range[rowNumber, 1].BorderAround();
-            sheet.Range[rowNumber, 1].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
-            sheet.Range[rowNumber, 2].BorderAround();
-            sheet.Range[rowNumber, 2].CellStyle.Color = Color.Orange;
 
             rowNumber++;
             sheet.Range[rowNumber, 1].Text = "Presented";
