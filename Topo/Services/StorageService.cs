@@ -127,6 +127,8 @@ namespace Topo.Services
 
         public bool SuppressLastName { get; set; }
 
-        public string Version = "1.67";
+        public bool LogToQueue { get; set; }
+
+        public string Version = "1.68";
     }
 }

@@ -40,6 +40,10 @@ builder.Services.AddScoped(s =>
     };
 });
 
+builder.Logging.ClearProviders();
+builder.Services.AddSingleton<LogQueueService>();
+builder.Services.AddSingleton<ILoggerProvider, TopoLoggerProvider>();
+
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddSyncfusionBlazor();
 #if DEBUG
