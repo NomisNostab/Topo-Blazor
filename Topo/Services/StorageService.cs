@@ -129,6 +129,6 @@ namespace Topo.Services
 
         public bool LogToQueue { get; set; }
 
-        public string Version = "1.68";
+        public string Version = "1.69";
     }
 }
