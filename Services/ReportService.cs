@@ -2377,8 +2377,14 @@ namespace Topo.Services
         {
             if (oas != null)
             {
-                if (oas.Awarded == DateTime.MinValue || oas.Awarded < new DateTime(2000, 1, 1))
+                if (oas.Approved == DateTime.MinValue || oas.Approved < new DateTime(2000, 1, 1))
+                {
                     oasText = "Started";
+                }
+                else if (oas.Awarded == DateTime.MinValue || oas.Awarded < new DateTime(2000, 1, 1))
+                {
+                    oasText = "Approved";
+                }
                 else
                     oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
             }
