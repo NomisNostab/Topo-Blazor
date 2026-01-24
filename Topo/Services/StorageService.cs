@@ -129,6 +129,6 @@ namespace Topo.Services
 
         public bool LogToQueue { get; set; }
 
-        public string Version = "1.69";
+        public string Version = DateTime.Now.ToString("yyyy.MM.dd");
     }
 }
