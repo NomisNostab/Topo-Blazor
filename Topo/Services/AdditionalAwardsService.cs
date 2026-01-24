@@ -111,12 +111,12 @@ namespace Topo.Services
                     MemberName = memberKVP.Value,
                     NightsCamped = (int)totalNightsCamped,
                     KMsHiked = (int)totalKmsHiked,
-                    AwardId = nextCamperAward?.id ?? "",
-                    AwardName = nextCamperAward?.name ?? "",
+                    AwardId = nextCamperAward?.id ?? "camper_award_10",
+                    AwardName = nextCamperAward?.name ?? "Camper Award - 10 Nights",
                     AwardSortIndex = nextCamperAward?.additionalAwardSortIndex ?? 0,
                     AwardDate = null,
                     PresentedDate = null,
-                    AwardUnits = nextCamperAward?.additionalAwardValue ?? 0
+                    AwardUnits = nextCamperAward?.additionalAwardValue ?? 10
                 });
 
                 var highestWalkaboutAward = additionalAwardsList.Where(a => a.MemberName == memberKVP.Value && a.AwardId.StartsWith("walkabout"))
@@ -129,12 +129,12 @@ namespace Topo.Services
                     MemberName = memberKVP.Value,
                     NightsCamped = (int)totalNightsCamped,
                     KMsHiked = (int)totalKmsHiked,
-                    AwardId = nextWalkaboutAward?.id ?? "",
-                    AwardName = nextWalkaboutAward?.name ?? "",
-                    AwardSortIndex = nextWalkaboutAward?.additionalAwardSortIndex ?? 0,
+                    AwardId = nextWalkaboutAward?.id ?? "walkabout_10",
+                    AwardName = nextWalkaboutAward?.name ?? "Walkabout Award - 10km",
+                    AwardSortIndex = nextWalkaboutAward?.additionalAwardSortIndex ?? 5,
                     AwardDate = null,
                     PresentedDate = null,
-                    AwardUnits = nextWalkaboutAward?.additionalAwardValue ?? 0
+                    AwardUnits = nextWalkaboutAward?.additionalAwardValue ?? 10
                 });
 
             }
