@@ -2033,6 +2033,7 @@ namespace Topo.Services
         {
             var workbook = CreateWorkbookWithLogo(groupName, section, 7);
             IWorksheet sheet = workbook.Worksheets[0];
+            sheet.Name = "Milestones";
             int rowNumber = 1;
             int cellNumber = 1;
 
@@ -2171,6 +2172,7 @@ namespace Topo.Services
             sheet.PageSetup.IsFitToPage = true;
 
             sheet = workbook.Worksheets.Create("Sheet2");
+            sheet.Name = "OAS - SIA";
             rowNumber = 0;
 
             // Outdoor Adventure Skills
@@ -2377,16 +2379,15 @@ namespace Topo.Services
         {
             if (oas != null)
             {
-                if (oas.Approved == DateTime.MinValue || oas.Approved < new DateTime(2000, 1, 1))
-                {
-                    oasText = "Started";
-                }
-                else if (oas.Awarded == DateTime.MinValue || oas.Awarded < new DateTime(2000, 1, 1))
+                oasText = "Started";
+                if (oas.Approved > new DateTime(2000, 1, 1))
                 {
                     oasText = "Approved";
                 }
-                else
+                if (oas.Awarded > new DateTime(2000, 1, 1))
+                {
                     oasText = $"{oas.Awarded.ToString("dd/MM/yy")} {oas.Section}";
+                }
             }
 
             return oasText;
