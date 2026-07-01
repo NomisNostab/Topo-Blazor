@@ -1,10 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
-  <PropertyGroup>
-    <IsPackable>false</IsPackable>
-  </PropertyGroup>
+
 
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
@@ -15,9 +17,9 @@
     <PackageReference Include="MSTest" />
   </ItemGroup>
 
+
   <ItemGroup>
-    <ProjectReference Include="..\Model\Model.csproj" />
-    <ProjectReference Include="..\TopoReportFunction\TopoReportFunction.csproj" />
+    <ProjectReference Include="../TopoReportFunction/TopoReportFunction.csproj" />
   </ItemGroup>
 
 </Project>
