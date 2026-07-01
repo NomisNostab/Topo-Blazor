@@ -526,7 +526,7 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 5].BorderAround();
                 sheet.Range[rowNumber, 6].Text = member.patrol_duty;
                 sheet.Range[rowNumber, 6].BorderAround();
-                sheet.Range[rowNumber, 7].Text = member.patrol_name;
+                sheet.Range[rowNumber, 7].Text = member.patrol_name.Trim();
                 sheet.Range[rowNumber, 7].BorderAround();
 
                 decimal.TryParse(member.age, out decimal approxYears);
@@ -560,6 +560,7 @@ namespace Topo.Services
             sheet.PageSetup.RightMargin = 0.25;
             sheet.PageSetup.HeaderMargin = 0;
             sheet.PageSetup.FooterMargin = 0;
+            sheet.PageSetup.FitToPagesWide = 1;
 
             return workbook;
         }
@@ -762,7 +763,8 @@ namespace Topo.Services
             sheet.PageSetup.RightMargin = 0.25;
             sheet.PageSetup.HeaderMargin = 0;
             sheet.PageSetup.FooterMargin = 0;
-            sheet.PageSetup.IsFitToPage = true;
+            sheet.PageSetup.FitToPagesWide = 1;
+            
 
             return workbook;
         }
