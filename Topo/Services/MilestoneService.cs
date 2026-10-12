@@ -40,6 +40,7 @@ namespace Topo.Services
                 int currentLevel = 1;
                 foreach (var milestoneResult in memberMilestones.results.Where(r => r.section == _storageService.Section).OrderBy(r => r.achievement_meta.stage))
                 {
+                    MoveMilestoneAssistsToLeads(milestoneResult);
                     switch (milestoneResult.achievement_meta.stage)
                     {
                         case 1:
@@ -131,6 +132,18 @@ namespace Topo.Services
             return unitMilestoneSummary;
         }
 
+        private void MoveMilestoneAssistsToLeads(MilestoneResult milestoneResult)
+        {
+            milestoneResult.event_count.leader.community += milestoneResult.event_count.assistant.community;
+            milestoneResult.event_count.leader.outdoors += milestoneResult.event_count.assistant.outdoors;
+            milestoneResult.event_count.leader.creative += milestoneResult.event_count.assistant.creative;
+            milestoneResult.event_count.leader.personal_growth += milestoneResult.event_count.assistant.personal_growth;
+            milestoneResult.event_count.assistant.community = 0;
+            milestoneResult.event_count.assistant.outdoors = 0;
+            milestoneResult.event_count.assistant.creative = 0;
+            milestoneResult.event_count.assistant.personal_growth = 0;
+        }
+
         private string FormatMilestoneChallengeArea(PALEventCount eventCount)
         {
             var community = (int)eventCount.community == 1 ? "Co " : (int)eventCount.community > 1 ? $"Co-{(int)eventCount.community} " : "";
@@ -162,13 +175,13 @@ namespace Topo.Services
             switch (currentLevel)
             {
                 case 1:
-                    target = 27;
+                    target = 26;
                     break;
                 case 2:
-                    target = 25;
+                    target = 24;
                     break;
                 case 3:
-                    target = 24;
+                    target = 20;
                     break;
             }
 
