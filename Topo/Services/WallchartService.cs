@@ -55,6 +55,7 @@ namespace Topo.Services
                 var memberMilestones = await _terrainAPIService.GetMilestoneResultsForMember(member.id);
                 foreach (var milestoneResult in memberMilestones.results.Where(r => r.section == _storageService.Section).OrderBy(r => r.achievement_meta.stage))
                 {
+                    MoveMilestoneAssistsToLeads(milestoneResult);
                     switch (milestoneResult.achievement_meta.stage)
                     {
                         case 1:
@@ -64,8 +65,8 @@ namespace Topo.Services
                                 wallchartItem.Milestone1Creative = 6;
                                 wallchartItem.Milestone1Outdoors = 6;
                                 wallchartItem.Milestone1PersonalGrowth = 6;
-                                wallchartItem.Milestone1Assist = 2;
-                                wallchartItem.Milestone1Lead = 1;
+                                wallchartItem.Milestone1Assist = 0;
+                                wallchartItem.Milestone1Lead = 2;
                                 wallchartItem.Milestone1Awarded = milestoneResult.status_updated;
                                 wallchartItem.Milestone1Presented = GetPresentedDate(member.id, "Milestone 1");
                             }
@@ -86,8 +87,8 @@ namespace Topo.Services
                                 wallchartItem.Milestone2Creative = 5;
                                 wallchartItem.Milestone2Outdoors = 5;
                                 wallchartItem.Milestone2PersonalGrowth = 5;
-                                wallchartItem.Milestone2Assist = 3;
-                                wallchartItem.Milestone2Lead = 2;
+                                wallchartItem.Milestone2Assist = 0;
+                                wallchartItem.Milestone2Lead = 4;
                                 wallchartItem.Milestone2Awarded = milestoneResult.status_updated;
                                 wallchartItem.Milestone2Presented = GetPresentedDate(member.id, "Milestone 2");
                             }
@@ -149,6 +150,8 @@ namespace Topo.Services
                     }
                 }
                 wallchartItem.OASStageProgressions = oasResults.results.Where(o => o.status == "awarded" && o.section == _storageService.Section).Count();
+                // Double Count OAS Stage Progressions for stages 7 and above.
+                wallchartItem.OASStageProgressions += oasResults.results.Where(o => o.achievement_meta.stage >=7 && o.status == "awarded" && o.section == _storageService.Section).Count();
                 // Member
                 wallchartItem.MemberId = member.id;
                 wallchartItem.MemberName = $"{member.first_name} {_membersService.GetMemberLastName(selectedUnitId, member.id).Result}";
@@ -214,6 +217,18 @@ namespace Topo.Services
             }
             _storageService.CachedWallchartItems.Add(new KeyValuePair<string, List<WallchartItemModel>>(selectedUnitId, wallchartItems));
             return wallchartItems;
+        }
+
+        private void MoveMilestoneAssistsToLeads(MilestoneResult milestoneResult)
+        {
+            milestoneResult.event_count.leader.community += milestoneResult.event_count.assistant.community;
+            milestoneResult.event_count.leader.outdoors += milestoneResult.event_count.assistant.outdoors;
+            milestoneResult.event_count.leader.creative += milestoneResult.event_count.assistant.creative;
+            milestoneResult.event_count.leader.personal_growth += milestoneResult.event_count.assistant.personal_growth;
+            milestoneResult.event_count.assistant.community = 0;
+            milestoneResult.event_count.assistant.outdoors = 0;
+            milestoneResult.event_count.assistant.creative = 0;
+            milestoneResult.event_count.assistant.personal_growth = 0;
         }
 
         private async Task<DateTime?> GetIntroToScouting(string memberId)

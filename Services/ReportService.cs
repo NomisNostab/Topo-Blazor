@@ -65,7 +65,39 @@ namespace Topo.Services
             peakAward
         }
 
-        private Color[] Milestone1ParticipateColours = new Color[]
+        private Color[] MilestoneColours1 = new Color[]
+        {
+            Color.FromArgb(236, 82, 82),
+            Color.FromArgb(156, 242, 80)
+        };
+
+        private Color[] MilestoneColours2 = new Color[]
+        {
+            Color.FromArgb(236, 82, 82),
+            Color.FromArgb(253, 238, 0),
+            Color.FromArgb(156, 242, 80)
+        };
+
+        private Color[] MilestoneColours4 = new Color[]
+        {
+            Color.FromArgb(236, 82, 82),
+            Color.FromArgb(244, 157, 43),
+            Color.FromArgb(253, 238, 0),
+            Color.FromArgb(206, 240, 38),
+            Color.FromArgb(156, 242, 80)
+        };
+
+        private Color[] MilestoneColours5 = new Color[]
+        {
+            Color.FromArgb(236, 82, 82),
+            Color.FromArgb(241, 131, 57),
+            Color.FromArgb(248, 189, 26),
+            Color.FromArgb(221, 239, 26),
+            Color.FromArgb(184, 241, 57),
+            Color.FromArgb(156, 242, 80)
+        };
+
+        private Color[] MilestoneColours6 = new Color[]
         {
             Color.FromArgb(236, 82, 82),
             Color.FromArgb(241, 129, 57),
@@ -76,45 +108,6 @@ namespace Topo.Services
             Color.FromArgb(156, 242, 80)
          };
 
-        private Color[] Milestone1AssistColours = new Color[]
-        {
-            Color.FromArgb(236, 82, 82),
-            Color.FromArgb(253, 238, 0),
-            Color.FromArgb(156, 242, 80)
-        };
-
-        private Color[] Milestone1LeadColours = new Color[]
-        {
-            Color.FromArgb(236, 82, 82),
-            Color.FromArgb(156, 242, 80)
-        };
-
-        private Color[] Milestone2ParticipateColours = new Color[]
-        {
-            Color.FromArgb(236, 82, 82),
-            Color.FromArgb(241, 131, 57),
-            Color.FromArgb(248, 189, 26),
-            Color.FromArgb(221, 239, 26),
-            Color.FromArgb(184, 241, 57),
-            Color.FromArgb(156, 242, 80)
-        };
-
-        private Color[] Milestone2AssistColours = new Color[]
-        {
-            Color.FromArgb(236, 82, 82),
-            Color.FromArgb(246, 176, 33),
-            Color.FromArgb(216, 240, 30),
-            Color.FromArgb(156, 242, 80)
-        };
-
-        private Color[] Milestone3Colours = new Color[]
-        {
-            Color.FromArgb(236, 82, 82),
-            Color.FromArgb(244, 157, 43),
-            Color.FromArgb(253, 238, 0),
-            Color.FromArgb(206, 240, 38),
-            Color.FromArgb(156, 242, 80)
-        };
 
         private bool RunningInUtc { get; set; }
 
@@ -1461,9 +1454,9 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 3].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, 3].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
                 sheet.Range[rowNumber, 3].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                sheet.Range[rowNumber, 3, rowNumber, 10].Merge();
-                sheet.Range[rowNumber, 3, rowNumber, 10].BorderAround();
-                sheet.Range[rowNumber, 3, rowNumber, 10].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                sheet.Range[rowNumber, 3, rowNumber, 8].Merge();
+                sheet.Range[rowNumber, 3, rowNumber, 8].BorderAround();
+                sheet.Range[rowNumber, 3, rowNumber, 8].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
                 sheet.SetRowHeight(rowNumber, 20);
 
                 rowNumber++;
@@ -1497,36 +1490,23 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 6].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, 6].BorderAround();
                 sheet.Range[rowNumber, 6].CellStyle.WrapText = true;
-                sheet.Range[rowNumber, 7].Text = GetAssistHeadingText(milestoneSummary.Key);
+                sheet.Range[rowNumber, 7].Text = GetLeadHeadingText(milestoneSummary.Key);
                 sheet.Range[rowNumber, 7].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, 7].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 sheet.Range[rowNumber - 1, 7, rowNumber, 7].Merge();
                 sheet.Range[rowNumber - 1, 7, rowNumber, 7].BorderAround();
                 sheet.Range[rowNumber - 1, 7, rowNumber, 7].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
-                sheet.Range[rowNumber, 8].Text = GetAssistHeadingText(milestoneSummary.Key) + " Areas";
+                sheet.Range[rowNumber, 8].Text = GetLeadHeadingText(milestoneSummary.Key) + " Areas";
                 sheet.Range[rowNumber, 8].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, 8].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 sheet.Range[rowNumber, 8].CellStyle.WrapText = true;
                 sheet.Range[rowNumber - 1, 8, rowNumber, 8].Merge();
                 sheet.Range[rowNumber - 1, 8, rowNumber, 8].BorderAround();
                 sheet.Range[rowNumber - 1, 8, rowNumber, 8].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
-                sheet.Range[rowNumber, 9].Text = GetLeadHeadingText(milestoneSummary.Key);
-                sheet.Range[rowNumber, 9].CellStyle.Font.Bold = true;
-                sheet.Range[rowNumber, 9].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                sheet.Range[rowNumber - 1, 9, rowNumber, 9].Merge();
-                sheet.Range[rowNumber - 1, 9, rowNumber, 9].BorderAround();
-                sheet.Range[rowNumber - 1, 9, rowNumber, 9].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
-                sheet.Range[rowNumber, 10].Text = GetLeadHeadingText(milestoneSummary.Key) + " Areas";
-                sheet.Range[rowNumber, 10].CellStyle.Font.Bold = true;
-                sheet.Range[rowNumber, 10].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                sheet.Range[rowNumber, 10].CellStyle.WrapText = true;
-                sheet.Range[rowNumber - 1, 10, rowNumber, 10].Merge();
-                sheet.Range[rowNumber - 1, 10, rowNumber, 10].BorderAround();
-                sheet.Range[rowNumber - 1, 10, rowNumber, 10].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
 
-                sheet.Range[rowNumber, 1, rowNumber, 10].CellStyle.VerticalAlignment = ExcelVAlign.VAlignBottom;
-                sheet.Range[rowNumber, 1, rowNumber, 10].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                sheet.Range[rowNumber, 1, rowNumber, 10].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                sheet.Range[rowNumber, 1, rowNumber, 8].CellStyle.VerticalAlignment = ExcelVAlign.VAlignBottom;
+                sheet.Range[rowNumber, 1, rowNumber, 8].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                sheet.Range[rowNumber, 1, rowNumber, 8].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
                 sheet.SetRowHeight(rowNumber, 35);
 
                 averageStartRow = rowNumber + 1;
@@ -1546,30 +1526,24 @@ namespace Topo.Services
                             SetMilestoneCell(sheet.Range[rowNumber, 4], 1, participateAssistLead.participate, memberSummary.milestone1ParticipateOutdoors);
                             SetMilestoneCell(sheet.Range[rowNumber, 5], 1, participateAssistLead.participate, memberSummary.milestone1ParticipateCreative);
                             SetMilestoneCell(sheet.Range[rowNumber, 6], 1, participateAssistLead.participate, memberSummary.milestone1ParticipatePersonalGrowth);
-                            SetMilestoneCell(sheet.Range[rowNumber, 7], 1, participateAssistLead.assist, memberSummary.milestone1Assist);
-                            SetMilestoneCell(sheet.Range[rowNumber, 8], 1, participateAssistLead.assist, memberSummary.milestone1Assist, memberSummary.milestone1AssistArea);
-                            SetMilestoneCell(sheet.Range[rowNumber, 9], 1, participateAssistLead.lead, memberSummary.milestone1Lead);
-                            SetMilestoneCell(sheet.Range[rowNumber, 10], 1, participateAssistLead.lead, memberSummary.milestone1Lead, memberSummary.milestone1LeadArea);
+                            SetMilestoneCell(sheet.Range[rowNumber, 7], 1, participateAssistLead.lead, memberSummary.milestone1Lead);
+                            SetMilestoneCell(sheet.Range[rowNumber, 8], 1, participateAssistLead.lead, memberSummary.milestone1Lead, memberSummary.milestone1LeadArea);
                             break;
                         case 2:
                             SetMilestoneCell(sheet.Range[rowNumber, 3], 2, participateAssistLead.participate, memberSummary.milestone2ParticipateCommunity);
                             SetMilestoneCell(sheet.Range[rowNumber, 4], 2, participateAssistLead.participate, memberSummary.milestone2ParticipateOutdoors);
                             SetMilestoneCell(sheet.Range[rowNumber, 5], 2, participateAssistLead.participate, memberSummary.milestone2ParticipateCreative);
                             SetMilestoneCell(sheet.Range[rowNumber, 6], 2, participateAssistLead.participate, memberSummary.milestone2ParticipatePersonalGrowth);
-                            SetMilestoneCell(sheet.Range[rowNumber, 7], 2, participateAssistLead.assist, memberSummary.milestone2Assist);
-                            SetMilestoneCell(sheet.Range[rowNumber, 8], 2, participateAssistLead.assist, memberSummary.milestone2Assist, memberSummary.milestone2AssistArea);
-                            SetMilestoneCell(sheet.Range[rowNumber, 9], 2, participateAssistLead.lead, memberSummary.milestone2Lead);
-                            SetMilestoneCell(sheet.Range[rowNumber, 10], 2, participateAssistLead.lead, memberSummary.milestone2Lead, memberSummary.milestone2LeadArea);
+                            SetMilestoneCell(sheet.Range[rowNumber, 7], 2, participateAssistLead.lead, memberSummary.milestone2Lead);
+                            SetMilestoneCell(sheet.Range[rowNumber, 8], 2, participateAssistLead.lead, memberSummary.milestone2Lead, memberSummary.milestone2LeadArea);
                             break;
                         case 3:
                             SetMilestoneCell(sheet.Range[rowNumber, 3], 3, participateAssistLead.participate, memberSummary.milestone3ParticipateCommunity);
                             SetMilestoneCell(sheet.Range[rowNumber, 4], 3, participateAssistLead.participate, memberSummary.milestone3ParticipateOutdoors);
                             SetMilestoneCell(sheet.Range[rowNumber, 5], 3, participateAssistLead.participate, memberSummary.milestone3ParticipateCreative);
                             SetMilestoneCell(sheet.Range[rowNumber, 6], 3, participateAssistLead.participate, memberSummary.milestone3ParticipatePersonalGrowth);
-                            SetMilestoneCell(sheet.Range[rowNumber, 7], 3, participateAssistLead.assist, memberSummary.milestone3Assist);
-                            SetMilestoneCell(sheet.Range[rowNumber, 8], 3, participateAssistLead.assist, memberSummary.milestone3Assist, memberSummary.milestone3AssistArea);
-                            SetMilestoneCell(sheet.Range[rowNumber, 9], 3, participateAssistLead.lead, memberSummary.milestone3Lead);
-                            SetMilestoneCell(sheet.Range[rowNumber, 10], 3, participateAssistLead.lead, memberSummary.milestone3Lead, memberSummary.milestone3LeadArea);
+                            SetMilestoneCell(sheet.Range[rowNumber, 7], 3, participateAssistLead.lead, memberSummary.milestone3Lead);
+                            SetMilestoneCell(sheet.Range[rowNumber, 8], 3, participateAssistLead.lead, memberSummary.milestone3Lead, memberSummary.milestone3LeadArea);
                             break;
                     }
                     sheet.Range[rowNumber, 3].BorderAround();
@@ -1578,9 +1552,7 @@ namespace Topo.Services
                     sheet.Range[rowNumber, 6].BorderAround();
                     sheet.Range[rowNumber, 7].BorderAround();
                     sheet.Range[rowNumber, 8].BorderAround();
-                    sheet.Range[rowNumber, 9].BorderAround();
-                    sheet.Range[rowNumber, 10].BorderAround();
-                    sheet.Range[rowNumber, 2, rowNumber, 10].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                    sheet.Range[rowNumber, 2, rowNumber, 8].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 }
 
                 // Add average row
@@ -1588,9 +1560,9 @@ namespace Topo.Services
                 rowNumber++;
                 sheet.Range[rowNumber, 2].Text = "Average";
                 sheet.Range[rowNumber, 2].BorderAround();
-                for (int i = 3; i <= 10; i++)
+                for (int i = 3; i <= 8; i++)
                 {
-                    if (!(i == 8 || i == 10)) // Don't total area text cols
+                    if (!(i == 8)) // Don't total area text cols
                     {
                         var avgRange = sheet.Range[averageStartRow, i, averageEndRow, i].AddressLocal;
                         sheet.Range[rowNumber, i].Formula = $"=AVERAGE({avgRange})";
@@ -1600,7 +1572,7 @@ namespace Topo.Services
                     sheet.Range[rowNumber, i].CellStyle.Font.Bold = true;
                     sheet.Range[rowNumber, i].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 }
-                sheet.Range[rowNumber, 2, rowNumber, 10].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                sheet.Range[rowNumber, 2, rowNumber, 8].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
 
                 rowNumber++;
                 rowNumber++;
@@ -1613,9 +1585,7 @@ namespace Topo.Services
             sheet.SetColumnWidth(5, 10);
             sheet.SetColumnWidth(6, 10);
             sheet.SetColumnWidth(7, 10);
-            sheet.SetColumnWidth(8, 10);
-            sheet.SetColumnWidth(9, 10);
-            sheet.SetColumnWidth(10, 10);
+            sheet.SetColumnWidth(8, 15);
 
             sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
             sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
@@ -1738,62 +1708,62 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 2, rowNumber, 3].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
                 sheet.Range[rowNumber, 2, rowNumber, 3].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
                 sheet.Range[rowNumber, 4].Text = "MILESTONE 1";
-                sheet.Range[rowNumber, 4, rowNumber, 9].Merge();
-                sheet.Range[rowNumber, 4, rowNumber, 9].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 4, rowNumber, 9].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 10].Text = "MILESTONE 2";
-                sheet.Range[rowNumber, 10, rowNumber, 15].Merge();
-                sheet.Range[rowNumber, 10, rowNumber, 15].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 10, rowNumber, 15].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 16].Text = "MILESTONE 3";
-                sheet.Range[rowNumber, 16, rowNumber, 21].Merge();
-                sheet.Range[rowNumber, 16, rowNumber, 21].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 16, rowNumber, 21].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 22].Text = "OUTDOOR ADVENTURE SKILLS";
-                sheet.Range[rowNumber, 22, rowNumber, 33].Merge();
-                sheet.Range[rowNumber, 22, rowNumber, 33].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 22, rowNumber, 33].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 34].Text = "SPECIAL INTEREST AREAS";
-                sheet.Range[rowNumber, 34, rowNumber, 39].Merge();
-                sheet.Range[rowNumber, 34, rowNumber, 39].CellStyle.WrapText = true;
-                sheet.Range[rowNumber, 34, rowNumber, 39].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 34, rowNumber, 39].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 40, rowNumber, 43].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 40, rowNumber, 43].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
-                sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.Font.Bold = true;
+                sheet.Range[rowNumber, 4, rowNumber, 8].Merge();
+                sheet.Range[rowNumber, 4, rowNumber, 8].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 4, rowNumber, 8].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 9].Text = "MILESTONE 2";
+                sheet.Range[rowNumber, 9, rowNumber, 13].Merge();
+                sheet.Range[rowNumber, 9, rowNumber, 13].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 9, rowNumber, 13].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 14].Text = "MILESTONE 3";
+                sheet.Range[rowNumber, 14, rowNumber, 18].Merge();
+                sheet.Range[rowNumber, 14, rowNumber, 18].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 14, rowNumber, 18].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 19].Text = "OUTDOOR ADVENTURE SKILLS";
+                sheet.Range[rowNumber, 19, rowNumber, 30].Merge();
+                sheet.Range[rowNumber, 19, rowNumber, 30].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 19, rowNumber, 30].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 31].Text = "SPECIAL INTEREST AREAS";
+                sheet.Range[rowNumber, 31, rowNumber, 36].Merge();
+                sheet.Range[rowNumber, 31, rowNumber, 36].CellStyle.WrapText = true;
+                sheet.Range[rowNumber, 31, rowNumber, 36].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 31, rowNumber, 36].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 37, rowNumber, 40].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 37, rowNumber, 40].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 2, rowNumber, 40].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                sheet.Range[rowNumber, 2, rowNumber, 40].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
+                sheet.Range[rowNumber, 2, rowNumber, 40].CellStyle.Font.Bold = true;
                 sheet.SetRowHeight(rowNumber, 30);
 
                 // Add Heading 2
                 rowNumber++;
-                sheet.Range[rowNumber, 2, rowNumber, 21].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 2, rowNumber, 21].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 22].Text = "CORE";
+                sheet.Range[rowNumber, 2, rowNumber, 18].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 2, rowNumber, 18].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 19].Text = "CORE";
+                sheet.Range[rowNumber, 19, rowNumber, 21].Merge();
+                sheet.Range[rowNumber, 19, rowNumber, 21].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 19, rowNumber, 21].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 22].Text = "LAND";
                 sheet.Range[rowNumber, 22, rowNumber, 24].Merge();
                 sheet.Range[rowNumber, 22, rowNumber, 24].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
                 sheet.Range[rowNumber, 22, rowNumber, 24].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 25].Text = "LAND";
+                sheet.Range[rowNumber, 25].Text = "WATER";
                 sheet.Range[rowNumber, 25, rowNumber, 27].Merge();
                 sheet.Range[rowNumber, 25, rowNumber, 27].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
                 sheet.Range[rowNumber, 25, rowNumber, 27].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 28].Text = "WATER";
-                sheet.Range[rowNumber, 28, rowNumber, 30].Merge();
-                sheet.Range[rowNumber, 28, rowNumber, 30].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 28, rowNumber, 30].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 31, rowNumber, 43].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 31, rowNumber, 43].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.Font.Bold = true;
+                sheet.Range[rowNumber, 28, rowNumber, 40].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 28, rowNumber, 40].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 2, rowNumber, 40].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                sheet.Range[rowNumber, 2, rowNumber, 40].CellStyle.Font.Bold = true;
 
                 // Add Heading 3
                 rowNumber++;
-                sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
-                sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.VerticalAlignment = ExcelVAlign.VAlignBottom;
-                sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.Rotation = 90;
-                sheet.Range[rowNumber, 1, rowNumber, 43].CellStyle.Font.Bold = true;
+                sheet.Range[rowNumber, 2, rowNumber, 40].CellStyle.Borders[ExcelBordersIndex.EdgeLeft].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 2, rowNumber, 40].CellStyle.Borders[ExcelBordersIndex.EdgeRight].LineStyle = ExcelLineStyle.Thin;
+                sheet.Range[rowNumber, 2, rowNumber, 40].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                sheet.Range[rowNumber, 2, rowNumber, 40].CellStyle.VerticalAlignment = ExcelVAlign.VAlignBottom;
+                sheet.Range[rowNumber, 2, rowNumber, 40].CellStyle.Rotation = 90;
+                sheet.Range[rowNumber, 1, rowNumber, 40].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, 1].Text = " Name";
                 sheet.Range[rowNumber, 2].Text = " Intro To Scouting";
                 sheet.Range[rowNumber, 3].Text = " Intro To Section";
@@ -1801,42 +1771,39 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 5].Text = " Creative (6)";
                 sheet.Range[rowNumber, 6].Text = " Outdoors (6)";
                 sheet.Range[rowNumber, 7].Text = " Personal Growth (6)";
-                sheet.Range[rowNumber, 8].Text = " Assist (2)";
-                sheet.Range[rowNumber, 9].Text = " Lead (1)";
-                sheet.Range[rowNumber, 10].Text = " Community (5)";
-                sheet.Range[rowNumber, 11].Text = " Creative (5)";
-                sheet.Range[rowNumber, 12].Text = " Outdoors (5)";
-                sheet.Range[rowNumber, 13].Text = " Personal Growth (5)";
-                sheet.Range[rowNumber, 14].Text = " Assist (3)";
-                sheet.Range[rowNumber, 15].Text = " Lead (2)";
-                sheet.Range[rowNumber, 16].Text = " Community (4)";
-                sheet.Range[rowNumber, 17].Text = " Creative (4)";
-                sheet.Range[rowNumber, 18].Text = " Outdoors (4)";
-                sheet.Range[rowNumber, 19].Text = " Personal Growth (4)";
-                sheet.Range[rowNumber, 20].Text = " Assist (4)";
-                sheet.Range[rowNumber, 21].Text = " Lead (4)";
-                sheet.Range[rowNumber, 22].Text = " Bushcraft";
-                sheet.Range[rowNumber, 23].Text = " Bushwalking";
-                sheet.Range[rowNumber, 24].Text = " Camping";
-                sheet.Range[rowNumber, 25].Text = " Alpine";
-                sheet.Range[rowNumber, 26].Text = " Cycling";
-                sheet.Range[rowNumber, 27].Text = " Vertical";
-                sheet.Range[rowNumber, 28].Text = " Aquatics";
-                sheet.Range[rowNumber, 29].Text = " Boating";
-                sheet.Range[rowNumber, 30].Text = " Paddling";
-                sheet.Range[rowNumber, 31].Text = " Total Progressions";
-                sheet.Range[rowNumber, 32].Text = " Total Nights Camped";
-                sheet.Range[rowNumber, 33].Text = " Total KMs Hiked";
-                sheet.Range[rowNumber, 34].Text = " Adventure & Sport";
-                sheet.Range[rowNumber, 35].Text = " Arts & Literature";
-                sheet.Range[rowNumber, 36].Text = " Environment";
-                sheet.Range[rowNumber, 37].Text = " STEM & Innovation";
-                sheet.Range[rowNumber, 38].Text = " Growth & Development";
-                sheet.Range[rowNumber, 39].Text = " Creating a Better World";
-                sheet.Range[rowNumber, 40].Text = " Leadership Course";
-                sheet.Range[rowNumber, 41].Text = " Adventurous Journey";
-                sheet.Range[rowNumber, 42].Text = " Personal Reflection";
-                sheet.Range[rowNumber, 43].Text = " PEAK AWARD";
+                sheet.Range[rowNumber, 8].Text = " Lead (2)";
+                sheet.Range[rowNumber, 9].Text = " Community (5)";
+                sheet.Range[rowNumber, 10].Text = " Creative (5)";
+                sheet.Range[rowNumber, 11].Text = " Outdoors (5)";
+                sheet.Range[rowNumber, 12].Text = " Personal Growth (5)";
+                sheet.Range[rowNumber, 13].Text = " Lead (4)";
+                sheet.Range[rowNumber, 14].Text = " Community (4)";
+                sheet.Range[rowNumber, 15].Text = " Creative (4)";
+                sheet.Range[rowNumber, 16].Text = " Outdoors (4)";
+                sheet.Range[rowNumber, 17].Text = " Personal Growth (4)";
+                sheet.Range[rowNumber, 18].Text = " Lead (6)";
+                sheet.Range[rowNumber, 19].Text = " Bushcraft";
+                sheet.Range[rowNumber, 20].Text = " Bushwalking";
+                sheet.Range[rowNumber, 21].Text = " Camping";
+                sheet.Range[rowNumber, 22].Text = " Alpine";
+                sheet.Range[rowNumber, 23].Text = " Cycling";
+                sheet.Range[rowNumber, 24].Text = " Vertical";
+                sheet.Range[rowNumber, 25].Text = " Aquatics";
+                sheet.Range[rowNumber, 26].Text = " Boating";
+                sheet.Range[rowNumber, 27].Text = " Paddling";
+                sheet.Range[rowNumber, 28].Text = " Total Progressions";
+                sheet.Range[rowNumber, 29].Text = " Total Nights Camped";
+                sheet.Range[rowNumber, 30].Text = " Total KMs Hiked";
+                sheet.Range[rowNumber, 31].Text = " Adventure & Sport";
+                sheet.Range[rowNumber, 32].Text = " Arts & Literature";
+                sheet.Range[rowNumber, 33].Text = " Environment";
+                sheet.Range[rowNumber, 34].Text = " STEM & Innovation";
+                sheet.Range[rowNumber, 35].Text = " Growth & Development";
+                sheet.Range[rowNumber, 36].Text = " Creating a Better World";
+                sheet.Range[rowNumber, 37].Text = " Leadership Course";
+                sheet.Range[rowNumber, 38].Text = " Adventurous Journey";
+                sheet.Range[rowNumber, 39].Text = " Personal Reflection";
+                sheet.Range[rowNumber, 40].Text = " PEAK AWARD";
                 sheet.SetRowHeight(rowNumber, 120);
 
                 foreach (var wallchartEntry in templatAnswerGroup.OrderBy(x => x.MemberName))
@@ -1848,14 +1815,14 @@ namespace Topo.Services
                     if (wallchartEntry.Milestone1Presented.HasValue)
                     {
                         sheet.Range[rowNumber, 4].DateTime = wallchartEntry.Milestone1Presented.Value;
-                        sheet.Range[rowNumber, 4, rowNumber, 9].Merge();
-                        sheet.Range[rowNumber, 4, rowNumber, 9].CellStyle.Color = Milestone1LeadColours[1];
+                        sheet.Range[rowNumber, 4, rowNumber, 8].Merge();
+                        sheet.Range[rowNumber, 4, rowNumber, 8].CellStyle.Color = MilestoneColours1[1];
                     }
                     else if (wallchartEntry.Milestone1Awarded.HasValue)
                     {
                         sheet.Range[rowNumber, 4].Text = $"{wallchartEntry.Milestone1Awarded.Value.ToShortDateString()}*";
-                        sheet.Range[rowNumber, 4, rowNumber, 9].Merge();
-                        sheet.Range[rowNumber, 4, rowNumber, 9].CellStyle.Color = Milestone1LeadColours[1];
+                        sheet.Range[rowNumber, 4, rowNumber, 8].Merge();
+                        sheet.Range[rowNumber, 4, rowNumber, 8].CellStyle.Color = MilestoneColours1[1];
                     }
                     else
                     {
@@ -1863,82 +1830,79 @@ namespace Topo.Services
                         SetWallchartCell(sheet.Range[rowNumber, 5], 1, wallchartGroups.participate, wallchartEntry.Milestone1Creative);
                         SetWallchartCell(sheet.Range[rowNumber, 6], 1, wallchartGroups.participate, wallchartEntry.Milestone1Outdoors);
                         SetWallchartCell(sheet.Range[rowNumber, 7], 1, wallchartGroups.participate, wallchartEntry.Milestone1PersonalGrowth);
-                        SetWallchartCell(sheet.Range[rowNumber, 8], 1, wallchartGroups.assist, wallchartEntry.Milestone1Assist);
-                        SetWallchartCell(sheet.Range[rowNumber, 9], 1, wallchartGroups.lead, wallchartEntry.Milestone1Lead);
+                        SetWallchartCell(sheet.Range[rowNumber, 8], 1, wallchartGroups.lead, wallchartEntry.Milestone1Lead);
                     }
 
                     if (wallchartEntry.Milestone2Presented.HasValue)
                     {
-                        sheet.Range[rowNumber, 10].DateTime = wallchartEntry.Milestone2Presented.Value;
-                        sheet.Range[rowNumber, 10, rowNumber, 15].Merge();
-                        sheet.Range[rowNumber, 10, rowNumber, 15].CellStyle.Color = Milestone1LeadColours[1];
+                        sheet.Range[rowNumber, 9].DateTime = wallchartEntry.Milestone2Presented.Value;
+                        sheet.Range[rowNumber, 9, rowNumber, 13].Merge();
+                        sheet.Range[rowNumber, 9, rowNumber, 13].CellStyle.Color = MilestoneColours1[1];
                     }
                     else if (wallchartEntry.Milestone2Awarded.HasValue)
                     {
-                        sheet.Range[rowNumber, 10].Text = $"{wallchartEntry.Milestone2Awarded.Value.ToShortDateString()}*";
-                        sheet.Range[rowNumber, 10, rowNumber, 15].Merge();
-                        sheet.Range[rowNumber, 10, rowNumber, 15].CellStyle.Color = Milestone1LeadColours[1];
+                        sheet.Range[rowNumber, 9].Text = $"{wallchartEntry.Milestone2Awarded.Value.ToShortDateString()}*";
+                        sheet.Range[rowNumber, 9, rowNumber, 13].Merge();
+                        sheet.Range[rowNumber, 9, rowNumber, 13].CellStyle.Color = MilestoneColours1[1];
                     }
                     else
                     {
-                        SetWallchartCell(sheet.Range[rowNumber, 10], 2, wallchartGroups.participate, wallchartEntry.Milestone2Community);
-                        SetWallchartCell(sheet.Range[rowNumber, 11], 2, wallchartGroups.participate, wallchartEntry.Milestone2Creative);
-                        SetWallchartCell(sheet.Range[rowNumber, 12], 2, wallchartGroups.participate, wallchartEntry.Milestone2Outdoors);
-                        SetWallchartCell(sheet.Range[rowNumber, 13], 2, wallchartGroups.participate, wallchartEntry.Milestone2PersonalGrowth);
-                        SetWallchartCell(sheet.Range[rowNumber, 14], 2, wallchartGroups.assist, wallchartEntry.Milestone2Assist);
-                        SetWallchartCell(sheet.Range[rowNumber, 15], 2, wallchartGroups.lead, wallchartEntry.Milestone2Lead);
+                        SetWallchartCell(sheet.Range[rowNumber, 9], 2, wallchartGroups.participate, wallchartEntry.Milestone2Community);
+                        SetWallchartCell(sheet.Range[rowNumber, 10], 2, wallchartGroups.participate, wallchartEntry.Milestone2Creative);
+                        SetWallchartCell(sheet.Range[rowNumber, 11], 2, wallchartGroups.participate, wallchartEntry.Milestone2Outdoors);
+                        SetWallchartCell(sheet.Range[rowNumber, 12], 2, wallchartGroups.participate, wallchartEntry.Milestone2PersonalGrowth);
+                        SetWallchartCell(sheet.Range[rowNumber, 13], 2, wallchartGroups.lead, wallchartEntry.Milestone2Lead);
                     }
 
                     if (wallchartEntry.Milestone3Presented.HasValue)
                     {
-                        sheet.Range[rowNumber, 16].DateTime = wallchartEntry.Milestone3Presented.Value;
-                        sheet.Range[rowNumber, 16, rowNumber, 21].Merge();
-                        sheet.Range[rowNumber, 16, rowNumber, 21].CellStyle.Color = Milestone1LeadColours[1];
+                        sheet.Range[rowNumber, 14].DateTime = wallchartEntry.Milestone3Presented.Value;
+                        sheet.Range[rowNumber, 14, rowNumber, 18].Merge();
+                        sheet.Range[rowNumber, 14, rowNumber, 18].CellStyle.Color = MilestoneColours1[1];
                     }
                     else if (wallchartEntry.Milestone3Awarded.HasValue)
                     {
-                        sheet.Range[rowNumber, 16].Text = $"{wallchartEntry.Milestone3Awarded.Value.ToShortDateString()}*";
-                        sheet.Range[rowNumber, 16, rowNumber, 21].Merge();
-                        sheet.Range[rowNumber, 16, rowNumber, 21].CellStyle.Color = Milestone1LeadColours[1];
+                        sheet.Range[rowNumber, 14].Text = $"{wallchartEntry.Milestone3Awarded.Value.ToShortDateString()}*";
+                        sheet.Range[rowNumber, 14, rowNumber, 18].Merge();
+                        sheet.Range[rowNumber, 14, rowNumber, 18].CellStyle.Color = MilestoneColours1[1];
                     }
                     else
                     {
-                        SetWallchartCell(sheet.Range[rowNumber, 16], 3, wallchartGroups.participate, wallchartEntry.Milestone3Community);
-                        SetWallchartCell(sheet.Range[rowNumber, 17], 3, wallchartGroups.participate, wallchartEntry.Milestone3Creative);
-                        SetWallchartCell(sheet.Range[rowNumber, 18], 3, wallchartGroups.participate, wallchartEntry.Milestone3Outdoors);
-                        SetWallchartCell(sheet.Range[rowNumber, 19], 3, wallchartGroups.participate, wallchartEntry.Milestone3PersonalGrowth);
-                        SetWallchartCell(sheet.Range[rowNumber, 20], 3, wallchartGroups.assist, wallchartEntry.Milestone3Assist);
-                        SetWallchartCell(sheet.Range[rowNumber, 21], 3, wallchartGroups.lead, wallchartEntry.Milestone3Lead);
+                        SetWallchartCell(sheet.Range[rowNumber, 14], 3, wallchartGroups.participate, wallchartEntry.Milestone3Community);
+                        SetWallchartCell(sheet.Range[rowNumber, 15], 3, wallchartGroups.participate, wallchartEntry.Milestone3Creative);
+                        SetWallchartCell(sheet.Range[rowNumber, 16], 3, wallchartGroups.participate, wallchartEntry.Milestone3Outdoors);
+                        SetWallchartCell(sheet.Range[rowNumber, 17], 3, wallchartGroups.participate, wallchartEntry.Milestone3PersonalGrowth);
+                        SetWallchartCell(sheet.Range[rowNumber, 18], 3, wallchartGroups.lead, wallchartEntry.Milestone3Lead);
                     }
-                    SetWallchartCell(sheet.Range[rowNumber, 22], 0, wallchartGroups.oasCore, wallchartEntry.OASBushcraftStage);
-                    SetWallchartCell(sheet.Range[rowNumber, 23], 0, wallchartGroups.oasCore, wallchartEntry.OASBushwalkingStage);
-                    SetWallchartCell(sheet.Range[rowNumber, 24], 0, wallchartGroups.oasCore, wallchartEntry.OASCampingStage);
-                    SetWallchartCell(sheet.Range[rowNumber, 25], 0, wallchartGroups.oasLand, wallchartEntry.OASAlpineStage);
-                    SetWallchartCell(sheet.Range[rowNumber, 26], 0, wallchartGroups.oasLand, wallchartEntry.OASCyclingStage);
-                    SetWallchartCell(sheet.Range[rowNumber, 27], 0, wallchartGroups.oasLand, wallchartEntry.OASVerticalStage);
-                    SetWallchartCell(sheet.Range[rowNumber, 28], 0, wallchartGroups.oasWater, wallchartEntry.OASAquaticsStage);
-                    SetWallchartCell(sheet.Range[rowNumber, 29], 0, wallchartGroups.oasWater, wallchartEntry.OASBoatingStage);
-                    SetWallchartCell(sheet.Range[rowNumber, 30], 0, wallchartGroups.oasWater, wallchartEntry.OASPaddlingStage);
-                    SetWallchartCell(sheet.Range[rowNumber, 31], 0, wallchartGroups.oasProgression, wallchartEntry.OASStageProgressions);
-                    SetWallchartCell(sheet.Range[rowNumber, 32], 0, wallchartGroups.oasProgression, wallchartEntry.NightsCamped);
-                    SetWallchartCell(sheet.Range[rowNumber, 33], 0, wallchartGroups.oasProgression, wallchartEntry.KMsHiked);
-                    SetWallchartCell(sheet.Range[rowNumber, 34], 0, wallchartGroups.siaOdd, wallchartEntry.SIAAdventureSport);
-                    SetWallchartCell(sheet.Range[rowNumber, 35], 0, wallchartGroups.siaEven, wallchartEntry.SIAArtsLiterature);
-                    SetWallchartCell(sheet.Range[rowNumber, 36], 0, wallchartGroups.siaOdd, wallchartEntry.SIAEnvironment);
-                    SetWallchartCell(sheet.Range[rowNumber, 37], 0, wallchartGroups.siaEven, wallchartEntry.SIAStemInnovation);
-                    SetWallchartCell(sheet.Range[rowNumber, 38], 0, wallchartGroups.siaOdd, wallchartEntry.SIAGrowthDevelopment);
-                    SetWallchartCell(sheet.Range[rowNumber, 39], 0, wallchartGroups.siaEven, wallchartEntry.SIACreatingABetterWorld);
-                    SetWallchartCell(sheet.Range[rowNumber, 40], 0, wallchartGroups.leadershipCourse, wallchartEntry.LeadershipCourse);
-                    SetWallchartCell(sheet.Range[rowNumber, 41], 0, wallchartGroups.adventurousJourney, wallchartEntry.AdventurousJourney);
-                    SetWallchartCell(sheet.Range[rowNumber, 42], 0, wallchartGroups.personalReflection, wallchartEntry.PersonalReflection);
-                    //SetWallchartCell(sheet.Range[rowNumber, 43], 0, wallchartGroups.intro, wallchartEntry.PeakAward); // TODO: Change to date
-                    sheet.Range[rowNumber, 1, rowNumber, 43].BorderAround();
-                    sheet.Range[rowNumber, 1, rowNumber, 43].BorderInside();
-                    sheet.Range[rowNumber, 2, rowNumber, 43].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                    SetWallchartCell(sheet.Range[rowNumber, 19], 0, wallchartGroups.oasCore, wallchartEntry.OASBushcraftStage);
+                    SetWallchartCell(sheet.Range[rowNumber, 20], 0, wallchartGroups.oasCore, wallchartEntry.OASBushwalkingStage);
+                    SetWallchartCell(sheet.Range[rowNumber, 21], 0, wallchartGroups.oasCore, wallchartEntry.OASCampingStage);
+                    SetWallchartCell(sheet.Range[rowNumber, 22], 0, wallchartGroups.oasLand, wallchartEntry.OASAlpineStage);
+                    SetWallchartCell(sheet.Range[rowNumber, 23], 0, wallchartGroups.oasLand, wallchartEntry.OASCyclingStage);
+                    SetWallchartCell(sheet.Range[rowNumber, 24], 0, wallchartGroups.oasLand, wallchartEntry.OASVerticalStage);
+                    SetWallchartCell(sheet.Range[rowNumber, 25], 0, wallchartGroups.oasWater, wallchartEntry.OASAquaticsStage);
+                    SetWallchartCell(sheet.Range[rowNumber, 26], 0, wallchartGroups.oasWater, wallchartEntry.OASBoatingStage);
+                    SetWallchartCell(sheet.Range[rowNumber, 27], 0, wallchartGroups.oasWater, wallchartEntry.OASPaddlingStage);
+                    SetWallchartCell(sheet.Range[rowNumber, 28], 0, wallchartGroups.oasProgression, wallchartEntry.OASStageProgressions);
+                    SetWallchartCell(sheet.Range[rowNumber, 29], 0, wallchartGroups.oasProgression, wallchartEntry.NightsCamped);
+                    SetWallchartCell(sheet.Range[rowNumber, 30], 0, wallchartGroups.oasProgression, wallchartEntry.KMsHiked);
+                    SetWallchartCell(sheet.Range[rowNumber, 31], 0, wallchartGroups.siaOdd, wallchartEntry.SIAAdventureSport);
+                    SetWallchartCell(sheet.Range[rowNumber, 32], 0, wallchartGroups.siaEven, wallchartEntry.SIAArtsLiterature);
+                    SetWallchartCell(sheet.Range[rowNumber, 33], 0, wallchartGroups.siaOdd, wallchartEntry.SIAEnvironment);
+                    SetWallchartCell(sheet.Range[rowNumber, 34], 0, wallchartGroups.siaEven, wallchartEntry.SIAStemInnovation);
+                    SetWallchartCell(sheet.Range[rowNumber, 35], 0, wallchartGroups.siaOdd, wallchartEntry.SIAGrowthDevelopment);
+                    SetWallchartCell(sheet.Range[rowNumber, 36], 0, wallchartGroups.siaEven, wallchartEntry.SIACreatingABetterWorld);
+                    SetWallchartCell(sheet.Range[rowNumber, 37], 0, wallchartGroups.leadershipCourse, wallchartEntry.LeadershipCourse);
+                    SetWallchartCell(sheet.Range[rowNumber, 38], 0, wallchartGroups.adventurousJourney, wallchartEntry.AdventurousJourney);
+                    SetWallchartCell(sheet.Range[rowNumber, 39], 0, wallchartGroups.personalReflection, wallchartEntry.PersonalReflection);
+                    //SetWallchartCell(sheet.Range[rowNumber, 40], 0, wallchartGroups.intro, wallchartEntry.PeakAward); // TODO: Change to date
+                    sheet.Range[rowNumber, 1, rowNumber, 40].BorderAround();
+                    sheet.Range[rowNumber, 1, rowNumber, 40].BorderInside();
+                    sheet.Range[rowNumber, 2, rowNumber, 40].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 }
 
 
-                sheet.Range[1, 1, rowNumber, 43].AutofitColumns();
+                sheet.Range[1, 1, rowNumber, 40].AutofitColumns();
 
                 sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
                 sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
@@ -2131,18 +2095,6 @@ namespace Topo.Services
                 {
                     cellNumber++;
                     sheet.Range[rowNumber, cellNumber].Text = milestoneEvent.EventName;
-                    sheet.Range[rowNumber + 1, cellNumber].DateTime = milestoneEvent.EventDate;
-                    sheet.Range[rowNumber + 1, cellNumber].HorizontalAlignment = ExcelHAlign.HAlignLeft;
-                }
-                rowNumber++;
-                rowNumber++;
-                sheet.Range[rowNumber, 1].Text = "Assist:";
-                sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
-                cellNumber = 1;
-                foreach (var milestoneEvent in milestone.AssistLogs)
-                {
-                    cellNumber++;
-                    sheet.Range[rowNumber, cellNumber].Text = $"{milestoneEvent.EventName} {milestoneEvent.ChallengeAreaAbbrev}";
                     sheet.Range[rowNumber + 1, cellNumber].DateTime = milestoneEvent.EventDate;
                     sheet.Range[rowNumber + 1, cellNumber].HorizontalAlignment = ExcelHAlign.HAlignLeft;
                 }
@@ -2649,31 +2601,17 @@ namespace Topo.Services
             }
         }
 
-        private string GetAssistHeadingText(int currentLevel)
-        {
-            switch (currentLevel)
-            {
-                case 1:
-                    return "Assist - 2";
-                case 2:
-                    return "Assist - 3";
-                case 3:
-                    return "Assist - 4";
-                default:
-                    return "Assist";
-            }
-        }
 
         private string GetLeadHeadingText(int currentLevel)
         {
             switch (currentLevel)
             {
                 case 1:
-                    return "Lead - 1";
-                case 2:
                     return "Lead - 2";
-                case 3:
+                case 2:
                     return "Lead - 4";
+                case 3:
+                    return "Lead - 6";
                 default:
                     return "Lead";
             }
@@ -2702,11 +2640,9 @@ namespace Topo.Services
                 switch (pal)
                 {
                     case participateAssistLead.participate:
-                        return Milestone1ParticipateColours[Math.Min(count, 6)];
-                    case participateAssistLead.assist:
-                        return Milestone1AssistColours[Math.Min(count, 2)];
+                        return MilestoneColours6[Math.Min(count, 6)];
                     case participateAssistLead.lead:
-                        return Milestone1LeadColours[Math.Min(count, 1)];
+                        return MilestoneColours2[Math.Min(count, 2)];
                     default:
                         return Color.White;
                 }
@@ -2717,11 +2653,9 @@ namespace Topo.Services
                 switch (pal)
                 {
                     case participateAssistLead.participate:
-                        return Milestone2ParticipateColours[Math.Min(count, 5)];
-                    case participateAssistLead.assist:
-                        return Milestone2AssistColours[Math.Min(count, 3)];
+                        return MilestoneColours5[Math.Min(count, 5)];
                     case participateAssistLead.lead:
-                        return Milestone1AssistColours[Math.Min(count, 2)];
+                        return MilestoneColours4[Math.Min(count, 4)];
                     default:
                         return Color.White;
                 }
@@ -2732,11 +2666,9 @@ namespace Topo.Services
                 switch (pal)
                 {
                     case participateAssistLead.participate:
-                        return Milestone3Colours[Math.Min(count, 4)];
-                    case participateAssistLead.assist:
-                        return Milestone3Colours[Math.Min(count, 4)];
+                        return MilestoneColours4[Math.Min(count, 4)];
                     case participateAssistLead.lead:
-                        return Milestone3Colours[Math.Min(count, 4)];
+                        return MilestoneColours6[Math.Min(count, 6)];
                     default:
                         return Color.White;
                 }
@@ -2781,38 +2713,15 @@ namespace Topo.Services
                     {
                         case 1:
                             if (count == 6)
-                                cell.CellStyle.Color = Milestone1ParticipateColours[6];
+                                cell.CellStyle.Color = MilestoneColours6[6];
                             break;
                         case 2:
                             if (count == 5)
-                                cell.CellStyle.Color = Milestone2ParticipateColours[5];
+                                cell.CellStyle.Color = MilestoneColours5[5];
                             break;
                         case 3:
                             if (count >= 4)
-                                cell.CellStyle.Color = Milestone3Colours[4];
-                            break;
-                    }
-                    break;
-                case wallchartGroups.assist:
-                    switch (currentLevel)
-                    {
-                        case 1:
-                            if (count == 2)
-                                cell.CellStyle.Color = Milestone1AssistColours[2];
-                            else
-                                cell.CellStyle.Color = Color.Gainsboro;
-                            break;
-                        case 2:
-                            if (count == 3)
-                                cell.CellStyle.Color = Milestone2AssistColours[3];
-                            else
-                                cell.CellStyle.Color = Color.Gainsboro;
-                            break;
-                        case 3:
-                            if (count >= 4)
-                                cell.CellStyle.Color = Milestone3Colours[4];
-                            else
-                                cell.CellStyle.Color = Color.Gainsboro;
+                                cell.CellStyle.Color = MilestoneColours4[4];
                             break;
                     }
                     break;
@@ -2820,20 +2729,20 @@ namespace Topo.Services
                     switch (currentLevel)
                     {
                         case 1:
-                            if (count == 1)
-                                cell.CellStyle.Color = Milestone1LeadColours[1];
+                            if (count == 2)
+                                cell.CellStyle.Color = MilestoneColours2[2];
                             else
                                 cell.CellStyle.Color = Color.Gainsboro;
                             break;
                         case 2:
-                            if (count == 2)
-                                cell.CellStyle.Color = Milestone1AssistColours[2];
+                            if (count == 4)
+                                cell.CellStyle.Color = MilestoneColours4[4];
                             else
                                 cell.CellStyle.Color = Color.Gainsboro;
                             break;
                         case 3:
-                            if (count >= 4)
-                                cell.CellStyle.Color = Milestone3Colours[4];
+                            if (count >= 6)
+                                cell.CellStyle.Color = MilestoneColours6[6];
                             else
                                 cell.CellStyle.Color = Color.Gainsboro;
                             break;

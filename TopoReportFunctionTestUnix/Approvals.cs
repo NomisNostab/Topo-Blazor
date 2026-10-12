@@ -20,6 +20,7 @@ namespace TopoReportFunctionTest
         {
             SetEnvironment.SetSyncfusionLicense();
             _function = new Function();
+            string reportData = File.ReadAllText("ReportData/Approvals.json");
             _reportGenerationRequest = new ReportGenerationRequest()
             {
                 ReportType = ReportType.Approvals,
@@ -27,7 +28,7 @@ namespace TopoReportFunctionTest
                 Section = "scout",
                 UnitName = "Scout Unit",
                 OutputType = OutputType.PDF,
-                ReportData = ""
+                ReportData = reportData
             };
             if (!Directory.Exists("TestResults"))
                 Directory.CreateDirectory("TestResults");
@@ -41,7 +42,7 @@ namespace TopoReportFunctionTest
             var functionResult = _function.FunctionHandler(proxyRequest, null);
             //Convert Base64String into PDF document
             byte[] bytes = Convert.FromBase64String(functionResult);
-            FileStream fileStream = new FileStream(@"TestResults/AdditionalAwards_ToPDF.pdf", FileMode.Create);
+            FileStream fileStream = new FileStream(@"TestResults/Approvals_ToPDF.pdf", FileMode.Create);
             BinaryWriter writer = new BinaryWriter(fileStream);
             writer.Write(bytes, 0, bytes.Length);
             writer.Close();
