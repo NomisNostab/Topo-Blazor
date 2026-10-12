@@ -94,7 +94,7 @@ namespace Topo.Services
                                                                                             + (int)milestone1.event_count.assistant.creative
                                                                                             + (int)milestone1.event_count.assistant.personal_growth),
                         milestone1AssistArea = milestone1Skipped ? "" : FormatMilestoneChallengeArea(milestone1.event_count.assistant),
-                        milestone1Lead = milestone1Skipped ? 0 : (milestone1Awarded ? 1 : (int)milestone1.event_count.leader.community
+                        milestone1Lead = milestone1Skipped ? 0 : (milestone1Awarded ? 2 : (int)milestone1.event_count.leader.community
                                                                                             + (int)milestone1.event_count.leader.outdoors
                                                                                             + (int)milestone1.event_count.leader.creative
                                                                                             + (int)milestone1.event_count.leader.personal_growth),
@@ -108,7 +108,7 @@ namespace Topo.Services
                                                                                             + (int)milestone2.event_count.assistant.creative
                                                                                             + (int)milestone2.event_count.assistant.personal_growth),
                         milestone2AssistArea = milestone2Skipped ? "" : FormatMilestoneChallengeArea(milestone2.event_count.assistant),
-                        milestone2Lead = milestone2Skipped ? 0 : (milestone2Awarded ? 2 : (int)milestone2.event_count.leader.community
+                        milestone2Lead = milestone2Skipped ? 0 : (milestone2Awarded ? 4 : (int)milestone2.event_count.leader.community
                                                                                             + (int)milestone2.event_count.leader.outdoors
                                                                                             + (int)milestone2.event_count.leader.creative
                                                                                             + (int)milestone2.event_count.leader.personal_growth),
@@ -122,7 +122,7 @@ namespace Topo.Services
                                                                 + (int)milestone3.event_count.assistant.creative
                                                                 + (int)milestone3.event_count.assistant.personal_growth,
                         milestone3AssistArea = milestone3Skipped ? "" : FormatMilestoneChallengeArea(milestone3.event_count.assistant),
-                        milestone3Lead = milestone3Awarded ? 4 : (int)milestone3.event_count.leader.community
+                        milestone3Lead = milestone3Awarded ? 6 : (int)milestone3.event_count.leader.community
                                                                 + (int)milestone3.event_count.leader.outdoors
                                                                 + (int)milestone3.event_count.leader.creative
                                                                 + (int)milestone3.event_count.leader.personal_growth,
@@ -160,17 +160,13 @@ namespace Topo.Services
                                 + (currentLevel == 3 ? Math.Min(4.0, eventCount.participant.outdoors) : eventCount.participant.outdoors)
                                 + (currentLevel == 3 ? Math.Min(4.0, eventCount.participant.creative) : eventCount.participant.creative)
                                 + (currentLevel == 3 ? Math.Min(4.0, eventCount.participant.personal_growth) : eventCount.participant.personal_growth));
-            int assistantTotal = (int)(eventCount.assistant.community
-                                 + eventCount.assistant.creative
-                                 + eventCount.assistant.outdoors
-                                 + eventCount.assistant.personal_growth);
             int leaderTotal = (int)(eventCount.leader.community
                                  + eventCount.leader.creative
                                  + eventCount.leader.outdoors
                                  + eventCount.leader.personal_growth);
             var total = currentLevel == 3
-                    ? participantTotal + Math.Min(4, assistantTotal) + Math.Min(4, leaderTotal)
-                    : participantTotal + assistantTotal + leaderTotal;
+                    ? participantTotal + Math.Min(6, leaderTotal)
+                    : participantTotal + leaderTotal;
 
             switch (currentLevel)
             {
