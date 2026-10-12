@@ -22,4 +22,8 @@
     <ProjectReference Include="../TopoReportFunction/TopoReportFunction.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="ReportData\*.*" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
 </Project>

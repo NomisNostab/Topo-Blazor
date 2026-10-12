@@ -105,18 +105,15 @@ namespace Topo.Services
                 {
                     case 1:
                         participantCount = 6;
-                        assistCount = 2;
-                        leadCount = 1;
+                        leadCount = 2;
                         break;
                     case 2:
                         participantCount = 5;
-                        assistCount = 3;
-                        leadCount = 2;
+                        leadCount = 4;
                         break;
                     case 3:
                         participantCount = 4;
-                        assistCount = 4;
-                        leadCount = 4;
+                        leadCount = 6;
                         break;
                 }
                 var milestoneSummary = new MilestoneSummary();
@@ -231,19 +228,7 @@ namespace Topo.Services
                             });
                 }
 
-                var assistEvents = milestoneResult.event_log.Where(e => e.credit_type == "assistant").ToList();
-                foreach (var assistEvent in assistEvents.OrderBy(ae => ae.event_start_datetime).Take(assistCount))
-                {
-                    milestoneSummary.AssistLogs.Add(
-                        new MilestoneLog
-                        {
-                            ChallengeArea = assistEvent.challenge_area,
-                            EventName = assistEvent.event_name,
-                            EventDate = assistEvent.event_start_datetime
-                        });
-                }
-
-                var leadEvents = milestoneResult.event_log.Where(e => e.credit_type == "leader").ToList();
+                var leadEvents = milestoneResult.event_log.Where(e => e.credit_type == "leader" || e.credit_type == "assistant").ToList();
                 foreach (var leadEvent in leadEvents.OrderBy(le => le.event_start_datetime).Take(leadCount))
                 {
                     milestoneSummary.LeadLogs.Add(
@@ -259,19 +244,19 @@ namespace Topo.Services
                 switch (milestoneResult.achievement_meta.stage)
                 {
                     case 1:
-                        if (eventCount == 27  && milestoneSummary.Status == "In Progress")
+                        if (eventCount == 26  && milestoneSummary.Status == "In Progress")
                         {
                             milestoneSummary.Status = "Awaiting Review";
                         }
                         break;
                     case 2:
-                        if (eventCount == 25 && milestoneSummary.Status == "In Progress")
+                        if (eventCount == 24 && milestoneSummary.Status == "In Progress")
                         {
                             milestoneSummary.Status = "Awaiting Review";
                         }
                         break;
                     case 3:
-                        if (eventCount == 24 && milestoneSummary.Status == "In Progress")
+                        if (eventCount == 20 && milestoneSummary.Status == "In Progress")
                         {
                             milestoneSummary.Status = "Awaiting Review";
                         }
@@ -288,7 +273,7 @@ namespace Topo.Services
         private async Task<List<OASSummary>> GetOASSummaries(string memberId)
         {
             var oasSummaries = new List<OASSummary>();
-
+            _oasProgressionCount = 0;
             var oasResults = await _terrainAPIService.GetOASResultsForMember(memberId);
             foreach (var oasResult in oasResults.results.OrderBy(o => o.achievement_meta.stream).ThenBy(o => o.achievement_meta.stage).ThenBy(o => o.status_updated))
             {
@@ -316,9 +301,19 @@ namespace Topo.Services
                     Section = oasResult.section.ToLower().Substring(0,1),
                     Template = oasResult.template
                 });
+                
+                // Compute new progression for stage 7, 8 and 9
+                if ((oasResult.status == "awarded" || oasResult.status == "approved") && oasResult.section.ToLower() == _storageService.Section.ToLower())
+                {
+                    _oasProgressionCount ++;
+                    if (oasResult.achievement_meta.stage >=7)
+                    {
+                        _oasProgressionCount ++;
+                    }
+                }
             }
 
-            _oasProgressionCount = oasResults.results.Where(r => r.status == "awarded" && r.section == _storageService.Section).Count();
+            //_oasProgressionCount = oasResults.results.Where(r => r.status == "awarded" && r.section == _storageService.Section).Count();
             return oasSummaries;
         }
 
