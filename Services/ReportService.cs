@@ -1799,18 +1799,18 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 2].Text = " Intro To Scouting";
                 sheet.Range[rowNumber, 3].Text = " Intro To Section";
                 sheet.Range[rowNumber, 4].Text = " Community (6)";
-                sheet.Range[rowNumber, 5].Text = " Creative (6)";
-                sheet.Range[rowNumber, 6].Text = " Outdoors (6)";
+                sheet.Range[rowNumber, 5].Text = " Outdoors (6)";
+                sheet.Range[rowNumber, 6].Text = " Creative (6)";
                 sheet.Range[rowNumber, 7].Text = " Personal Growth (6)";
                 sheet.Range[rowNumber, 8].Text = " Lead (2)";
                 sheet.Range[rowNumber, 9].Text = " Community (5)";
-                sheet.Range[rowNumber, 10].Text = " Creative (5)";
-                sheet.Range[rowNumber, 11].Text = " Outdoors (5)";
+                sheet.Range[rowNumber, 10].Text = " Outdoors (5)";
+                sheet.Range[rowNumber, 11].Text = " Creative (5)";
                 sheet.Range[rowNumber, 12].Text = " Personal Growth (5)";
                 sheet.Range[rowNumber, 13].Text = " Lead (4)";
                 sheet.Range[rowNumber, 14].Text = " Community (4)";
-                sheet.Range[rowNumber, 15].Text = " Creative (4)";
-                sheet.Range[rowNumber, 16].Text = " Outdoors (4)";
+                sheet.Range[rowNumber, 15].Text = " Outdoors (4)";
+                sheet.Range[rowNumber, 16].Text = " Creative (4)";
                 sheet.Range[rowNumber, 17].Text = " Personal Growth (4)";
                 sheet.Range[rowNumber, 18].Text = " Lead (6)";
                 sheet.Range[rowNumber, 19].Text = " Bushcraft";
@@ -1858,8 +1858,8 @@ namespace Topo.Services
                     else
                     {
                         SetWallchartCell(sheet.Range[rowNumber, 4], 1, wallchartGroups.participate, wallchartEntry.Milestone1Community);
-                        SetWallchartCell(sheet.Range[rowNumber, 5], 1, wallchartGroups.participate, wallchartEntry.Milestone1Creative);
-                        SetWallchartCell(sheet.Range[rowNumber, 6], 1, wallchartGroups.participate, wallchartEntry.Milestone1Outdoors);
+                        SetWallchartCell(sheet.Range[rowNumber, 5], 1, wallchartGroups.participate, wallchartEntry.Milestone1Outdoors);
+                        SetWallchartCell(sheet.Range[rowNumber, 6], 1, wallchartGroups.participate, wallchartEntry.Milestone1Creative);
                         SetWallchartCell(sheet.Range[rowNumber, 7], 1, wallchartGroups.participate, wallchartEntry.Milestone1PersonalGrowth);
                         SetWallchartCell(sheet.Range[rowNumber, 8], 1, wallchartGroups.lead, wallchartEntry.Milestone1Lead);
                     }
@@ -1879,8 +1879,8 @@ namespace Topo.Services
                     else
                     {
                         SetWallchartCell(sheet.Range[rowNumber, 9], 2, wallchartGroups.participate, wallchartEntry.Milestone2Community);
-                        SetWallchartCell(sheet.Range[rowNumber, 10], 2, wallchartGroups.participate, wallchartEntry.Milestone2Creative);
-                        SetWallchartCell(sheet.Range[rowNumber, 11], 2, wallchartGroups.participate, wallchartEntry.Milestone2Outdoors);
+                        SetWallchartCell(sheet.Range[rowNumber, 10], 2, wallchartGroups.participate, wallchartEntry.Milestone2Outdoors);
+                        SetWallchartCell(sheet.Range[rowNumber, 11], 2, wallchartGroups.participate, wallchartEntry.Milestone2Creative);
                         SetWallchartCell(sheet.Range[rowNumber, 12], 2, wallchartGroups.participate, wallchartEntry.Milestone2PersonalGrowth);
                         SetWallchartCell(sheet.Range[rowNumber, 13], 2, wallchartGroups.lead, wallchartEntry.Milestone2Lead);
                     }
@@ -1900,8 +1900,8 @@ namespace Topo.Services
                     else
                     {
                         SetWallchartCell(sheet.Range[rowNumber, 14], 3, wallchartGroups.participate, wallchartEntry.Milestone3Community);
-                        SetWallchartCell(sheet.Range[rowNumber, 15], 3, wallchartGroups.participate, wallchartEntry.Milestone3Creative);
-                        SetWallchartCell(sheet.Range[rowNumber, 16], 3, wallchartGroups.participate, wallchartEntry.Milestone3Outdoors);
+                        SetWallchartCell(sheet.Range[rowNumber, 15], 3, wallchartGroups.participate, wallchartEntry.Milestone3Outdoors);
+                        SetWallchartCell(sheet.Range[rowNumber, 16], 3, wallchartGroups.participate, wallchartEntry.Milestone3Creative);
                         SetWallchartCell(sheet.Range[rowNumber, 17], 3, wallchartGroups.participate, wallchartEntry.Milestone3PersonalGrowth);
                         SetWallchartCell(sheet.Range[rowNumber, 18], 3, wallchartGroups.lead, wallchartEntry.Milestone3Lead);
                     }
