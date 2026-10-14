@@ -54,7 +54,13 @@ namespace Topo.Services
                                 MemberRole = getLogbookDetail.details.your_role,
                                 KilometersHiked = kmsHiked,
                                 NightsCamped = (float)nightsCamped,
-                                Verifier = getLogbookDetail.details.verifier.name
+                                VerifierName = getLogbookDetail.details.verifier.name,
+                                VerifierContact = getLogbookDetail.details.verifier.contact,
+                                Weather = getLogbookDetail.details.weather,
+                                Location = getLogbookDetail.details.location,
+                                Grade = getLogbookDetail.details.activity_grade,
+                                OtherParticipants = getLogbookDetail.details.other_participants,
+                                Purpose = getLogbookDetail.details.purpose
                             });
                         }
                     }
