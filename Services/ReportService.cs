@@ -757,7 +757,7 @@ namespace Topo.Services
             sheet.PageSetup.HeaderMargin = 0;
             sheet.PageSetup.FooterMargin = 0;
             sheet.PageSetup.FitToPagesWide = 1;
-            
+
 
             return workbook;
         }
@@ -1635,6 +1635,22 @@ namespace Topo.Services
 
                 sheet.SetRowHeight(rowNumber, 20);
 
+                rowNumber++;
+                sheet.Range[rowNumber, 2].Text = "Activity Name";
+                sheet.Range[rowNumber, 3].Text = "Activity Area";
+                sheet.Range[rowNumber, 4].Text = "Activity Date";
+                sheet.Range[rowNumber, 5].Text = "Member Role";
+                sheet.Range[rowNumber, 6].Text = "Kilometers Hiked";
+                sheet.Range[rowNumber, 7].Text = "Nights Camped";
+                sheet.Range[rowNumber, 8].Text = "Weather";
+                sheet.Range[rowNumber, 9].Text = "Location";
+                sheet.Range[rowNumber, 10].Text = "Grade";
+                sheet.Range[rowNumber, 11].Text = "Other Participants";
+                sheet.Range[rowNumber, 12].Text = "Purpose";
+                sheet.Range[rowNumber, 13].Text = "Verifier Name";
+                sheet.Range[rowNumber, 14].Text = "Verifier Contact";
+                sheet.Range[rowNumber, 2, rowNumber, 14].CellStyle.Font.Italic = true;
+
                 foreach (var logbookEntry in logbookGroupEntry)
                 {
                     rowNumber++;
@@ -1644,7 +1660,13 @@ namespace Topo.Services
                     sheet.Range[rowNumber, 5].Text = logbookEntry.MemberRole;
                     sheet.Range[rowNumber, 6].Text = $"{logbookEntry.KilometersHiked} KMs";
                     sheet.Range[rowNumber, 7].Text = $"{logbookEntry.NightsCamped} Nights";
-                    sheet.Range[rowNumber, 8].Text = logbookEntry.Verifier;
+                    sheet.Range[rowNumber, 8].Text = logbookEntry.Weather;
+                    sheet.Range[rowNumber, 9].Text = logbookEntry.Location;
+                    sheet.Range[rowNumber, 10].Text = logbookEntry.Grade;
+                    sheet.Range[rowNumber, 11].Text = logbookEntry.OtherParticipants;
+                    sheet.Range[rowNumber, 12].Text = logbookEntry.Purpose;
+                    sheet.Range[rowNumber, 13].Text = logbookEntry.VerifierName;
+                    sheet.Range[rowNumber, 14].Text = logbookEntry.VerifierContact;
                 }
             }
 
@@ -1654,9 +1676,18 @@ namespace Topo.Services
             sheet.SetColumnWidth(3, 15);
             sheet.SetColumnWidth(4, 15);
             sheet.SetColumnWidth(5, 15);
-            sheet.SetColumnWidth(6, 10);
-            sheet.SetColumnWidth(7, 10);
-            sheet.Range[1, 8, rowNumber, 8].AutofitColumns();
+            sheet.SetColumnWidth(6, 15);
+            sheet.SetColumnWidth(7, 15);
+            sheet.SetColumnWidth(8, 15);
+            sheet.SetColumnWidth(9, 20);
+            sheet.Range[1, 9, rowNumber, 9].CellStyle.WrapText = true;
+            sheet.SetColumnWidth(10, 10);
+            sheet.SetColumnWidth(11, 40);
+            sheet.Range[1, 11, rowNumber, 11].CellStyle.WrapText = true;
+            sheet.SetColumnWidth(12, 10);
+            sheet.SetColumnWidth(13, 15);
+            sheet.SetColumnWidth(14, 15);
+            sheet.Range[1, 14, rowNumber, 14].AutofitColumns();
 
             sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
             sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;

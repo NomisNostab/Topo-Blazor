@@ -12,6 +12,12 @@
         public string MemberRole { get; set; } = string.Empty;
         public float KilometersHiked { get; set; } = 0;
         public float NightsCamped { get; set; } = 0;
-        public string Verifier { get; set; } = string.Empty;
+        public string VerifierName { get; set; } = string.Empty;
+        public string VerifierContact { get; set; } = string.Empty;
+        public string Weather { get; set; } = string.Empty;
+        public string Location { get; set; } = string.Empty;
+        public string Grade { get; set; } = string.Empty;
+        public string OtherParticipants { get; set; } = string.Empty;
+        public string Purpose { get; set; } = string.Empty;
     }
 }
