@@ -17,6 +17,7 @@ namespace Topo.Services
     public interface ITerrainAPIService
     {
         public Task<AuthenticationResultModel?> LoginAsync(string? branch, string? username, string? password);
+        public Task RefreshTokenAsync();
         public Task<GetUserResultModel?> GetUserAsync();
         public Task<GetProfilesResultModel> GetProfilesAsync();
         public Task<GetMembersResultModel?> GetMembersAsync(string selectedUnitId);
