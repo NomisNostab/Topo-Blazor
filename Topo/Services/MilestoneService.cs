@@ -82,7 +82,11 @@ namespace Topo.Services
                         percentComplete = CalculateMilestonePercentComplete(2, milestone2.event_count);
                         break; 
                     case 3:
-                        percentComplete = CalculateMilestonePercentComplete(3, milestone3.event_count);
+                        // Unlike milestones 1 and 2, there's no "Milestone 4" to move on to once this
+                        // is awarded, so the raw event-count formula below would otherwise keep showing
+                        // a member's progress as it stood at the point of award, even though the report
+                        // now lists them as having completed it (see milestone3Awarded above).
+                        percentComplete = milestone3Awarded ? 100 : CalculateMilestonePercentComplete(3, milestone3.event_count);
                         break;
                 }
                 unitMilestoneSummary.Add(
