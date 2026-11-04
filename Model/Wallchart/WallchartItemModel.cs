@@ -53,7 +53,11 @@
         public DateTime? LeadershipCourse { get; set; }
         public DateTime? AdventurousJourney { get; set; }
         public DateTime? PersonalReflection { get; set; }
+        // Fraction (0.0-1.0) complete towards this member's section's own top award - see
+        // WallchartService.ComputePeakAwardPercent for how it's derived. Only meaningful until
+        // the award itself is granted, at which point PeakAwardAwarded takes over instead.
         public double PeakAward { get; set; }
+        public DateTime? PeakAwardAwarded { get; set; }
 
     }
 }

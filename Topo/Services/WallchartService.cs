@@ -212,11 +212,95 @@ namespace Topo.Services
                     .Where(r => r.status == "awarded" && r.section == _storageService.Section)
                     .FirstOrDefault()?.status_updated;
 
-                wallchartItem.PeakAward = 0;
+                var peakAwardResultModel = await _terrainAPIService.GetPeakAwardResultsForMember(member.id);
+                wallchartItem.PeakAwardAwarded = peakAwardResultModel.results
+                    .Where(r => r.status == "awarded" && r.section == _storageService.Section)
+                    .FirstOrDefault()?.status_updated;
+
+                // Percent complete, for display until the award itself is granted (see PeakAwardAwarded).
+                wallchartItem.PeakAward = ComputePeakAwardPercent(wallchartItem, _storageService.Section);
+
                 wallchartItems.Add(wallchartItem);
             }
             _storageService.CachedWallchartItems.Add(new KeyValuePair<string, List<WallchartItemModel>>(selectedUnitId, wallchartItems));
             return wallchartItems;
+        }
+
+        // Peak Award percent complete = an equal-weighted average of a few "buckets", each itself a
+        // 0.0-1.0 fraction: Milestones, OAS, SIA, and the three individual awards (Leadership Course,
+        // Adventurous Journey, Personal Reflection). See PeakAwardRequirements for the per-section
+        // numeric thresholds this depends on.
+        private static double ComputePeakAwardPercent(WallchartItemModel w, string section)
+        {
+            var buckets = new List<double>
+            {
+                ComputeMilestoneBucket(w),
+                w.LeadershipCourse.HasValue ? 1.0 : 0.0,
+                w.AdventurousJourney.HasValue ? 1.0 : 0.0,
+                w.PersonalReflection.HasValue ? 1.0 : 0.0,
+            };
+
+            // OAS and SIA need section-specific thresholds; if the section isn't one we have
+            // requirements for, those two buckets are simply left out rather than guessed at.
+            if (PeakAwardRequirements.BySection.TryGetValue(section, out var requirement))
+            {
+                buckets.Add(ComputeOASBucket(w, requirement));
+                buckets.Add(ComputeSIABucket(w, requirement));
+            }
+
+            return buckets.Average();
+        }
+
+        private static double ComputeMilestoneBucket(WallchartItemModel w)
+        {
+            var awarded = new[] { w.Milestone1Awarded, w.Milestone2Awarded, w.Milestone3Awarded }.Count(d => d.HasValue);
+            return awarded / 3.0;
+        }
+
+        private static double ComputeOASBucket(WallchartItemModel w, PeakAwardRequirements.SectionRequirement requirement)
+        {
+            var ratios = new List<double>
+            {
+                SafeRatio(w.OASStageProgressions, requirement.OASProgressionsRequired),
+                SafeRatio(w.OASBushcraftStage, requirement.OASCoreMinLevel),
+                SafeRatio(w.OASBushwalkingStage, requirement.OASCoreMinLevel),
+                SafeRatio(w.OASCampingStage, requirement.OASCoreMinLevel),
+            };
+
+            if (requirement.OASLevel4PlusRequired > 0)
+            {
+                var streamsAtLevel4Plus = new[]
+                {
+                    w.OASBushcraftStage, w.OASBushwalkingStage, w.OASCampingStage,
+                    w.OASAlpineStage, w.OASCyclingStage, w.OASVerticalStage,
+                    w.OASAquaticsStage, w.OASBoatingStage, w.OASPaddlingStage
+                }.Count(stage => stage >= 4);
+                ratios.Add(SafeRatio(streamsAtLevel4Plus, requirement.OASLevel4PlusRequired));
+            }
+
+            return ratios.Average();
+        }
+
+        private static double ComputeSIABucket(WallchartItemModel w, PeakAwardRequirements.SectionRequirement requirement)
+        {
+            var siaCountsByArea = new[]
+            {
+                w.SIAAdventureSport, w.SIAArtsLiterature, w.SIAEnvironment,
+                w.SIAStemInnovation, w.SIAGrowthDevelopment, w.SIACreatingABetterWorld
+            };
+            var totalRatio = SafeRatio(siaCountsByArea.Sum(), requirement.SIARequired);
+            var areaSpreadRatio = SafeRatio(siaCountsByArea.Count(count => count > 0), requirement.SIAMinAreasRequired);
+            return new[] { totalRatio, areaSpreadRatio }.Average();
+        }
+
+        // A requirement of 0 (or a negative typo) means "nothing needed", i.e. trivially 100% met -
+        // without this, PeakAwardRequirements.cs being hand-edited to a 0 would silently turn the
+        // whole Peak Award percentage into NaN (0/0) instead of a clear, harmless 100%.
+        private static double SafeRatio(double achieved, int required)
+        {
+            if (required <= 0)
+                return 1.0;
+            return Math.Min(1.0, achieved / required);
         }
 
         private void MoveMilestoneAssistsToLeads(MilestoneResult milestoneResult)

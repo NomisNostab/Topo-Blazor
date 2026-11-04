@@ -1926,7 +1926,11 @@ namespace Topo.Services
                     SetWallchartCell(sheet.Range[rowNumber, 37], 0, wallchartGroups.leadershipCourse, wallchartEntry.LeadershipCourse);
                     SetWallchartCell(sheet.Range[rowNumber, 38], 0, wallchartGroups.adventurousJourney, wallchartEntry.AdventurousJourney);
                     SetWallchartCell(sheet.Range[rowNumber, 39], 0, wallchartGroups.personalReflection, wallchartEntry.PersonalReflection);
-                    //SetWallchartCell(sheet.Range[rowNumber, 40], 0, wallchartGroups.intro, wallchartEntry.PeakAward); // TODO: Change to date
+                    // Percentage complete until the award itself is granted, then the awarded date.
+                    if (wallchartEntry.PeakAwardAwarded.HasValue)
+                        SetWallchartCell(sheet.Range[rowNumber, 40], 0, wallchartGroups.peakAward, wallchartEntry.PeakAwardAwarded);
+                    else
+                        SetWallchartCell(sheet.Range[rowNumber, 40], 0, wallchartGroups.peakAward, wallchartEntry.PeakAward);
                     sheet.Range[rowNumber, 1, rowNumber, 40].BorderAround();
                     sheet.Range[rowNumber, 1, rowNumber, 40].BorderInside();
                     sheet.Range[rowNumber, 2, rowNumber, 40].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
