@@ -59,7 +59,7 @@ namespace Topo.Services
                     switch (milestoneResult.achievement_meta.stage)
                     {
                         case 1:
-                            if (milestoneResult.status == "awarded")
+                            if (IsAwardedOrApproved(milestoneResult.status))
                             {
                                 wallchartItem.Milestone1Community = 6;
                                 wallchartItem.Milestone1Creative = 6;
@@ -81,7 +81,7 @@ namespace Topo.Services
                             }
                             break;
                         case 2:
-                            if (milestoneResult.status == "awarded")
+                            if (IsAwardedOrApproved(milestoneResult.status))
                             {
                                 wallchartItem.Milestone2Community = 5;
                                 wallchartItem.Milestone2Creative = 5;
@@ -109,7 +109,9 @@ namespace Topo.Services
                             wallchartItem.Milestone3PersonalGrowth = (int)milestoneResult.event_count.participant.personal_growth;
                             wallchartItem.Milestone3Assist = PALEventCountTotal(milestoneResult.event_count.assistant);
                             wallchartItem.Milestone3Lead = PALEventCountTotal(milestoneResult.event_count.leader);
-                            wallchartItem.Milestone3Awarded = milestoneResult.status == "awarded" ? milestoneResult.status_updated : null;
+                            // "Awarded" here also covers Terrain's "approved" status - see
+                            // IsAwardedOrApproved. This also feeds PeakAward's Milestones bucket.
+                            wallchartItem.Milestone3Awarded = IsAwardedOrApproved(milestoneResult.status) ? milestoneResult.status_updated : null;
                             wallchartItem.Milestone3Presented = GetPresentedDate(member.id, "Milestone 3");
                             break;
                     }
@@ -218,6 +220,12 @@ namespace Topo.Services
             _storageService.CachedWallchartItems.Add(new KeyValuePair<string, List<WallchartItemModel>>(selectedUnitId, wallchartItems));
             return wallchartItems;
         }
+
+        // A leader approving a milestone is functionally "done" - the formal award is just the
+        // presentation step that follows later. Same "awarded" + "approved" pairing already used
+        // for OAS elsewhere in this app (OASService/ProgressService) and for the Milestone report
+        // (MilestoneService.IsAwardedOrApproved).
+        private static bool IsAwardedOrApproved(string status) => status == "awarded" || status == "approved";
 
         private void MoveMilestoneAssistsToLeads(MilestoneResult milestoneResult)
         {
