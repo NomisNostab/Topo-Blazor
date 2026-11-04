@@ -109,8 +109,7 @@ namespace Topo.Services
                             wallchartItem.Milestone3PersonalGrowth = (int)milestoneResult.event_count.participant.personal_growth;
                             wallchartItem.Milestone3Assist = PALEventCountTotal(milestoneResult.event_count.assistant);
                             wallchartItem.Milestone3Lead = PALEventCountTotal(milestoneResult.event_count.leader);
-                            // "Awarded" here also covers Terrain's "approved" status - see
-                            // IsAwardedOrApproved. This also feeds PeakAward's Milestones bucket.
+                            // "Awarded" here also covers Terrain's "approved" status - see IsAwardedOrApproved.
                             wallchartItem.Milestone3Awarded = IsAwardedOrApproved(milestoneResult.status) ? milestoneResult.status_updated : null;
                             wallchartItem.Milestone3Presented = GetPresentedDate(member.id, "Milestone 3");
                             break;
