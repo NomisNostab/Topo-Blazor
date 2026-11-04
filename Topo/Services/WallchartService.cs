@@ -59,6 +59,7 @@ namespace Topo.Services
                     switch (milestoneResult.achievement_meta.stage)
                     {
                         case 1:
+                            wallchartItem.Milestone1Skipped = milestoneResult.status == "not_required";
                             if (milestoneResult.status == "awarded")
                             {
                                 wallchartItem.Milestone1Community = 6;
@@ -81,6 +82,7 @@ namespace Topo.Services
                             }
                             break;
                         case 2:
+                            wallchartItem.Milestone2Skipped = milestoneResult.status == "not_required";
                             if (milestoneResult.status == "awarded")
                             {
                                 wallchartItem.Milestone2Community = 5;
@@ -111,6 +113,7 @@ namespace Topo.Services
                             wallchartItem.Milestone3Lead = PALEventCountTotal(milestoneResult.event_count.leader);
                             wallchartItem.Milestone3Awarded = milestoneResult.status == "awarded" ? milestoneResult.status_updated : null;
                             wallchartItem.Milestone3Presented = GetPresentedDate(member.id, "Milestone 3");
+                            wallchartItem.Milestone3Skipped = milestoneResult.status == "not_required";
                             break;
                     }
                 }
@@ -251,10 +254,29 @@ namespace Topo.Services
             return buckets.Average();
         }
 
+        // Each milestone contributes its own percent-complete (same formula as the Milestone report)
+        // rather than a flat awarded/not-awarded count, so partial progress on the current milestone
+        // shows up here too. A milestone that's been awarded or marked "not required" always counts
+        // as fully done - the raw counts behind an awarded milestone don't necessarily add up to the
+        // formula's own targets (the award is a leader's call, not a strict numeric gate), and a
+        // skipped milestone's counts are 0 regardless of progress.
         private static double ComputeMilestoneBucket(WallchartItemModel w)
         {
-            var awarded = new[] { w.Milestone1Awarded, w.Milestone2Awarded, w.Milestone3Awarded }.Count(d => d.HasValue);
-            return awarded / 3.0;
+            var milestone1 = w.Milestone1Awarded.HasValue || w.Milestone1Skipped
+                ? 1.0
+                : MilestonePercentComplete(1, w.Milestone1Community, w.Milestone1Outdoors, w.Milestone1Creative, w.Milestone1PersonalGrowth, w.Milestone1Lead);
+            var milestone2 = w.Milestone2Awarded.HasValue || w.Milestone2Skipped
+                ? 1.0
+                : MilestonePercentComplete(2, w.Milestone2Community, w.Milestone2Outdoors, w.Milestone2Creative, w.Milestone2PersonalGrowth, w.Milestone2Lead);
+            var milestone3 = w.Milestone3Awarded.HasValue || w.Milestone3Skipped
+                ? 1.0
+                : MilestonePercentComplete(3, w.Milestone3Community, w.Milestone3Outdoors, w.Milestone3Creative, w.Milestone3PersonalGrowth, w.Milestone3Lead);
+            return new[] { milestone1, milestone2, milestone3 }.Average();
+        }
+
+        private static double MilestonePercentComplete(int level, int community, int outdoors, int creative, int personalGrowth, int lead)
+        {
+            return Math.Min(1.0, MilestoneProgressCalculator.CalculatePercentComplete(level, community, outdoors, creative, personalGrowth, lead) / 100.0);
         }
 
         private static double ComputeOASBucket(WallchartItemModel w, PeakAwardRequirements.SectionRequirement requirement)
