@@ -83,6 +83,7 @@ namespace Topo.Services
                     new MilestoneSummaryListModel
                     {
                         memberName = $"{member.first_name} {_membersService.GetMemberLastName(selectedUnitId, member.id).Result}",
+                        memberPatrol = member.patrol_name,
                         currentLevel = currentLevel,
                         percentComplete = percentComplete,
                         milestone1ParticipateCommunity = milestone1Skipped ? 0 : (milestone1Awarded ? 6 : (int)milestone1.event_count.participant.community),

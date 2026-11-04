@@ -49,5 +49,20 @@ namespace TopoReportFunctionTest
             writer.Close();
         }
 
+        [TestMethod]
+        public void Milestone_ToExcel_BreakByPatrol()
+        {
+            var proxyRequest = new Amazon.Lambda.APIGatewayEvents.APIGatewayProxyRequest();
+            _reportGenerationRequest.OutputType = OutputType.Excel;
+            _reportGenerationRequest.BreakByPatrol = true;
+            proxyRequest.Body = JsonConvert.SerializeObject(_reportGenerationRequest);
+            var functionResult = _function.FunctionHandler(proxyRequest, null);
+            byte[] bytes = Convert.FromBase64String(functionResult);
+            FileStream fileStream = new FileStream(@"TestResults/Milestone_ToExcel_BreakByPatrol.xlsx", FileMode.Create);
+            BinaryWriter writer = new BinaryWriter(fileStream);
+            writer.Write(bytes, 0, bytes.Length);
+            writer.Close();
+        }
+
     }
 }

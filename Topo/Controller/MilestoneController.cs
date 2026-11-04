@@ -85,7 +85,7 @@ namespace Topo.Controller
 
             var serialisedMilestoneSummaries = JsonConvert.SerializeObject(milestoneSummaries);
 
-            var report = await _reportService.GetMilestoneReport(groupName, section, unitName, outputType, serialisedMilestoneSummaries);
+            var report = await _reportService.GetMilestoneReport(groupName, section, unitName, outputType, serialisedMilestoneSummaries, model.BreakByPatrol);
             return report;
         }
     }
