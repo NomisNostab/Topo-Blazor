@@ -15,5 +15,8 @@
         public DateTime submission_date { get; set; }
         public DateTime? awarded_date { get; set; }
         public DateTime? presented_date { get; set; }
+        // Whole years completed in this section (see YearsOfServiceCalculator) - a per-member
+        // value, so every row for the same member carries the same number.
+        public int? YearsOfService { get; set; }
     }
 }

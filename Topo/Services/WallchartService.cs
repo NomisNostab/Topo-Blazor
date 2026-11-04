@@ -158,6 +158,7 @@ namespace Topo.Services
                 wallchartItem.MemberPatrol = member.patrol_name;
                 wallchartItem.IntroToScouting = await GetIntroToScouting(member.id);
                 wallchartItem.IntroToSection = await GetIntroToSection(member.id);
+                wallchartItem.YearsOfService = YearsOfServiceCalculator.CalculateCompletedYears(wallchartItem.IntroToSection, DateTime.Now);
                 // Logbook
                 await _terrainAPIService.AssumeProfile(member.id);
                 var getMemberLogbookMetrics = await _terrainAPIService.GetMemberLogbookMetrics(member.id);

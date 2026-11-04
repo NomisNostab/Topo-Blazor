@@ -20,12 +20,14 @@ namespace Topo.Services
         private readonly IMembersService _memberService;
         private readonly ITerrainAPIService _terrainAPIService;
         private readonly ILocalStorageService _localStorageService;
+        private readonly StorageService _storageService;
 
-        public ApprovalsService(IMembersService membersService, ITerrainAPIService terrainAPIService, ILocalStorageService localStorageService)
+        public ApprovalsService(IMembersService membersService, ITerrainAPIService terrainAPIService, ILocalStorageService localStorageService, StorageService storageService)
         {
             _memberService = membersService;
             _terrainAPIService = terrainAPIService;
             _localStorageService = localStorageService;
+            _storageService = storageService;
         }
 
         //private async Task<List<ApprovalsListModel>> GetApprovalList(string unitId, string status)
@@ -254,8 +256,40 @@ namespace Topo.Services
                 Console.WriteLine($"Approved: {approvalDate} Awarded:{awardedDate}");
                 approvalList.Add(approvalItem);
             }
+
+            var yearsOfServiceByMember = new Dictionary<string, int?>();
+            foreach (var memberId in approvalList.Select(a => a.member_id).Distinct())
+            {
+                var introToSection = await GetIntroToSection(memberId);
+                yearsOfServiceByMember[memberId] = YearsOfServiceCalculator.CalculateCompletedYears(introToSection, DateTime.Now);
+            }
+            foreach (var approvalItem in approvalList)
+            {
+                approvalItem.YearsOfService = yearsOfServiceByMember[approvalItem.member_id];
+            }
+
             return approvalList;
         }
+
+        private async Task<DateTime?> GetIntroToSection(string memberId)
+        {
+            var introToSection = await _terrainAPIService.GetIntroductionToSectionResultsForMember(memberId);
+            var result = introToSection.results.Where(r => r.section == _storageService.Section && r.status == "awarded").FirstOrDefault();
+            if (result != null)
+            {
+                if (!string.IsNullOrEmpty(result.imported.date_awarded))
+                {
+                    return DateTime.ParseExact(result.imported.date_awarded, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                }
+                else
+                {
+                    return result.status_updated;
+                }
+            }
+
+            return null;
+        }
+
         //public async Task<List<ApprovalsListModel>> GetApprovalListItemsx(string unitId)
         //{
         //    var savedApprovalItems = await ReadApprovalListFromLocalStorage(unitId);

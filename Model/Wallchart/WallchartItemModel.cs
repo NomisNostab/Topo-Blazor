@@ -7,6 +7,9 @@
         public string MemberPatrol { get; set; } = string.Empty;
         public DateTime? IntroToScouting { get; set; }
         public DateTime? IntroToSection { get; set; }
+        // Whole years completed in this section since IntroToSection - years of service is tracked
+        // per section, not overall Scouting membership, so this is NOT derived from IntroToScouting.
+        public int? YearsOfService { get; set; }
         public int Milestone1Community { get; set; }
         public int Milestone1Outdoors { get; set; }
         public int Milestone1Creative { get; set; }
