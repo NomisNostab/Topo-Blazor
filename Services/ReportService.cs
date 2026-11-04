@@ -1452,11 +1452,14 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 2, rowNumber, 8].Merge();
                 sheet.SetRowHeight(rowNumber, 30);
 
-                foreach (var milestoneSummary in patrolGroup.GroupBy(ms => ms.currentLevel).OrderBy(ms => ms.Key))
+                // Group key 4 is "Milestone 3 complete" - there's no Milestone 4, so a member whose
+                // Milestone 3 is awarded/approved stays at currentLevel 3 (see MilestoneService), but
+                // gets its own section here rather than being mixed in with those still working on it.
+                foreach (var milestoneSummary in patrolGroup.GroupBy(ms => ms.currentLevel == 3 && ms.milestone3Awarded ? 4 : ms.currentLevel).OrderBy(ms => ms.Key))
                 {
                     // Headings
                     rowNumber++;
-                    sheet.Range[rowNumber, 3].Text = $"Milestone {milestoneSummary.Key}";
+                    sheet.Range[rowNumber, 3].Text = milestoneSummary.Key == 4 ? "Milestone 3 - Completed" : $"Milestone {milestoneSummary.Key}";
                     sheet.Range[rowNumber, 3].CellStyle.Font.Bold = true;
                     sheet.Range[rowNumber, 3].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
                     sheet.Range[rowNumber, 3].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
@@ -1543,7 +1546,10 @@ namespace Topo.Services
                                 SetMilestoneCell(sheet.Range[rowNumber, 7], 2, participateAssistLead.lead, memberSummary.milestone2Lead);
                                 SetMilestoneCell(sheet.Range[rowNumber, 8], 2, participateAssistLead.lead, memberSummary.milestone2Lead, memberSummary.milestone2LeadArea);
                                 break;
+                            // Key 4 ("Milestone 3 - Completed") reuses Milestone 3's own fields and
+                            // level-3 colouring - it's the same milestone, just split into its own section.
                             case 3:
+                            case 4:
                                 SetMilestoneCell(sheet.Range[rowNumber, 3], 3, participateAssistLead.participate, memberSummary.milestone3ParticipateCommunity);
                                 SetMilestoneCell(sheet.Range[rowNumber, 4], 3, participateAssistLead.participate, memberSummary.milestone3ParticipateOutdoors);
                                 SetMilestoneCell(sheet.Range[rowNumber, 5], 3, participateAssistLead.participate, memberSummary.milestone3ParticipateCreative);
@@ -2635,6 +2641,7 @@ namespace Topo.Services
                 case 2:
                     return "Participate - 5";
                 case 3:
+                case 4:
                     return "Participate - 4";
                 default:
                     return "Participate";
@@ -2651,6 +2658,7 @@ namespace Topo.Services
                 case 2:
                     return "Lead - 4";
                 case 3:
+                case 4:
                     return "Lead - 6";
                 default:
                     return "Lead";
