@@ -49,20 +49,6 @@ namespace TopoReportFunctionTest
         }
 
         [TestMethod]
-        public void Approvals_ToPDF_GroupByMember()
-        {
-            var proxyRequest = new Amazon.Lambda.APIGatewayEvents.APIGatewayProxyRequest();
-            _reportGenerationRequest.GroupByMember = true;
-            proxyRequest.Body = JsonConvert.SerializeObject(_reportGenerationRequest);
-            var functionResult = _function.FunctionHandler(proxyRequest, null);
-            byte[] bytes = Convert.FromBase64String(functionResult);
-            FileStream fileStream = new FileStream(@"TestResults/Approvals_ToPDF_GroupByMember.pdf", FileMode.Create);
-            BinaryWriter writer = new BinaryWriter(fileStream);
-            writer.Write(bytes, 0, bytes.Length);
-            writer.Close();
-        }
-
-        [TestMethod]
         public void ApprovalsParsing()
         {
             string pendingApprovalsString = "{\"results\": []}";

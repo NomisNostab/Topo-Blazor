@@ -1844,8 +1844,7 @@ namespace Topo.Services
                     sheet.Range[rowNumber, 1].Text = wallchartEntry.MemberName;
                     SetWallchartCell(sheet.Range[rowNumber, 2], 0, wallchartGroups.intro, wallchartEntry.IntroToScouting);
                     SetWallchartCell(sheet.Range[rowNumber, 3], 0, wallchartGroups.intro, wallchartEntry.IntroToSection);
-                    if (wallchartEntry.YearsOfService.HasValue)
-                        sheet.Range[rowNumber, 4].Number = wallchartEntry.YearsOfService.Value;
+                    sheet.Range[rowNumber, 4].Number = wallchartEntry.YearsOfService ?? 0;
                     if (wallchartEntry.Milestone1Presented.HasValue)
                     {
                         sheet.Range[rowNumber, 5].DateTime = wallchartEntry.Milestone1Presented.Value;
@@ -1991,12 +1990,7 @@ namespace Topo.Services
             foreach (var approvalGroup in groupedApprovals.OrderBy(a => a.Key))
             {
                 rowNumber++;
-                // Years of service is a badge earned once a whole year is passed, so a member with
-                // 0 completed years hasn't earned one yet and nothing is shown for them here.
-                var yearsOfService = groupByMember ? approvalGroup.FirstOrDefault()?.YearsOfService : null;
-                sheet.Range[rowNumber, 1].Text = yearsOfService.HasValue && yearsOfService.Value >= 1
-                    ? $"{approvalGroup.Key} ({yearsOfService.Value} year{(yearsOfService.Value == 1 ? "" : "s")} of service)"
-                    : approvalGroup.Key;
+                sheet.Range[rowNumber, 1].Text = approvalGroup.Key;
                 sheet.Range[rowNumber, 1, rowNumber, 4].Merge();
                 if (rowNumber == 4)
                 {
