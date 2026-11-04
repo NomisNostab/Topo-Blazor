@@ -64,5 +64,19 @@ namespace TopoReportFunctionTest
             writer.Close();
         }
 
+        [TestMethod]
+        public void Milestone_ToPDF_BreakByPatrol()
+        {
+            var proxyRequest = new Amazon.Lambda.APIGatewayEvents.APIGatewayProxyRequest();
+            _reportGenerationRequest.BreakByPatrol = true;
+            proxyRequest.Body = JsonConvert.SerializeObject(_reportGenerationRequest);
+            var functionResult = _function.FunctionHandler(proxyRequest, null);
+            byte[] bytes = Convert.FromBase64String(functionResult);
+            FileStream fileStream = new FileStream(@"TestResults/Milestone_ToPDF_BreakByPatrol.pdf", FileMode.Create);
+            BinaryWriter writer = new BinaryWriter(fileStream);
+            writer.Write(bytes, 0, bytes.Length);
+            writer.Close();
+        }
+
     }
 }
