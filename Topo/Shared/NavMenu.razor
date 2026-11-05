@@ -1,12 +1,17 @@
 ﻿@inject Topo.Services.StorageService _storageService
+@inject Blazored.LocalStorage.ILocalStorageService _localStorageService
+@inject IJSRuntime JS
 @implements IDisposable
 
-<div class="top-row ps-3 navbar navbar-dark">
+<div class="top-row navbar navbar-dark @(_storageService.NavMenuIconOnly ? "icon-only" : "ps-3")">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">
             <img src="G12-Map-icon-64.png" width="20" height="20" class="d-inline-block align-top" alt=""> <!--Icon from http://raindropmemory.deviantart.com/-->
-            Topo
+            <span class="nav-text">Topo</span>
         </a>
+        <button title="@(_storageService.NavMenuIconOnly ? "Expand menu" : "Collapse to icons")" class="icon-toggler" @onclick="ToggleIconOnly">
+            <span class="oi @(_storageService.NavMenuIconOnly ? "oi-chevron-right" : "oi-chevron-left")" aria-hidden="true"></span>
+        </button>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -16,16 +21,19 @@
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
     <nav class="flex-column">
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All" title="Home">
+                <span class="oi oi-home" aria-hidden="true"></span> <span class="nav-text">Home</span>
             </NavLink>
         </div>
         @if (!_storageService.IsAuthenticated)
         {
             <div class="nav-item px-3">
-                <NavLink class="nav-link" href="login">
-                    <span class="oi oi-lock-unlocked" aria-hidden="true"></span> Login
+                <NavLink class="nav-link" href="login" title="Login">
+                    <span class="oi oi-lock-unlocked" aria-hidden="true"></span> <span class="nav-text">Login</span>
                 </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <a class="nav-link" href="https://github.com/NomisNostab/Topo-Blazor/wiki" target="_blank" title="Help"><span class="oi oi-info" aria-hidden="true"></span> <span class="nav-text">Help</span></a>
             </div>
         }
         else
@@ -33,92 +41,117 @@
             if (_storageService.IsYouthMember)
             {
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="logbook">
-                        <span class="oi oi-book" aria-hidden="true"></span> Logbook
+                    <NavLink class="nav-link" href="logbook" title="Logbook">
+                        <span class="oi oi-book" aria-hidden="true"></span> <span class="nav-text">Logbook</span>
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="awards">
-                        <span class="oi oi-shield" aria-hidden="true"></span> Additional Awards
+                    <NavLink class="nav-link" href="awards" title="Additional Awards">
+                        <span class="oi oi-shield" aria-hidden="true"></span> <span class="nav-text">Additional Awards</span>
                     </NavLink>
                 </div>
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="progress/progress">
-                        <span class="oi oi-person" aria-hidden="true"></span> Personal Progress
+                    <NavLink class="nav-link" href="progress/progress" title="Personal Progress">
+                        <span class="oi oi-person" aria-hidden="true"></span> <span class="nav-text">Personal Progress</span>
                     </NavLink>
                 </div>
             }
             else
             {
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="members">
-                        <span class="oi oi-people" aria-hidden="true"></span> Members
-                    </NavLink>
+                <div class="nav-group-label px-3" @onclick="ToggleBadgework" @onclick:stopPropagation="true">
+                    <span class="nav-text">Badgework</span>
+                    <span class="oi @(badgeworkExpanded ? "oi-chevron-top" : "oi-chevron-bottom")" aria-hidden="true"></span>
                 </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="program">
-                        <span class="oi oi-calendar" aria-hidden="true"></span> Program
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="oas">
-                        <span class="oi oi-compass" aria-hidden="true"></span> OAS
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="sia">
-                        <span class="oi oi-clipboard" aria-hidden="true"></span> SIA
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="milestone">
-                        <span class="oi oi-flag" aria-hidden="true"></span> Milestone
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="logbook">
-                        <span class="oi oi-book" aria-hidden="true"></span> Logbook
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="wallchart">
-                        <span class="oi oi-bar-chart" aria-hidden="true"></span> Wallchart
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="awards">
-                        <span class="oi oi-shield" aria-hidden="true"></span> Additional Awards
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="approvals/approvals">
-                        <span class="oi oi-thumb-up" aria-hidden="true"></span> Approvals
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="progress/progress">
-                        <span class="oi oi-person" aria-hidden="true"></span> Personal Progress
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="logging">
-                        <span class="oi oi-document" aria-hidden="true"></span> @(_storageService.LogToQueue ? "Stop Logging" : "Enable Logging")
-                    </NavLink>
-                </div>
+                @if (ShowGroup(badgeworkExpanded))
+                {
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="oas" title="OAS">
+                            <span class="oi oi-compass" aria-hidden="true"></span> <span class="nav-text">OAS</span>
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="sia" title="SIA">
+                            <span class="oi oi-clipboard" aria-hidden="true"></span> <span class="nav-text">SIA</span>
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="milestone" title="Milestone">
+                            <span class="oi oi-flag" aria-hidden="true"></span> <span class="nav-text">Milestone</span>
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="awards" title="Additional Awards">
+                            <span class="oi oi-shield" aria-hidden="true"></span> <span class="nav-text">Additional Awards</span>
+                        </NavLink>
+                    </div>
+                }
 
+                <div class="nav-group-label px-3" @onclick="ToggleReports" @onclick:stopPropagation="true">
+                    <span class="nav-text">Reports</span>
+                    <span class="oi @(reportsExpanded ? "oi-chevron-top" : "oi-chevron-bottom")" aria-hidden="true"></span>
+                </div>
+                @if (ShowGroup(reportsExpanded))
+                {
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="members" title="Members">
+                            <span class="oi oi-people" aria-hidden="true"></span> <span class="nav-text">Members</span>
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="program" title="Program">
+                            <span class="oi oi-calendar" aria-hidden="true"></span> <span class="nav-text">Program</span>
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="logbook" title="Logbook">
+                            <span class="oi oi-book" aria-hidden="true"></span> <span class="nav-text">Logbook</span>
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="wallchart" title="Wallchart">
+                            <span class="oi oi-bar-chart" aria-hidden="true"></span> <span class="nav-text">Wallchart</span>
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="approvals/approvals" title="Approvals">
+                            <span class="oi oi-thumb-up" aria-hidden="true"></span> <span class="nav-text">Approvals</span>
+                        </NavLink>
+                    </div>
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="progress/progress" title="Personal Progress">
+                            <span class="oi oi-person" aria-hidden="true"></span> <span class="nav-text">Personal Progress</span>
+                        </NavLink>
+                    </div>
+                }
             }
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="logout">
-                    <span class="oi oi-lock-locked" aria-hidden="true"></span> Logout
-                </NavLink>
+
+            <div class="nav-group-label px-3" @onclick="ToggleSettings" @onclick:stopPropagation="true">
+                <span class="nav-text">Settings</span>
+                <span class="oi @(settingsExpanded ? "oi-chevron-top" : "oi-chevron-bottom")" aria-hidden="true"></span>
             </div>
+            @if (ShowGroup(settingsExpanded))
+            {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="logout" title="Logout">
+                        <span class="oi oi-lock-locked" aria-hidden="true"></span> <span class="nav-text">Logout</span>
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <a class="nav-link" href="https://github.com/NomisNostab/Topo-Blazor/wiki" target="_blank" title="Help"><span class="oi oi-info" aria-hidden="true"></span> <span class="nav-text">Help</span></a>
+                </div>
+                if (!_storageService.IsYouthMember)
+                {
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="logging" title="@(_storageService.LogToQueue ? "Stop Logging" : "Enable Logging")">
+                            <span class="oi oi-document" aria-hidden="true"></span> <span class="nav-text">@(_storageService.LogToQueue ? "Stop Logging" : "Enable Logging")</span>
+                        </NavLink>
+                    </div>
+                }
+            }
         }
-        <div class="nav-item px-3">
-            <a class="nav-link" href="https://github.com/NomisNostab/Topo-Blazor/wiki" target="_blank"><span class="oi oi-info" aria-hidden="true"></span> Help</a>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="https://github.com/NomisNostab/Topo-Blazor/releases/latest" target="_blank" >
-                <span class="" aria-hidden="true"></span> Version @_storageService.Version
+        <div class="nav-item version-item px-3">
+            <NavLink class="nav-link" href="https://github.com/NomisNostab/Topo-Blazor/releases/latest" target="_blank" title="@($"Version {_storageService.Version}")">
+                <span class="" aria-hidden="true"></span> <span class="nav-text">Version @_storageService.Version</span>
             </NavLink>
         </div>
 
@@ -127,17 +160,61 @@
 
 @code {
     private bool collapseNavMenu = true;
+    private bool badgeworkExpanded = true;
+    private bool reportsExpanded = true;
+    private bool settingsExpanded = false;
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private string NavMenuCssClass => "nav-scroll-area " + (collapseNavMenu ? "collapse " : "") + (_storageService.NavMenuIconOnly ? "icon-only" : "");
+
+    private bool ShowGroup(bool expanded) => _storageService.NavMenuIconOnly || expanded;
 
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
     }
 
-    protected override void OnInitialized()
+    private async Task ToggleIconOnly()
+    {
+        _storageService.NavMenuIconOnly = !_storageService.NavMenuIconOnly;
+        await _localStorageService.SetItemAsync("NavMenuIconOnly", _storageService.NavMenuIconOnly);
+    }
+
+    private async Task ToggleBadgework()
+    {
+        badgeworkExpanded = !badgeworkExpanded;
+        await SaveGroupState("Badgework", badgeworkExpanded);
+    }
+
+    private async Task ToggleReports()
+    {
+        reportsExpanded = !reportsExpanded;
+        await SaveGroupState("Reports", reportsExpanded);
+    }
+
+    private async Task ToggleSettings()
+    {
+        settingsExpanded = !settingsExpanded;
+        await SaveGroupState("Settings", settingsExpanded);
+    }
+
+    private async Task SaveGroupState(string key, bool expanded)
+    {
+        await JS.InvokeVoidAsync("sessionStorage.setItem", $"NavGroup_{key}", expanded ? "1" : "0");
+    }
+
+    private async Task<bool> LoadGroupState(string key, bool defaultValue)
+    {
+        var value = await JS.InvokeAsync<string>("sessionStorage.getItem", $"NavGroup_{key}");
+        return value == null ? defaultValue : value == "1";
+    }
+
+    protected override async Task OnInitializedAsync()
     {
         _storageService.OnChange += StateHasChanged;
+        _storageService.NavMenuIconOnly = await _localStorageService.GetItemAsync<bool>("NavMenuIconOnly");
+        badgeworkExpanded = await LoadGroupState("Badgework", true);
+        reportsExpanded = await LoadGroupState("Reports", true);
+        settingsExpanded = await LoadGroupState("Settings", false);
     }
 
     public void Dispose()

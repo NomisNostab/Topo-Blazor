@@ -60,6 +60,11 @@ main {
         height: 100vh;
         position: sticky;
         top: 0;
+        transition: width 0.15s ease-in-out;
+    }
+
+    .sidebar.icon-only {
+        width: 4rem;
     }
 
     .top-row {
