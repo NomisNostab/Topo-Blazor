@@ -1,0 +1,11 @@
+[
+  {"ActivityName":"Clean The Creek","ChallengeArea":"Community","LastRunDate":"2025-03-10T00:00:00","TimesRun":2,"Highlight":false},
+  {"ActivityName":"Police Station Visit","ChallengeArea":"Community","LastRunDate":"2026-09-02T00:00:00","TimesRun":1,"Highlight":true},
+  {"ActivityName":"Geo Guesser","ChallengeArea":"Community","LastRunDate":"2026-10-20T00:00:00","TimesRun":3,"Highlight":true},
+  {"ActivityName":"Pottery Night","ChallengeArea":"Creative","LastRunDate":"2024-06-01T00:00:00","TimesRun":1,"Highlight":false},
+  {"ActivityName":"Movie Making","ChallengeArea":"Creative","LastRunDate":"2026-08-15T00:00:00","TimesRun":2,"Highlight":true},
+  {"ActivityName":"Overnight Hike","ChallengeArea":"Outdoors","LastRunDate":"2023-05-01T00:00:00","TimesRun":4,"Highlight":false},
+  {"ActivityName":"Bike Ride","ChallengeArea":"Outdoors","LastRunDate":"2026-09-28T00:00:00","TimesRun":2,"Highlight":true},
+  {"ActivityName":"Kayaking","ChallengeArea":"Outdoors","LastRunDate":"2025-11-11T00:00:00","TimesRun":1,"Highlight":false},
+  {"ActivityName":"First Aid Night","ChallengeArea":"Personal Growth","LastRunDate":"2026-07-07T00:00:00","TimesRun":3,"Highlight":false}
+]

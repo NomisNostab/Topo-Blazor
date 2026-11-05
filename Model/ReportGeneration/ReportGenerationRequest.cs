@@ -16,7 +16,8 @@
         AdditionalAwards,
         Approvals,
         PersonalProgress,
-        TermProgram
+        TermProgram,
+        ProgramIdeas
     }
 
     public enum OutputType

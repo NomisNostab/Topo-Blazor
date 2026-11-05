@@ -17,6 +17,7 @@ namespace Topo.Services
         public Task<EventListModel> GetAttendanceForEvent(string eventId);
         public Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string[] selectedCalendars);
         public Task<List<MemberListModel>> GetInviteesForEvent(string eventId);
+        public Task<List<ProgramIdeaItemModel>?> GetProgramIdeas(DateTime fromDate, DateTime? highlightFromDate, string[] selectedCalendars);
     }
 
     public class ProgramService : IProgramService
@@ -293,6 +294,44 @@ namespace Topo.Services
             }
 
             return eventListModel;
+        }
+
+        public async Task<List<ProgramIdeaItemModel>?> GetProgramIdeas(DateTime fromDate, DateTime? highlightFromDate, string[] selectedCalendars)
+        {
+            TextInfo myTI = new CultureInfo("en-AU", false).TextInfo;
+            await SetCalendar(selectedCalendars);
+            // Matches GetEventsForDates' own fromDate.AddDays(-1) above - without the day of buffer,
+            // an event right at the lookback boundary can be silently excluded.
+            var getEventsResultModel = await _terrainAPIService.GetEventsAsync(GetUser(), fromDate.AddDays(-1), DateTime.Now);
+            await ResetCalendar();
+
+            // null (not an empty list) distinguishes "the request failed" from "genuinely no matches",
+            // since TerrainAPIService swallows request failures and returns a null result model.
+            if (getEventsResultModel == null || getEventsResultModel.results == null)
+                return null;
+
+            // Only the four SIA challenge areas get a sheet/section in the report (matching the other
+            // reports' convention) - filtering here too keeps the on-page list consistent with what
+            // actually ends up in the exported file, rather than showing items that then vanish on export.
+            var knownChallengeAreas = new[] { "community", "creative", "outdoors", "personal_growth" };
+
+            var ideas = new List<ProgramIdeaItemModel>();
+            var grouped = getEventsResultModel.results
+                .Where(e => !string.IsNullOrWhiteSpace(e.title) && knownChallengeAreas.Contains(e.challenge_area))
+                .GroupBy(e => new { Name = e.title.Trim().ToLowerInvariant(), e.challenge_area });
+            foreach (var group in grouped)
+            {
+                var lastRunEvent = group.OrderByDescending(e => e.start_datetime).First();
+                ideas.Add(new ProgramIdeaItemModel
+                {
+                    ActivityName = lastRunEvent.title.Trim(),
+                    ChallengeArea = myTI.ToTitleCase((group.Key.challenge_area ?? "").Replace("_", " ")),
+                    LastRunDate = lastRunEvent.start_datetime,
+                    TimesRun = group.Count(),
+                    Highlight = highlightFromDate.HasValue && lastRunEvent.start_datetime >= highlightFromDate.Value
+                });
+            }
+            return ideas.OrderBy(i => i.ChallengeArea).ThenBy(i => i.ActivityName).ToList();
         }
 
         public async Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string[] selectedCalendars)

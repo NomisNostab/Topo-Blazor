@@ -103,6 +103,9 @@ public class Function
                     case ReportType.TermProgram:
                         workbook = GenerateTermProgramWorkbook(reportGenerationRequest);
                         break;
+                    case ReportType.ProgramIdeas:
+                        workbook = GenerateProgramIdeasWorkbook(reportGenerationRequest);
+                        break;
                 }
 
                 Console.WriteLine("Workbook completed");
@@ -325,6 +328,18 @@ public class Function
             var workbook = reportService.GenerateTermProgramWorkbook(reportData, reportGenerationRequest.GroupName, reportGenerationRequest.Section
                 , reportGenerationRequest.UnitName
                 , reportGenerationRequest.OutputType == OutputType.Excel);
+            return workbook;
+        }
+        return reportService.CreateWorkbookWithSheets(1);
+    }
+
+    private IWorkbook GenerateProgramIdeasWorkbook(ReportGenerationRequest reportGenerationRequest)
+    {
+        var reportData = JsonConvert.DeserializeObject<List<ProgramIdeaItemModel>>(reportGenerationRequest.ReportData);
+        if (reportData != null)
+        {
+            var workbook = reportService.GenerateProgramIdeasWorkbook(reportData, reportGenerationRequest.GroupName, reportGenerationRequest.Section
+                , reportGenerationRequest.UnitName, reportGenerationRequest.OutputType == OutputType.PDF);
             return workbook;
         }
         return reportService.CreateWorkbookWithSheets(1);

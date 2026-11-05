@@ -22,6 +22,7 @@ namespace Topo.Services
         public Task<byte[]> GetApprovalsReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData, DateTime fromDate, DateTime toDate, bool groupByMember);
         public Task<byte[]> GetProgressReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
         public Task<byte[]> GetTermProgramReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
+        public Task<byte[]> GetProgramIdeasReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
     }
 
     public class ReportService : IReportService
@@ -275,6 +276,22 @@ namespace Topo.Services
             var reportGenerationRequest = new ReportGenerationRequest()
             {
                 ReportType = ReportType.TermProgram,
+                GroupName = groupName,
+                Section = section,
+                UnitName = unitName,
+                OutputType = outputType,
+                ReportData = serialisedReportData
+            };
+
+            var report = await CallReportGeneratorFunction(reportGenerationRequest);
+            return report;
+        }
+
+        public async Task<byte[]> GetProgramIdeasReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData)
+        {
+            var reportGenerationRequest = new ReportGenerationRequest()
+            {
+                ReportType = ReportType.ProgramIdeas,
                 GroupName = groupName,
                 Section = section,
                 UnitName = unitName,
