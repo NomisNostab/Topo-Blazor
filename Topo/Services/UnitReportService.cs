@@ -70,12 +70,35 @@ namespace Topo.Services
             await _programService.SetCalendar(calendarIds);
             try
             {
-                return await _programService.GetEventDetailsForDates(from, to);
+                return await GetEventDetails(from, to);
             }
             finally
             {
                 await _programService.ResetCalendar();
             }
+        }
+
+        // Every event in the range, in full (attendance, logbook data) with its scope. Asked for in 90 day windows
+        // so that "all time" is many small requests rather than one very large one.
+        private async Task<List<UnitEventInput>> GetEventDetails(DateTime from, DateTime to)
+        {
+            var userId = _storageService.GetProfilesResult?.profiles?.FirstOrDefault()?.member?.id ?? "";
+            var events = new List<UnitEventInput>();
+            var seen = new HashSet<string>();
+            for (var windowStart = from.Date; windowStart <= to.Date; windowStart = windowStart.AddDays(90))
+            {
+                var windowEnd = windowStart.AddDays(89) < to.Date ? windowStart.AddDays(89) : to.Date;
+                var result = await _terrainAPIService.GetEventsAsync(userId, windowStart.AddDays(-1), windowEnd.AddDays(1));
+                foreach (var summary in result?.results ?? new Topo.Model.Program.Event[0])
+                {
+                    if (!seen.Add(summary.id))
+                        continue;
+                    var detail = await _terrainAPIService.GetEventAsync(summary.id);
+                    if (detail != null)
+                        events.Add(new UnitEventInput { Scope = summary.invitee_type, Event = detail });
+                }
+            }
+            return events;
         }
 
         private async Task<Dictionary<string, string>> GetAwardNames()
