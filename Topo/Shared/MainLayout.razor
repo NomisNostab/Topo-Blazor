@@ -1,10 +1,12 @@
 ﻿@inherits LayoutComponentBase
+@inject Topo.Services.StorageService _storageService
+@implements IDisposable
 
 <div class="page">
 
     <Spinner></Spinner>
 
-    <div class="sidebar">
+    <div class="sidebar @(_storageService.NavMenuIconOnly ? "icon-only" : "")">
         <NavMenu />
     </div>
 
@@ -15,3 +17,15 @@
     </main>
 
 </div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        _storageService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        _storageService.OnChange -= StateHasChanged;
+    }
+}
