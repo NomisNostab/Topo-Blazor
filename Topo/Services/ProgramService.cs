@@ -226,29 +226,20 @@ namespace Topo.Services
         public async Task<List<MemberListModel>> GetMembersForScope(SignInSheetOptions options)
         {
             var members = new List<MemberListModel>();
-            var units = _storageService.Units ?? new Dictionary<string, string>();
             var unitSections = _storageService.UnitSections ?? new Dictionary<string, string>();
             foreach (var unitId in ResolveUnitIdsForScope(options))
             {
-                var unitMembers = await _memberService.GetMembersAsync(unitId);
+                // copies, so the section is not written onto the unit's cached member list
+                var unitMembers = (await _memberService.GetMembersAsync(unitId)).Select(m => m.Clone()).ToList();
                 foreach (var unitMember in unitMembers)
                 {
-                    unitMember.unit_name = units.GetValueOrDefault(unitId, "");
                     unitMember.section = unitSections.GetValueOrDefault(unitId, "");
                 }
                 members.AddRange(unitMembers);
             }
 
-            // A leader who belongs to several of the units is listed once, tagged with all their units
-            return members
-                .GroupBy(m => m.id)
-                .Select(g =>
-                {
-                    var member = g.First();
-                    member.unit_name = string.Join(", ", g.Select(m => m.unit_name).Where(n => !string.IsNullOrEmpty(n)).Distinct());
-                    return member;
-                })
-                .ToList();
+            // A leader who belongs to several of the units is listed once
+            return members.GroupBy(m => m.id).Select(g => g.First()).ToList();
         }
 
         public async Task<EventListModel> GetAttendanceForEvent(string eventId)

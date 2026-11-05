@@ -21,8 +21,12 @@ namespace Topo.Model.Members
             var displayNames = new Dictionary<string, string>();
             if (useFullNames)
             {
-                foreach (var member in members)
-                    displayNames[member.id] = $"{member.first_name} {member.last_name}".Trim();
+                foreach (var sameName in members.GroupBy(m => $"{m.first_name} {m.last_name}".Trim(), StringComparer.OrdinalIgnoreCase))
+                {
+                    var duplicates = sameName.ToList();
+                    for (var i = 0; i < duplicates.Count; i++)
+                        displayNames[duplicates[i].id] = duplicates.Count > 1 ? $"{sameName.Key} ({i + 1})" : sameName.Key;
+                }
                 return displayNames;
             }
 

@@ -25,9 +25,11 @@ namespace Topo.Model.Members
         public bool selected { get; set; }
         public bool isEligibleJamboree { get; set; } = false;
 
-        // Populated when members are gathered across the whole group (not from a single unit) -
-        // e.g. for a group-scoped event's sign in sheet. Blank for every other existing use.
-        public string unit_name { get; set; } = string.Empty;
+        // The unit's section, filled in when members are gathered from several units (a sign in sheet
+        // for the whole group) so they can be grouped by section. Blank for every other use.
         public string section { get; set; } = string.Empty;
+
+        // A copy, for adding to it without changing the member list that is cached for the unit
+        public MemberListModel Clone() => (MemberListModel)MemberwiseClone();
     }
 }

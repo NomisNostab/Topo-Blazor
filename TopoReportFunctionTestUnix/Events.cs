@@ -91,6 +91,20 @@ namespace TopoReportFunctionTest
         }
 
         [TestMethod]
+        public void SignInSheet_FullNamesThatMatchGetNumbered()
+        {
+            MemberListModel Member(string id, string first, string last) =>
+                new MemberListModel { id = id, first_name = first, last_name = last, section = "scout" };
+            var members = new List<MemberListModel> { Member("1", "Ethan", "Wu"), Member("2", "Ethan", "Wu"), Member("3", "Mia", "Chen") };
+
+            var names = SignInSheetLayout.GetDisplayNames(members, true);
+
+            Assert.AreEqual("Ethan Wu (1)", names["1"]);
+            Assert.AreEqual("Ethan Wu (2)", names["2"]);
+            Assert.AreEqual("Mia Chen", names["3"]);
+        }
+
+        [TestMethod]
         public void SignInSheet_Group_NoEvent_ToPDF()
         {
             _reportGenerationRequest.ReportData = File.ReadAllText("ReportData/SignInGroup.json");

@@ -7,7 +7,6 @@
   "patrol_name": "",
   "patrol_duty": "",
   "isAdultLeader": 0,
-  "unit_name": "Joey unit",
   "section": "joey"
  },
  {
@@ -18,7 +17,6 @@
   "patrol_name": "",
   "patrol_duty": "",
   "isAdultLeader": 0,
-  "unit_name": "Joey unit",
   "section": "joey"
  },
  {
@@ -29,7 +27,6 @@
   "patrol_name": "",
   "patrol_duty": "",
   "isAdultLeader": 0,
-  "unit_name": "Joey unit",
   "section": "joey"
  },
  {
@@ -40,7 +37,6 @@
   "patrol_name": "Blue Six",
   "patrol_duty": "Sixer",
   "isAdultLeader": 0,
-  "unit_name": "Cub unit",
   "section": "cub"
  },
  {
@@ -51,7 +47,6 @@
   "patrol_name": "Red Six",
   "patrol_duty": "",
   "isAdultLeader": 0,
-  "unit_name": "Cub unit",
   "section": "cub"
  },
  {
@@ -62,7 +57,6 @@
   "patrol_name": "Blue Six",
   "patrol_duty": "",
   "isAdultLeader": 0,
-  "unit_name": "Cub unit",
   "section": "cub"
  },
  {
@@ -73,7 +67,6 @@
   "patrol_name": "Eagles",
   "patrol_duty": "PL",
   "isAdultLeader": 0,
-  "unit_name": "Scout unit",
   "section": "scout"
  },
  {
@@ -84,7 +77,6 @@
   "patrol_name": "Hawks",
   "patrol_duty": "",
   "isAdultLeader": 0,
-  "unit_name": "Scout unit",
   "section": "scout"
  },
  {
@@ -95,7 +87,6 @@
   "patrol_name": "Eagles",
   "patrol_duty": "APL",
   "isAdultLeader": 0,
-  "unit_name": "Scout unit",
   "section": "scout"
  },
  {
@@ -106,7 +97,6 @@
   "patrol_name": "",
   "patrol_duty": "",
   "isAdultLeader": 0,
-  "unit_name": "Venturer unit",
   "section": "venturer"
  },
  {
@@ -117,7 +107,6 @@
   "patrol_name": "",
   "patrol_duty": "",
   "isAdultLeader": 0,
-  "unit_name": "Venturer unit",
   "section": "venturer"
  },
  {
@@ -128,7 +117,6 @@
   "patrol_name": "",
   "patrol_duty": "UL",
   "isAdultLeader": 1,
-  "unit_name": "Scout unit",
   "section": "scout"
  },
  {
@@ -139,7 +127,6 @@
   "patrol_name": "",
   "patrol_duty": "AL",
   "isAdultLeader": 1,
-  "unit_name": "Cub unit",
   "section": "cub"
  }
 ]
