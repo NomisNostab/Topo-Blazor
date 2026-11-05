@@ -24,5 +24,10 @@ namespace Topo.Model.Members
         public int isAdultLeader { get; set; } = 0;
         public bool selected { get; set; }
         public bool isEligibleJamboree { get; set; } = false;
+
+        // Populated when members are gathered across the whole group (not from a single unit) -
+        // e.g. for a group-scoped event's sign in sheet. Blank for every other existing use.
+        public string unit_name { get; set; } = string.Empty;
+        public string section { get; set; } = string.Empty;
     }
 }

@@ -41,5 +41,6 @@
         public bool BreakByPatrol { get; set; } = false;
         public bool GroupByMember { get; set; } = false;
         public bool FormatLikeTerrain { get; set; } = false;
+        public Topo.Model.Program.SignInSheetOptions SignInSheetOptions { get; set; } = new Topo.Model.Program.SignInSheetOptions();
     }
 }

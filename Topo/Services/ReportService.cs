@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Text;
 using System.Text.Json;
+using Topo.Model.Program;
 using Topo.Model.ReportGeneration;
 
 namespace Topo.Services
@@ -10,7 +11,7 @@ namespace Topo.Services
         public Task<byte[]> GetMemberListReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberList);
         public Task<byte[]> GetPatrolListReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberList, bool includeLeaders);
         public Task<byte[]> GetPatrolSheetsReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberList);
-        public Task<byte[]> GetSignInSheetReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberList, string eventName);
+        public Task<byte[]> GetSignInSheetReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberList, string eventName, SignInSheetOptions options);
         public Task<byte[]> GetEventAttendanceReport(string groupName, string section, string unitName, OutputType outputType, string serialisedEventListModel);
         public Task<byte[]> GetAttendanceReport(string groupName, string section, string unitName, OutputType outputType, string serialisedAttendanceReportData, DateTime fromDate, DateTime toDate);
         public Task<byte[]> GetOASWorksheetReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberAnswers, bool breakByPatrol, bool formatLikeTerrain);
@@ -85,7 +86,7 @@ namespace Topo.Services
             return report;
         }
 
-        public async Task<byte[]> GetSignInSheetReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberList, string eventName)
+        public async Task<byte[]> GetSignInSheetReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberList, string eventName, SignInSheetOptions options)
         {
             var reportGenerationRequest = new ReportGenerationRequest()
             {
@@ -95,7 +96,8 @@ namespace Topo.Services
                 UnitName = unitName,
                 OutputType = outputType,
                 ReportData = serialisedSortedMemberList,
-                EventName = eventName
+                EventName = eventName,
+                SignInSheetOptions = options
             };
 
             var report = await CallReportGeneratorFunction(reportGenerationRequest);

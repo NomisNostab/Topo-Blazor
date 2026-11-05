@@ -115,23 +115,6 @@ namespace Topo.Controller
             }
         }
 
-        public async Task SignInSheetClick(string eventId)
-        {
-            var eventName = model.Events?.Where(e => e.Id == eventId).FirstOrDefault()?.EventDisplay ?? "";
-            var groupName = _storageService.GroupName ?? "Group Name";
-            var unitName = _storageService.UnitName ?? "Unit Name";
-            var section = _storageService.Section;
-
-            var members = await _programService.GetInviteesForEvent(eventId);
-            var serialisedSortedMemberList = JsonConvert.SerializeObject(members.OrderBy(m => m.first_name).ThenBy(m => m.last_name));
-            var report = await _reportService.GetSignInSheetReport(groupName, section, unitName, OutputType.PDF, serialisedSortedMemberList, eventName);
-
-            var fileName = $"SignInSheet_{unitName.Replace(' ', '_')}_{eventName.Replace(' ', '_')}.pdf";
-
-            // Send the data to JS to actually download the file
-            await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, "application/pdf", report);
-        }
-
         internal async Task EventAttendanceClick(string eventId)
         {
             var groupName = _storageService.GroupName ?? "Group Name";
