@@ -97,6 +97,7 @@ namespace Topo.Controller
             var savedOptions = await _localStorageService.GetItemAsync<SignInSheetOptions>(OptionsKey);
             if (savedOptions != null)
             {
+                savedOptions.SelectedSections ??= Array.Empty<string>();
                 model.Options = savedOptions;
             }
             if (!HasMultipleUnits)
@@ -225,8 +226,8 @@ namespace Topo.Controller
         {
             var request = ++_previewRequest;
             PreviewFailed = false;
-            // with no event the sheet is for the unit(s) chosen, with a blank title
-            if (string.IsNullOrEmpty(EventId) && string.IsNullOrEmpty(model.UnitId))
+            // the sheet is for a unit; with no event it has a blank title
+            if (string.IsNullOrEmpty(model.UnitId))
             {
                 PreviewMembers = null;
                 return;
