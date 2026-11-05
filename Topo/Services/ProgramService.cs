@@ -16,6 +16,7 @@ namespace Topo.Services
         public Task<List<EventListModel>> GetEventsForDates(DateTime fromDate, DateTime toDate);
         public Task<EventListModel> GetAttendanceForEvent(string eventId);
         public Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string[] selectedCalendars);
+        public Task<List<Topo.Model.UnitReport.UnitEventInput>> GetEventDetailsForDates(DateTime fromDate, DateTime toDate);
         public Task<List<MemberListModel>> GetInviteesForEvent(string eventId);
     }
 
@@ -100,6 +101,28 @@ namespace Topo.Services
         public async Task ResetCalendar()
         {
             await _terrainAPIService.PutCalendarsAsync(GetUser(), _getCalendarsResultModel);
+        }
+
+        // Every event in the range, in full (attendance, logbook data) with its scope. Asked for in 90 day windows
+        // so that "all time" is many small requests rather than one very large one.
+        public async Task<List<Topo.Model.UnitReport.UnitEventInput>> GetEventDetailsForDates(DateTime fromDate, DateTime toDate)
+        {
+            var events = new List<Topo.Model.UnitReport.UnitEventInput>();
+            var seen = new HashSet<string>();
+            for (var windowStart = fromDate.Date; windowStart <= toDate.Date; windowStart = windowStart.AddDays(90))
+            {
+                var windowEnd = windowStart.AddDays(89) < toDate.Date ? windowStart.AddDays(89) : toDate.Date;
+                var result = await _terrainAPIService.GetEventsAsync(GetUser(), windowStart.AddDays(-1), windowEnd.AddDays(1));
+                foreach (var summary in result?.results ?? new Topo.Model.Program.Event[0])
+                {
+                    if (!seen.Add(summary.id))
+                        continue;
+                    var detail = await _terrainAPIService.GetEventAsync(summary.id);
+                    if (detail != null)
+                        events.Add(new Topo.Model.UnitReport.UnitEventInput { Scope = summary.invitee_type, Event = detail });
+                }
+            }
+            return events;
         }
 
         public async Task<List<EventListModel>> GetEventsForDates(DateTime fromDate, DateTime toDate)
