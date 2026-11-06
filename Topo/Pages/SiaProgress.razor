@@ -1,0 +1,114 @@
+@page "/siaprogress"
+@inherits Controller.SiaProgressController
+@using Topo.Model.SiaProgress
+
+<PageTitle>Topo / SIA Progress</PageTitle>
+
+<EditForm Model="@model">
+    <div class="mt-3 mb-3 row">
+        <h2>SIA Progress @model.GroupName</h2>
+    </div>
+
+    <div class="form-group mb-3 row">
+        <label for="unit" class="col-sm-2 col-form-label">Select Unit</label>
+        <div class="col-sm-3">
+            <select id="unit" class="form-select" value="@model.UnitId" @onchange="UnitChange">
+                <option value="">Select unit</option>
+                @foreach (var unit in model.Units)
+                {
+                    <option value="@unit.Key">@unit.Value</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group mb-3 row">
+        <label class="col-sm-2 col-form-label">Report on</label>
+        <div class="col-sm-10 col-form-label">
+            <div>
+                <label><input type="radio" name="scope" checked="@(model.Scope == SiaScope.OneProject)" @onchange="@(() => ScopeChange(SiaScope.OneProject))" /> One project</label>
+            </div>
+            <div>
+                <label><input type="radio" name="scope" checked="@(model.Scope == SiaScope.OnePerson)" @onchange="@(() => ScopeChange(SiaScope.OnePerson))" /> All the projects of one Scout</label>
+            </div>
+            <div>
+                <label><input type="radio" name="scope" checked="@(model.Scope == SiaScope.WholeUnit)" @onchange="@(() => ScopeChange(SiaScope.WholeUnit))" /> All the projects of the unit</label>
+            </div>
+        </div>
+    </div>
+
+    @if (NeedsMember)
+    {
+        <div class="form-group mb-3 row">
+            <label for="member" class="col-sm-2 col-form-label">Select Scout</label>
+            <div class="col-sm-3">
+                <select id="member" class="form-select" value="@model.MemberId" @onchange="MemberChange">
+                    <option value="">Select Scout</option>
+                    @foreach (var member in model.Members)
+                    {
+                        <option value="@member.id">@member.first_name @member.last_name</option>
+                    }
+                </select>
+            </div>
+        </div>
+    }
+
+    @if (NeedsProject && model.Projects.Count > 1)
+    {
+        <div class="form-group mb-3 row">
+            <label for="project" class="col-sm-2 col-form-label">Select Project</label>
+            <div class="col-sm-5">
+                <select id="project" class="form-select" @bind="model.ProjectId">
+                    <option value="">Select project</option>
+                    @foreach (var project in model.Projects)
+                    {
+                        <option value="@project.Id">@project.Label</option>
+                    }
+                </select>
+            </div>
+        </div>
+    }
+    else if (NeedsProject && model.Projects.Count == 1)
+    {
+        <div class="form-group mb-3 row">
+            <label class="col-sm-2 col-form-label">Project</label>
+            <div class="col-sm-10 col-form-label">@model.Projects[0].Label</div>
+        </div>
+    }
+
+    <div class="form-group mb-3 row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-10">
+            <div>
+                <label>
+                    <input type="checkbox" @bind="model.ExcludeCompleted" disabled="@(model.Scope == SiaScope.OneProject)" /> Leave out completed projects
+                </label>
+            </div>
+            <div>
+                <label>
+                    <input type="checkbox" @bind="model.IncludeSummary" /> Include a summary of where everyone in the report is up to
+                </label>
+            </div>
+            <div>
+                <label>
+                    <input type="checkbox" @bind="model.DoubleSided" /> Print double-sided: each Scout starts on a new sheet (adds blank pages)
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3 mb-3 row">
+        <div class="col-sm">
+            <button type="button" class="btn btn-primary" disabled="@Busy" @onclick="PdfClick">SIA Progress (pdf)</button>
+            <button type="button" class="btn btn-success" disabled="@Busy" @onclick="XlsxClick">SIA Progress (xlsx)</button>
+            @if (Busy)
+            {
+                <span class="ms-3">Reading @Progress...</span>
+            }
+            @if (!string.IsNullOrEmpty(model.ErrorMessage))
+            {
+                <span class="ms-3 text-danger">@model.ErrorMessage</span>
+            }
+        </div>
+    </div>
+</EditForm>

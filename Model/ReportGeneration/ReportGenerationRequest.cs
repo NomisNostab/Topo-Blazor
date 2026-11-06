@@ -18,7 +18,8 @@
         PersonalProgress,
         TermProgram,
         ProgramIdeas,
-        ProposedActivities
+        ProposedActivities,
+        SiaProgress
     }
 
     public enum OutputType
