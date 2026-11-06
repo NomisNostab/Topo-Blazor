@@ -8,7 +8,9 @@ using Topo.Model.Logbook;
 using Topo.Model.Members;
 using Topo.Model.Milestone;
 using Topo.Model.OAS;
+using System.Globalization;
 using Topo.Model.SIA;
+using Topo.Model.SiaProgress;
 using Topo.Model.Wallchart;
 using Topo.Model.Progress;
 using Syncfusion.EJ2.Spreadsheet;
@@ -34,6 +36,7 @@ namespace Topo.Services
         public IWorkbook GenerateApprovalsWorkbook(List<ApprovalsListModel> selectedApprovals, string groupName, string section, string unitName, DateTime approvalSearchFromDate, DateTime approvalSearchToDate, bool groupByMember, bool forPdfOutput);
         public IWorkbook GenerateProgressWorkbook(ProgressDetailsPageViewModel progressEntries, string groupName, string section, string unitName);
         public IWorkbook GenerateTermProgramWorkbook(List<EventListModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput);
+        public IWorkbook GenerateSiaProgressWorkbook(SiaProgressReport report, string groupName, string section);
         public IWorkbook CreateWorkbookWithSheets(int sheetsToCreate);
     }
     public class ReportService : IReportService
@@ -114,6 +117,296 @@ namespace Topo.Services
         public ReportService()
         {
             RunningInUtc = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now) == TimeSpan.Zero;
+        }
+
+        // A summary of where the Scouts are up to (when asked for), then one sheet for each Special Interest Area project: where
+        // it is up to, the plan and the review as question and answer, the files attached, and room for the leader's notes.
+        // A project that is too long for a page runs onto a second. For double-sided printing each Scout (and the summary)
+        // takes whole sheets of paper, with a blank page added wherever the next one would start on the back of a sheet.
+        public IWorkbook GenerateSiaProgressWorkbook(SiaProgressReport report, string groupName, string section)
+        {
+            const string dateFormat = "d MMM yyyy";
+            // what an A4 page holds with the margins used, in points
+            const double printWidth = 559;
+            const double printHeight = 806;
+            // a page may be shrunk this far to keep a project on one page before it is given a second
+            const double smallestScale = 0.75;
+            var culture = CultureInfo.InvariantCulture;
+            var workbook = CreateWorkbookWithSheets(Math.Max(1, (report.IncludeSummary ? 1 : 0) + report.Projects.Count));
+            var sheetNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            // each sheet in order, whose it is and how many pages it prints on
+            var printed = new List<(string owner, IWorksheet sheet, int pages)>();
+
+            // the logo hangs down from the top left corner, so leave room for it before the lines beside it begin
+            int RoomForLogo(IWorksheet sheet, int rowNumber, double usedPoints)
+            {
+                var logoPoints = sheet.Pictures.Count > 0 ? sheet.Pictures[0].Height * 0.75 : 0.0;
+                if (logoPoints + 6 <= usedPoints)
+                    return rowNumber;
+                rowNumber++;
+                sheet.SetRowHeight(rowNumber, logoPoints + 6 - usedPoints);
+                return rowNumber;
+            }
+
+            // Rows have the heights set for them, so how many pages a sheet needs is known: one if it fits when shrunk a
+            // little, otherwise as many as its length at full size needs.
+            int SetUpPage(IWorksheet sheet, int lastRow, int lastColumn)
+            {
+                double height = 0, width = 0;
+                for (var row = 1; row <= lastRow; row++)
+                    height += sheet.GetRowHeight(row);
+                for (var column = 1; column <= lastColumn; column++)
+                    width += sheet.GetColumnWidthInPixels(column) * 0.75;
+                var pagesLong = height * Math.Min(1.0, printWidth / width) / printHeight;
+                var pages = pagesLong <= 1 / smallestScale ? 1 : (int)Math.Ceiling(pagesLong);
+
+                sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+                sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
+                sheet.PageSetup.BottomMargin = 0.25;
+                sheet.PageSetup.TopMargin = 0.25;
+                sheet.PageSetup.LeftMargin = 0.25;
+                sheet.PageSetup.RightMargin = 0.25;
+                sheet.PageSetup.HeaderMargin = 0;
+                sheet.PageSetup.FooterMargin = 0;
+                sheet.PageSetup.FitToPagesWide = 1;
+                sheet.PageSetup.FitToPagesTall = pages;
+                return pages;
+            }
+
+            // Excel sheet names are at most 31 characters, without some symbols, and unique
+            string SheetName(string wanted)
+            {
+                var clean = new string(wanted.Where(c => !"[]:*?/\\".Contains(c)).ToArray()).Trim();
+                clean = clean.Length == 0 ? "Project" : clean.Length > 31 ? clean.Substring(0, 31) : clean;
+                var name = clean;
+                for (var n = 2; !sheetNames.Add(name); n++)
+                {
+                    var suffix = $" ({n})";
+                    name = clean.Substring(0, Math.Min(clean.Length, 31 - suffix.Length)) + suffix;
+                }
+                return name;
+            }
+
+            var sheetIndex = 0;
+            if (report.IncludeSummary)
+            {
+                var sheet = AddLogoToSheet(workbook, sheetIndex++, groupName, section, 4);
+                sheet.Name = SheetName("Summary");
+                IStyle headingStyle = workbook.Styles["headingStyle"];
+                int rowNumber = 1;
+
+                rowNumber++;
+                sheet.Range[rowNumber, 2].Text = "Special Interest Area Progress";
+                sheet.Range[rowNumber, 2, rowNumber, 4].Merge();
+                sheet.Range[rowNumber, 2].CellStyle = headingStyle;
+                sheet.SetRowHeight(rowNumber, 40);
+
+                rowNumber++;
+                sheet.Range[rowNumber, 2].Text = report.UnitName;
+                sheet.Range[rowNumber, 2, rowNumber, 4].Merge();
+                sheet.Range[rowNumber, 2].CellStyle = headingStyle;
+                sheet.SetRowHeight(rowNumber, 30);
+
+                rowNumber = RoomForLogo(sheet, rowNumber, 100);
+
+                rowNumber += 2;
+                var headings = new[] { "Name", "Completed", "In progress", "Areas completed" };
+                for (var c = 0; c < headings.Length; c++)
+                {
+                    var cell = sheet.Range[rowNumber, c + 1];
+                    cell.Text = headings[c];
+                    cell.CellStyle.Font.Bold = true;
+                    cell.CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                    cell.CellStyle.HorizontalAlignment = c == 0 ? ExcelHAlign.HAlignLeft : ExcelHAlign.HAlignCenter;
+                }
+                sheet.SetRowHeight(rowNumber, 20);
+                var headingRow = rowNumber;
+
+                foreach (var row in report.Summary)
+                {
+                    rowNumber++;
+                    sheet.Range[rowNumber, 1].Text = row.MemberName;
+                    sheet.Range[rowNumber, 2].Text = report.SiaRequired > 0 ? $"{row.Completed}/{report.SiaRequired}" : row.Completed.ToString();
+                    sheet.Range[rowNumber, 3].Text = row.InProgress.ToString();
+                    sheet.Range[rowNumber, 4].Text = report.AreasRequired > 0 ? $"{row.AreasCompleted}/{report.AreasRequired}" : row.AreasCompleted.ToString();
+                    sheet.Range[rowNumber, 2, rowNumber, 4].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                }
+                if (report.Summary.Count == 0)
+                {
+                    rowNumber++;
+                    sheet.Range[rowNumber, 1].Text = "No members to show";
+                }
+
+                rowNumber += 2;
+                sheet.Range[rowNumber, 1, rowNumber, 4].Merge();
+                sheet.Range[rowNumber, 1].Text = report.SiaRequired > 0
+                    ? $"The {report.AwardName} asks for {report.SiaRequired} Special Interest Area projects over at least {report.AreasRequired} areas. Completed projects are awarded ones; in progress is every other project started in this section."
+                    : "Completed projects are awarded ones; in progress is every other project started in this section.";
+                sheet.Range[rowNumber, 1].CellStyle.WrapText = true;
+                sheet.Range[rowNumber, 1].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
+                sheet.SetRowHeight(rowNumber, 45);
+
+                sheet.SetColumnWidth(1, 36);
+                sheet.SetColumnWidth(2, 16);
+                sheet.SetColumnWidth(3, 16);
+                sheet.SetColumnWidth(4, 20);
+                var pages = SetUpPage(sheet, rowNumber, 4);
+                // a second page starts with the headings again
+                if (pages > 1)
+                    sheet.PageSetup.PrintTitleRows = $"${headingRow}:${headingRow}";
+                printed.Add(("summary", sheet, pages));
+            }
+
+            foreach (var project in report.Projects)
+            {
+                const int questionWidth = 44;
+                const int answerWidth = 62;
+                var sheet = AddLogoToSheet(workbook, sheetIndex++, groupName, section, 2);
+                sheet.Name = SheetName($"{project.MemberName} - {project.ProjectName}");
+                IStyle headingStyle = workbook.Styles["headingStyle"];
+                int rowNumber = 1;
+
+                rowNumber++;
+                sheet.Range[rowNumber, 2].Text = "Special Interest Area Project";
+                sheet.Range[rowNumber, 2].CellStyle = headingStyle;
+                sheet.SetRowHeight(rowNumber, 40);
+
+                rowNumber++;
+                sheet.Range[rowNumber, 2].Text = project.MemberName;
+                sheet.Range[rowNumber, 2].CellStyle = headingStyle;
+                sheet.SetRowHeight(rowNumber, 30);
+
+                rowNumber = RoomForLogo(sheet, rowNumber, 70);
+
+                void Block(string heading)
+                {
+                    rowNumber += 2;
+                    sheet.Range[rowNumber, 1, rowNumber, 2].Merge();
+                    sheet.Range[rowNumber, 1].Text = heading;
+                    sheet.Range[rowNumber, 1, rowNumber, 2].CellStyle.Font.Bold = true;
+                    sheet.Range[rowNumber, 1, rowNumber, 2].CellStyle.Font.Size = 12;
+                    sheet.Range[rowNumber, 1, rowNumber, 2].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                    sheet.SetRowHeight(rowNumber, 20);
+                }
+
+                // A row can't be taller than Excel allows (409 points), so a very long answer carries on in the rows below it
+                void Row(string label, string text, bool bold = true, double minHeight = 15)
+                {
+                    const int charsPerLine = answerWidth - 2;
+                    const int linesPerRow = 25;
+                    var chunks = new List<string>();
+                    var current = new List<string>();
+                    var currentLines = 0;
+                    foreach (var paragraph in text.Split('\n'))
+                    {
+                        // a paragraph is cut at a space when it is longer than a row holds
+                        var rest = paragraph;
+                        do
+                        {
+                            var room = (linesPerRow - currentLines) * charsPerLine;
+                            var piece = rest;
+                            if (rest.Length > room && currentLines < linesPerRow)
+                            {
+                                var cut = rest.LastIndexOf(' ', Math.Min(room, rest.Length - 1));
+                                piece = rest.Substring(0, cut > 0 ? cut : room);
+                            }
+                            var lines = Math.Max(1, (int)Math.Ceiling(piece.Length / (double)charsPerLine));
+                            if (currentLines + lines > linesPerRow && current.Count > 0)
+                            {
+                                chunks.Add(string.Join("\n", current));
+                                current = new List<string>();
+                                currentLines = 0;
+                                continue;
+                            }
+                            current.Add(piece);
+                            currentLines += lines;
+                            rest = rest.Substring(piece.Length).TrimStart();
+                        } while (rest.Length > 0);
+                    }
+                    chunks.Add(string.Join("\n", current));
+
+                    for (var i = 0; i < chunks.Count; i++)
+                    {
+                        var chunk = chunks[i];
+                        var rowLabel = i == 0 ? label : "";
+                        rowNumber++;
+                        sheet.Range[rowNumber, 1].Text = rowLabel;
+                        sheet.Range[rowNumber, 1].CellStyle.Font.Bold = bold;
+                        sheet.Range[rowNumber, 1].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
+                        sheet.Range[rowNumber, 1].CellStyle.WrapText = true;
+                        sheet.Range[rowNumber, 2].Text = chunk;
+                        sheet.Range[rowNumber, 2].CellStyle.WrapText = true;
+                        sheet.Range[rowNumber, 2].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
+                        var lines = Math.Max(
+                            (int)Math.Ceiling(rowLabel.Length / (double)(questionWidth - 12)),
+                            chunk.Split('\n').Sum(l => Math.Max(1, (int)Math.Ceiling(l.Length / (double)charsPerLine))));
+                        sheet.SetRowHeight(rowNumber, Math.Min(400, Math.Max(minHeight, lines * 15)));
+                    }
+                }
+
+                void Questions(List<SiaAnswer> answers)
+                {
+                    foreach (var item in answers)
+                        Row(item.Question, string.IsNullOrWhiteSpace(item.Answer) ? "Not answered yet" : item.Answer.Trim(), bold: false);
+                }
+
+                Block("Project");
+                Row("Name", project.ProjectName);
+                Row("Special Interest Area", project.Area);
+                Row("Where it is up to", project.Status);
+                Row("Last updated", project.StatusUpdated.ToString(dateFormat, culture));
+                if (project.DateAwarded.HasValue)
+                    Row("Awarded", project.DateAwarded.Value.ToString(dateFormat, culture));
+
+                Block("Plan");
+                Questions(project.Plan);
+
+                Block("Review");
+                Questions(project.Review);
+
+                Block("Files attached");
+                Row("Files", project.Files.Count == 0 ? "None" : string.Join("\n", project.Files));
+
+                Block("Notes to talk through");
+                Row("Next steps", "", minHeight: 60);
+                Row("Leader comments", "", minHeight: 60);
+
+                sheet.SetColumnWidth(1, questionWidth);
+                sheet.SetColumnWidth(2, answerWidth);
+                var pages = SetUpPage(sheet, rowNumber, 2);
+                // a second page says whose it is
+                if (pages > 1)
+                    sheet.PageSetup.PrintTitleRows = "$2:$3";
+                printed.Add((project.MemberId, sheet, pages));
+            }
+
+            if (report.DoubleSided)
+            {
+                // a blank page goes before whoever would start on the back of a sheet
+                var pagesSoFar = 0;
+                var previousOwner = "";
+                foreach (var (owner, sheet, pages) in printed)
+                {
+                    if (owner != previousOwner && pagesSoFar % 2 == 1)
+                    {
+                        var blank = workbook.Worksheets.Create(SheetName("Blank"));
+                        // a space is enough for the page to be printed
+                        blank.Range[1, 1].Text = " ";
+                        blank.Move(sheet.Index);
+                        pagesSoFar++;
+                    }
+                    pagesSoFar += pages;
+                    previousOwner = owner;
+                }
+            }
+
+            if (printed.Count == 0)
+            {
+                var sheet = AddLogoToSheet(workbook, 0, groupName, section, 2);
+                sheet.Range[3, 2].Text = "No Special Interest Area projects to show";
+            }
+
+            return workbook;
         }
 
         public IWorkbook CreateWorkbookWithSheets(int sheetsToCreate)
