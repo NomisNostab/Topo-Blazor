@@ -15,6 +15,7 @@ namespace Topo.Controller
         protected override void OnInitialized()
         {
             indexPageViewModel.IsAuthenticated = _storageService.IsAuthenticated;
+            indexPageViewModel.IsYouthMember = _storageService.IsYouthMember;
             indexPageViewModel.FullName = _storageService.MemberName ?? "";
             indexPageViewModel.Groups = _storageService.Groups;
             indexPageViewModel.GroupId = _storageService.GroupId ?? "";
