@@ -141,8 +141,8 @@ namespace TopoReportFunctionTest
         {
             var report = UnitReportBuilder.Build(Sample());
 
-            Assert.AreEqual(2, report.Members.CurrentYouth);
-            Assert.AreEqual(2, report.Members.CurrentLeaders); // the unit leader counts as a leader
+            Assert.AreEqual(3, report.Members.CurrentYouth); // the unit leader is a youth member
+            Assert.AreEqual(1, report.Members.CurrentLeaders);
             Assert.AreEqual(1, report.Members.FormerAttendees); // not the other unit's member from the group event
             Assert.AreEqual(5, report.Members.Total);
         }
@@ -163,8 +163,8 @@ namespace TopoReportFunctionTest
 
             Assert.AreEqual(2, report.NightsRun);
             Assert.AreEqual(10, report.PersonNightsCamped); // five people, two nights
-            Assert.AreEqual(6, report.YouthPersonNights);
-            Assert.AreEqual(4, report.LeaderPersonNights);
+            Assert.AreEqual(8, report.YouthPersonNights);
+            Assert.AreEqual(2, report.LeaderPersonNights);
         }
 
         [TestMethod]
@@ -172,9 +172,10 @@ namespace TopoReportFunctionTest
         {
             var report = UnitReportBuilder.Build(Sample());
 
-            // camp 40h: 2 leaders, 3 youth; hike 6h: 1 leader, 1 youth; group event 2h: just the one unit member
-            Assert.AreEqual(86.0, report.LeaderHours);
-            Assert.AreEqual(128.0, report.YouthHours);
+            // camp 40h: 1 leader, 4 youth (the unit leader and the former member among them); hike 6h: 1 leader, 1 youth;
+            // group event 2h: just the one unit member
+            Assert.AreEqual(46.0, report.LeaderHours);
+            Assert.AreEqual(168.0, report.YouthHours);
         }
 
         [TestMethod]
@@ -190,6 +191,25 @@ namespace TopoReportFunctionTest
             Assert.AreEqual(8.0, report.HikeKm);
             report.KmPerPerson = true;
             Assert.AreEqual(16.0, report.HikeKm);
+        }
+
+        [TestMethod]
+        public void UnitLeaderIsYouthSoTheirBadgesAndHoursCountWithTheYouth()
+        {
+            var input = Sample();
+            input.BadgesByMember["ul"] = new UnitMemberBadges
+            {
+                Milestones = { results = new[]
+                {
+                    new MilestoneResult { section = "scout", status = "awarded", achievement_meta = new Topo.Model.Milestone.Achievement_Meta { stage = 3 }, status_updated = new DateTime(2026, 3, 1) }
+                } }
+            };
+
+            var report = UnitReportBuilder.Build(input);
+
+            Assert.AreEqual(2, report.Badges.MilestonesTotal); // y1's milestone 1 and the unit leader's milestone 3
+            Assert.IsTrue(report.Badges.Milestones.Any(m => m.Name == "Milestone 3"));
+            Assert.AreEqual(1, report.Members.CurrentLeaders); // only the adult leader
         }
 
         [TestMethod]
