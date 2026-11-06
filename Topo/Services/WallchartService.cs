@@ -53,7 +53,7 @@ namespace Topo.Services
 
                 // Get Milestone for member
                 var memberMilestones = await _terrainAPIService.GetMilestoneResultsForMember(member.id);
-                foreach (var milestoneResult in memberMilestones.results.Where(r => r.section == _storageService.Section).OrderBy(r => r.achievement_meta.stage))
+                foreach (var milestoneResult in AchievementSelection.OnePerMilestoneStage(memberMilestones.results.Where(r => r.section == _storageService.Section)))
                 {
                     MoveMilestoneAssistsToLeads(milestoneResult);
                     switch (milestoneResult.achievement_meta.stage)
@@ -152,9 +152,7 @@ namespace Topo.Services
                             break;
                     }
                 }
-                wallchartItem.OASStageProgressions = oasResults.results.Where(o => o.status == "awarded" && o.section == _storageService.Section).Count();
-                // Double Count OAS Stage Progressions for stages 7 and above.
-                wallchartItem.OASStageProgressions += oasResults.results.Where(o => o.achievement_meta.stage >=7 && o.status == "awarded" && o.section == _storageService.Section).Count();
+                wallchartItem.OASStageProgressions = AchievementSelection.OasProgressions(oasResults.results, _storageService.Section, includeApproved: false);
                 // Member
                 wallchartItem.MemberId = member.id;
                 wallchartItem.MemberName = $"{member.first_name} {_membersService.GetMemberLastName(selectedUnitId, member.id).Result}";
@@ -202,24 +200,16 @@ namespace Topo.Services
                 }
                 // Peak Award
                 var courseReflectionResultModel = await _terrainAPIService.GetCourseReflectionResultsForMember(member.id);
-                wallchartItem.LeadershipCourse = courseReflectionResultModel.results
-                    .Where(r => r.status == "awarded" && r.section == _storageService.Section)
-                    .FirstOrDefault()?.status_updated;
+                wallchartItem.LeadershipCourse = AchievementSelection.LatestAwardedPeak(courseReflectionResultModel.results, _storageService.Section)?.status_updated;
 
                 var adventurousJourneyResultModel = await _terrainAPIService.GetAdventurousJourneyResultsForMember(member.id);
-                wallchartItem.AdventurousJourney = adventurousJourneyResultModel.results
-                    .Where(r => r.status == "awarded" && r.section == _storageService.Section)
-                    .FirstOrDefault()?.status_updated;
+                wallchartItem.AdventurousJourney = AchievementSelection.LatestAwardedPeak(adventurousJourneyResultModel.results, _storageService.Section)?.status_updated;
 
                 var personalReflectionResultModel = await _terrainAPIService.GetPersonalReflectionResultsForMember(member.id);
-                wallchartItem.PersonalReflection = personalReflectionResultModel.results
-                    .Where(r => r.status == "awarded" && r.section == _storageService.Section)
-                    .FirstOrDefault()?.status_updated;
+                wallchartItem.PersonalReflection = AchievementSelection.LatestAwardedPeak(personalReflectionResultModel.results, _storageService.Section)?.status_updated;
 
                 var peakAwardResultModel = await _terrainAPIService.GetPeakAwardResultsForMember(member.id);
-                wallchartItem.PeakAwardAwarded = peakAwardResultModel.results
-                    .Where(r => r.status == "awarded" && r.section == _storageService.Section)
-                    .FirstOrDefault()?.status_updated;
+                wallchartItem.PeakAwardAwarded = AchievementSelection.LatestAwardedPeak(peakAwardResultModel.results, _storageService.Section)?.status_updated;
 
                 // Percent complete, for display until the award itself is granted (see PeakAwardAwarded).
                 wallchartItem.PeakAward = ComputePeakAwardPercent(wallchartItem, _storageService.Section);
@@ -341,7 +331,7 @@ namespace Topo.Services
         private async Task<DateTime?> GetIntroToScouting(string memberId)
         {
             var introToScouting = await _terrainAPIService.GetIntroductionToScoutingResultsForMember(memberId);
-            var result = introToScouting.results.Where(r => r.status == "awarded").FirstOrDefault();
+            var result = AchievementSelection.LatestAwardedIntro(introToScouting.results);
             if (result != null)
             {
                 if (!string.IsNullOrEmpty(result.imported.date_awarded))
@@ -360,7 +350,7 @@ namespace Topo.Services
         private async Task<DateTime?> GetIntroToSection(string memberId)
         {
             var introToSection = await _terrainAPIService.GetIntroductionToSectionResultsForMember(memberId);
-            var result = introToSection.results.Where(r => r.section == _storageService.Section && r.status == "awarded").FirstOrDefault();
+            var result = AchievementSelection.LatestAwardedIntro(introToSection.results, _storageService.Section);
             if (result != null)
             {
                 if (!string.IsNullOrEmpty(result.imported.date_awarded))
