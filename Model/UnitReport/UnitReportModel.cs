@@ -8,6 +8,8 @@ namespace Topo.Model.UnitReport
         public DateTime From { get; set; }
         public DateTime To { get; set; }
         public bool AllTime { get; set; }
+        // Terrain only lists current members, so the member counts are as at the day the report was made
+        public DateTime AsAt { get; set; }
 
         public int EventsCounted { get; set; }
         public int EventsWithoutAttendance { get; set; }
@@ -37,6 +39,8 @@ namespace Topo.Model.UnitReport
     {
         public int CurrentYouth { get; set; }
         public int CurrentLeaders { get; set; }
+        // Under 18 with a leader's duty in the unit; counted as neither youth nor leaders
+        public int YouthHelpers { get; set; }
         // People who attended the unit's own events in the range but are not current members
         public int FormerAttendees { get; set; }
         public int Total => CurrentYouth + CurrentLeaders + FormerAttendees;
