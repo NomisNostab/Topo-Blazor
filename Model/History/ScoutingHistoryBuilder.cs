@@ -181,7 +181,7 @@ namespace Topo.Model.History
                 .OrderBy(r => AwardedDate(r.imported.date_awarded, r.status_updated))
                 .Select(r => new SiaEntry
                 {
-                    Area = Title((r.answers.special_interest_area_selection ?? "").Replace("sia_", "")),
+                    Area = SiaName(r.answers.special_interest_area_selection ?? ""),
                     Project = r.answers.project_name ?? "",
                     Date = AwardedDate(r.imported.date_awarded, r.status_updated)
                 }).ToList();
@@ -303,6 +303,21 @@ namespace Topo.Model.History
             var rank = Array.IndexOf(SectionOrder, key);
             return rank < 0 ? int.MaxValue : rank;
         }
+        // The special interest areas as Scouts names them, from Terrain's key (with or without its "sia_" prefix)
+        public static string SiaName(string key)
+        {
+            switch ((key ?? "").Replace("sia_", ""))
+            {
+                case "adventure_sport": return "Adventure & Sport";
+                case "art_literature": return "Art & Literature";
+                case "better_world": return "Creating a Better World";
+                case "environment": return "Environment";
+                case "growth_development": return "Growth & Development";
+                case "stem_innovation": return "STEM & Innovation";
+                default: return Title((key ?? "").Replace("sia_", ""));
+            }
+        }
+
         private static string SectionName(string key) => Title(key) + "s";
         public static string Title(string text) =>
             CultureInfo.InvariantCulture.TextInfo.ToTitleCase((text ?? "").Replace("_", " ").Replace("-", " ").Trim());

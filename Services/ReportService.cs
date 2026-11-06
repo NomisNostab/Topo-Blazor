@@ -2309,7 +2309,14 @@ namespace Topo.Services
 
             var m = report.Members;
             Block("Members");
-            Row("Current members", new[] { $"{m.CurrentYouth} youth, {m.CurrentLeaders} leaders" });
+            var currentMembers = new List<string>
+            {
+                $"{m.CurrentYouth} youth (as at {report.AsAt.ToString(dateFormat, culture)})",
+                $"{m.CurrentLeaders} {(m.CurrentLeaders == 1 ? "leader" : "leaders")}"
+            };
+            if (m.YouthHelpers > 0)
+                currentMembers.Insert(1, $"{m.YouthHelpers} youth {(m.YouthHelpers == 1 ? "helper" : "helpers")}");
+            Row("Current members", currentMembers);
             Row("Former members", new[] { $"{m.FormerAttendees} who attended the unit's events" });
             Row("Been part of the unit", new[] { m.Total.ToString() });
 
@@ -2323,7 +2330,7 @@ namespace Topo.Services
 
             Block("Nights away");
             Row("Nights run", new[] { report.NightsRun.ToString() });
-            Row("Person nights camped", new[] { $"{report.PersonNightsCamped} ({report.YouthPersonNights} youth, {report.LeaderPersonNights} leaders)" });
+            Row("Person nights camped", new[] { $"{report.PersonNightsCamped} ({report.YouthPersonNights} youth, {report.LeaderPersonNights} {(report.LeaderPersonNights == 1 ? "leader" : "leaders")})" });
 
             Block("Hiking");
             Row("Km hiked", new[]

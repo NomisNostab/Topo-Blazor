@@ -81,7 +81,7 @@ namespace TopoReportFunctionTest
                     Oas("scout", "camping", 8, "awarded", new DateTime(2026, 3, 1)),
                     Oas("scout", "alpine", 2, "draft_review", new DateTime(2026, 3, 1))
                 } },
-                Sia = { results = new[] { Sia("scout", "sia_adventure_sports", "awarded", new DateTime(2026, 2, 2)) } },
+                Sia = { results = new[] { Sia("scout", "sia_adventure_sport", "awarded", new DateTime(2026, 2, 2)) } },
                 Peak = { results = new[] { new Topo.Model.Progress.PeakAwardResult { section = "scout", status = "awarded", status_updated = new DateTime(2026, 4, 1) } } }
             };
             input.BadgesByMember["y2"] = new UnitMemberBadges
@@ -145,6 +145,30 @@ namespace TopoReportFunctionTest
             Assert.AreEqual(1, report.Members.CurrentLeaders);
             Assert.AreEqual(1, report.Members.FormerAttendees); // not the other unit's member from the group event
             Assert.AreEqual(5, report.Members.Total);
+        }
+
+        [TestMethod]
+        public void YouthHelpersAndGroupRolesAreNotTheUnitsLeaders()
+        {
+            var input = Sample();
+            foreach (var leader in input.CurrentMembers.Where(m => m.isAdultLeader == 1))
+            {
+                leader.patrol_name = "Adult Leaders - Scouts";
+                leader.age = "40y 0m";
+            }
+            var helper = Member("h1", "20", adult: 1);
+            helper.age = "16y 2m";
+            var advisor = Member("g1", "21", adult: 1); // a group role: the leader duty but not in the leaders' patrol
+            advisor.age = "70y 1m";
+            input.CurrentMembers.Add(helper);
+            input.CurrentMembers.Add(advisor);
+
+            var report = UnitReportBuilder.Build(input);
+
+            Assert.AreEqual(1, report.Members.CurrentLeaders);
+            Assert.AreEqual(1, report.Members.YouthHelpers);
+            Assert.AreEqual(3, report.Members.CurrentYouth);
+            Assert.AreEqual(input.AsOf, report.AsAt);
         }
 
         [TestMethod]
@@ -222,7 +246,7 @@ namespace TopoReportFunctionTest
             Assert.AreEqual("Milestone 1", badges.Milestones.Single().Name);
             Assert.AreEqual(3, badges.OasProgressions); // bushcraft 1, camping stage 8 counts double; the draft one does not count
             Assert.AreEqual(2, badges.SiaTotal);
-            CollectionAssert.AreEqual(new[] { "Adventure Sports", "Stem Innovation" }, badges.SiaCategories.Select(s => s.Name).ToList());
+            CollectionAssert.AreEqual(new[] { "Adventure & Sport", "STEM & Innovation" }, badges.SiaCategories.Select(s => s.Name).ToList());
             Assert.AreEqual(1, badges.AdditionalAwardsTotal);
             Assert.AreEqual("Bronze Cross", badges.AdditionalAwards.Single().Name);
         }

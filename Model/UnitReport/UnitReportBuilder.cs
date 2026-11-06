@@ -55,8 +55,10 @@ namespace Topo.Model.UnitReport
             var current = input.CurrentMembers
                 .GroupBy(m => PersonKey(m.member_number, m.id), StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
-            model.Members.CurrentLeaders = input.CurrentMembers.Count(IsLeader);
-            model.Members.CurrentYouth = input.CurrentMembers.Count - model.Members.CurrentLeaders;
+            model.AsAt = input.AsOf;
+            model.Members.CurrentLeaders = LeadersOf(current.Values).Count;
+            model.Members.YouthHelpers = current.Values.Count(IsYouthHelper);
+            model.Members.CurrentYouth = current.Values.Count(m => !IsLeader(m));
 
             AddEvents(input, model, current);
             AddBadges(input, model);
@@ -167,7 +169,7 @@ namespace Topo.Model.UnitReport
 
                 foreach (var r in badges.Sia.results.Where(r => r.status == "awarded" && InUnit(r.section) && InRange(r.imported.date_awarded, r.status_updated)))
                 {
-                    var area = ScoutingHistoryBuilder.Title((r.answers.special_interest_area_selection ?? "").Replace("sia_", ""));
+                    var area = ScoutingHistoryBuilder.SiaName(r.answers.special_interest_area_selection ?? "");
                     area = area == "" ? "Other" : area;
                     sia[area] = sia.GetValueOrDefault(area) + 1;
                 }
@@ -192,6 +194,20 @@ namespace Topo.Model.UnitReport
 
         // Adult leaders only. A unit leader (UL) is a youth member, who chairs the unit council, so counts with the youth.
         public static bool IsLeader(MemberListModel member) => member.isAdultLeader == 1;
+
+        // Terrain gives the adult leader duty to others in a unit too: young helpers, and people whose role is in the group
+        // (a group leader or advisor). A helper is under 18. The unit's own leaders are the adults in its "Adult Leaders"
+        // patrol; when nobody has a patrol that can't be told, so every adult counts.
+        public static List<MemberListModel> LeadersOf(IEnumerable<MemberListModel> members)
+        {
+            var adults = members.Where(m => IsLeader(m) && !IsUnder18(m)).ToList();
+            var inAPatrol = adults.Where(m => !string.IsNullOrEmpty(m.patrol_name)).ToList();
+            return inAPatrol.Count > 0 ? inAPatrol : adults;
+        }
+
+        public static bool IsYouthHelper(MemberListModel member) => IsLeader(member) && IsUnder18(member);
+
+        private static bool IsUnder18(MemberListModel member) => int.TryParse((member.age ?? "").Split('y')[0], out var years) && years < 18;
 
         private static string PersonKey(string memberNumber, string id) => string.IsNullOrEmpty(memberNumber) ? id : memberNumber;
     }

@@ -4,7 +4,14 @@
 <div class="card mb-3">
     <div class="card-header"><strong>Members</strong></div>
     <div class="card-body">
-        <div class="row"><div class="col-sm-3">Current members</div><div class="col-sm-9">@Report.Members.CurrentYouth youth, @Report.Members.CurrentLeaders leaders</div></div>
+        <div class="row"><div class="col-sm-3">Current members</div><div class="col-sm-9">
+            <div>@Report.Members.CurrentYouth youth (as at @Report.AsAt.ToString("d MMM yyyy"))</div>
+            @if (Report.Members.YouthHelpers > 0)
+            {
+                <div>@Report.Members.YouthHelpers youth @(Report.Members.YouthHelpers == 1 ? "helper" : "helpers")</div>
+            }
+            <div>@Report.Members.CurrentLeaders @(Report.Members.CurrentLeaders == 1 ? "leader" : "leaders")</div>
+        </div></div>
         <div class="row"><div class="col-sm-3">Former members</div><div class="col-sm-9">@Report.Members.FormerAttendees who attended the unit's events</div></div>
         <div class="row"><div class="col-sm-3"><strong>Been part of the unit</strong></div><div class="col-sm-9"><strong>@Report.Members.Total</strong></div></div>
     </div>
@@ -61,7 +68,7 @@
     <div class="card-header"><strong>Nights, hiking and hours</strong></div>
     <div class="card-body">
         <div class="row"><div class="col-sm-3">Nights run</div><div class="col-sm-9">@Report.NightsRun</div></div>
-        <div class="row"><div class="col-sm-3">Person nights camped</div><div class="col-sm-9">@Report.PersonNightsCamped (@Report.YouthPersonNights youth, @Report.LeaderPersonNights leaders)</div></div>
+        <div class="row"><div class="col-sm-3">Person nights camped</div><div class="col-sm-9">@Report.PersonNightsCamped (@Report.YouthPersonNights youth, @Report.LeaderPersonNights @(Report.LeaderPersonNights == 1 ? "leader" : "leaders"))</div></div>
         <div class="row">
             <div class="col-sm-3">Km hiked</div>
             <div class="col-sm-9">
