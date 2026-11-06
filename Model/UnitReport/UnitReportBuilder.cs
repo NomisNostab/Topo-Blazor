@@ -190,9 +190,8 @@ namespace Topo.Model.UnitReport
             model.Badges.AdditionalAwards = awards.Select(a => new UnitBadgeCount { Name = a.Key, Count = a.Value }).ToList();
         }
 
-        // Unit leaders and other adult leaders (a unit leader is not flagged as an adult leader in the member list)
-        public static bool IsLeader(MemberListModel member) =>
-            member.isAdultLeader == 1 || member.patrol_duty == "UL" || member.patrol_duty == "SL";
+        // Adult leaders only. A unit leader (UL) is a youth member, who chairs the unit council, so counts with the youth.
+        public static bool IsLeader(MemberListModel member) => member.isAdultLeader == 1;
 
         private static string PersonKey(string memberNumber, string id) => string.IsNullOrEmpty(memberNumber) ? id : memberNumber;
     }
