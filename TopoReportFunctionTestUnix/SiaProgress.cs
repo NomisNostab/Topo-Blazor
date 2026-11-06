@@ -169,6 +169,19 @@ namespace TopoReportFunctionTest
         }
 
         [TestMethod]
+        public void AnUnansweredQuestionIsLeftBlankToWriteIn()
+        {
+            var input = new SiaProgressInput { UnitName = "Scout Unit", Section = "scout", Templates = Templates() };
+            input.Members.Add(Member("Alex Another", Project("p5", "Kayak", "sia_adventure_sport", "pending_review")));
+            var base64 = Render(SiaProgressBuilder.Build(input), OutputType.PDF, "SiaProgress_Blank.pdf");
+            using var document = new PdfLoadedDocument(Convert.FromBase64String(base64));
+            var text = document.Pages[0].ExtractText();
+
+            StringAssert.Contains(text, "My goal is..."); // the question is there
+            Assert.IsFalse(text.Contains("Not answered"), "nothing is written where there is no answer");
+        }
+
+        [TestMethod]
         public void NobodyOrNoProjectsStillBuilds()
         {
             var empty = new SiaProgressInput { Section = "scout", IncludeSummary = true };
