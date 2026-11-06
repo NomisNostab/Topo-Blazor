@@ -2217,7 +2217,7 @@ namespace Topo.Services
                 Row("Leaders", leaders);
 
                 Block(report.IsGroup ? $"{unit.UnitName}: activities" : "Activities");
-                Row("Past events", unit.PastEvents.Select(e => $"{Day(e.Start)} - {e.Title} ({e.ChallengeArea}) - {e.YouthAttended} youth, {e.LeadersAttended} leaders"));
+                Row("Past events", unit.PastEvents.Select(e => $"{Day(e.Start)} - {e.Title} ({e.ChallengeArea}) - {e.YouthAttended} youth, {e.LeadersAttended} {(e.LeadersAttended == 1 ? "leader" : "leaders")}"));
                 Row("Upcoming events", unit.UpcomingEvents.Select(e => $"{Day(e.Start)} - {e.Title} ({e.ChallengeArea})"));
                 Badges(unit.Badges, report.IsGroup ? unit.UnitName + ":" : "");
             }

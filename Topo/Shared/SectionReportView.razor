@@ -144,7 +144,7 @@
         <div class="line"><div class="label">Past events</div><div class="detail">
             @foreach (var evt in unit.PastEvents)
             {
-                <div>@evt.Start.ToString("d MMM yyyy") - @evt.Title (@evt.ChallengeArea) - @evt.YouthAttended youth, @evt.LeadersAttended leaders</div>
+                <div>@evt.Start.ToString("d MMM yyyy") - @evt.Title (@evt.ChallengeArea) - @evt.YouthAttended youth, @evt.LeadersAttended @(evt.LeadersAttended == 1 ? "leader" : "leaders")</div>
             }
             @if (unit.PastEvents.Count == 0)
             {
