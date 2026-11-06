@@ -92,7 +92,7 @@ namespace Topo.Model.SectionReport
             {
                 SavedOn = savedOn,
                 Youth = list.Where(m => !UnitReportBuilder.IsLeader(m)).Select(Person).ToList(),
-                Leaders = LeadersOf(list).Select(Person).ToList()
+                Leaders = UnitReportBuilder.LeadersOf(list).Select(Person).ToList()
             };
         }
 
@@ -114,14 +114,14 @@ namespace Topo.Model.SectionReport
             // a person listed twice is one person
             var members = Distinct(input.CurrentMembers);
             var youth = members.Where(m => !UnitReportBuilder.IsLeader(m)).ToList();
-            var leaders = LeadersOf(members);
+            var leaders = UnitReportBuilder.LeadersOf(members);
             var currentKeys = members.Select(m => PersonKey(m.member_number, m.id)).ToHashSet(StringComparer.OrdinalIgnoreCase);
             model.CurrentYouth = youth.Count;
             model.CurrentLeaders = leaders.Count;
             model.Leaders = leaders
                 .Select(l => new LeaderEntry { Name = Name(l), MemberNumber = l.member_number })
                 .OrderBy(l => l.Name, StringComparer.OrdinalIgnoreCase).ToList();
-            model.YouthHelpers = members.Where(m => UnitReportBuilder.IsLeader(m) && IsUnder18(m))
+            model.YouthHelpers = members.Where(UnitReportBuilder.IsYouthHelper)
                 .Select(l => new LeaderEntry { Name = Name(l), MemberNumber = l.member_number })
                 .OrderBy(l => l.Name, StringComparer.OrdinalIgnoreCase).ToList();
             model.Ages = AgeProfileOf(youth, section);
@@ -366,7 +366,8 @@ namespace Topo.Model.SectionReport
 
                 foreach (var r in badges.Sia.results.Where(r => r.status == "awarded" && InSection(r.section) && InPeriod(r.imported.date_awarded, r.status_updated)))
                 {
-                    var area = SiaName((r.answers.special_interest_area_selection ?? "").Replace("sia_", ""));
+                    var area = ScoutingHistoryBuilder.SiaName(r.answers.special_interest_area_selection ?? "");
+                    area = area == "" ? "Other" : area;
                     sia[area] = sia.GetValueOrDefault(area) + 1;
                 }
 
@@ -420,28 +421,6 @@ namespace Topo.Model.SectionReport
 
         private static string Name(MemberListModel member) => $"{member.first_name} {member.last_name}".Trim();
         private static string Key(string? section) => (section ?? "").Trim().ToLowerInvariant();
-        // The unit's leaders. Terrain gives the adult leader duty to others in the unit too: youth helpers, and people whose
-        // role is in the group (a group leader or advisor). The unit's own leaders are the adults in its "Adult Leaders"
-        // patrol; when nobody has a patrol that can't be told, so every adult counts.
-        private static List<MemberListModel> LeadersOf(IEnumerable<MemberListModel> members)
-        {
-            var adults = members.Where(m => UnitReportBuilder.IsLeader(m) && !IsUnder18(m)).ToList();
-            var inAPatrol = adults.Where(m => !string.IsNullOrEmpty(m.patrol_name)).ToList();
-            return inAPatrol.Count > 0 ? inAPatrol : adults;
-        }
-
-        // The areas as Scouts names them
-        private static string SiaName(string key) => key switch
-        {
-            "adventure_sport" => "Adventure & Sport",
-            "art_literature" => "Art & Literature",
-            "better_world" => "Creating a Better World",
-            "environment" => "Environment",
-            "growth_development" => "Growth & Development",
-            "stem_innovation" => "STEM & Innovation",
-            "" => "Other",
-            _ => ScoutingHistoryBuilder.Title(key)
-        };
 
         // The ages the sections cover, in whole years
         private static readonly Dictionary<string, (int from, int to)> SectionAges = new Dictionary<string, (int, int)>
@@ -484,8 +463,6 @@ namespace Topo.Model.SectionReport
             }
             return profile;
         }
-
-        private static bool IsUnder18(MemberListModel member) => int.TryParse(member.age.Split('y')[0], out var years) && years < 18;
 
         private static string PersonKey(string memberNumber, string id) => string.IsNullOrEmpty(memberNumber) ? id : memberNumber;
     }
