@@ -59,7 +59,7 @@ namespace TopoReportFunctionTest
 
             input.Sia.results = new[]
             {
-                new SiaResult { section = "scout", status = "awarded", answers = new Topo.Model.SIA.Answers { special_interest_area_selection = "sia_adventure_sports", project_name = "Kayak trip" }, status_updated = new DateTime(2024, 1, 5) },
+                new SiaResult { section = "scout", status = "awarded", answers = new Topo.Model.SIA.Answers { special_interest_area_selection = "sia_adventure_sport", project_name = "Kayak trip" }, status_updated = new DateTime(2024, 1, 5) },
                 new SiaResult { section = "scout", status = "draft_review", answers = new Topo.Model.SIA.Answers { special_interest_area_selection = "sia_stem_innovation" } }
             };
 
@@ -181,7 +181,7 @@ namespace TopoReportFunctionTest
             var history = ScoutingHistoryBuilder.Build(SampleInput());
 
             var scouts = history.Sections[1];
-            Assert.AreEqual("Adventure Sports", scouts.Sia.Single().Area);
+            Assert.AreEqual("Adventure & Sport", scouts.Sia.Single().Area);
             Assert.AreEqual("Kayak trip", scouts.Sia.Single().Project);
             Assert.AreEqual(1, scouts.SiaInProgress);
             Assert.AreEqual("Bronze Cross", scouts.AdditionalAwards.Single().Name);
