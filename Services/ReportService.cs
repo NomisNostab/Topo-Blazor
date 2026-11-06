@@ -346,8 +346,9 @@ namespace Topo.Services
 
                 void Questions(List<SiaAnswer> answers)
                 {
+                    // an unanswered question is left as room to write the answer in by hand
                     foreach (var item in answers)
-                        Row(item.Question, string.IsNullOrWhiteSpace(item.Answer) ? "Not answered yet" : item.Answer.Trim(), bold: false);
+                        Row(item.Question, item.Answer?.Trim() ?? "", bold: false, minHeight: string.IsNullOrWhiteSpace(item.Answer) ? 30 : 15);
                 }
 
                 Block("Project");
