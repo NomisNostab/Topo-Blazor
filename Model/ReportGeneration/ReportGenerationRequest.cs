@@ -20,7 +20,8 @@
         ProgramIdeas,
         ProposedActivities,
         ScoutingHistory,
-        UnitReport
+        UnitReport,
+        SiaProgress
     }
 
     public enum OutputType
