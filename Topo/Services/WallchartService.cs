@@ -67,7 +67,7 @@ namespace Topo.Services
                                 wallchartItem.Milestone1PersonalGrowth = 6;
                                 wallchartItem.Milestone1Assist = 0;
                                 wallchartItem.Milestone1Lead = 2;
-                                wallchartItem.Milestone1Awarded = milestoneResult.status_updated;
+                                wallchartItem.Milestone1Awarded = MilestoneDates.AwardedDate(milestoneResult);
                                 wallchartItem.Milestone1Presented = GetPresentedDate(member.id, "Milestone 1");
                             }
                             else
@@ -89,7 +89,7 @@ namespace Topo.Services
                                 wallchartItem.Milestone2PersonalGrowth = 5;
                                 wallchartItem.Milestone2Assist = 0;
                                 wallchartItem.Milestone2Lead = 4;
-                                wallchartItem.Milestone2Awarded = milestoneResult.status_updated;
+                                wallchartItem.Milestone2Awarded = MilestoneDates.AwardedDate(milestoneResult);
                                 wallchartItem.Milestone2Presented = GetPresentedDate(member.id, "Milestone 2");
                             }
                             else
@@ -110,7 +110,7 @@ namespace Topo.Services
                             wallchartItem.Milestone3Assist = PALEventCountTotal(milestoneResult.event_count.assistant);
                             wallchartItem.Milestone3Lead = PALEventCountTotal(milestoneResult.event_count.leader);
                             // "Awarded" here also covers Terrain's "approved" status - see IsAwardedOrApproved.
-                            wallchartItem.Milestone3Awarded = IsAwardedOrApproved(milestoneResult.status) ? milestoneResult.status_updated : null;
+                            wallchartItem.Milestone3Awarded = IsAwardedOrApproved(milestoneResult.status) ? MilestoneDates.AwardedDate(milestoneResult) : null;
                             wallchartItem.Milestone3Presented = GetPresentedDate(member.id, "Milestone 3");
                             break;
                     }
