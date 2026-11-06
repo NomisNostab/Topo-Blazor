@@ -19,6 +19,7 @@ using Topo.Model.Approvals;
 using Topo.Model.Progress;
 using Topo.Model.History;
 using Topo.Model.UnitReport;
+using Topo.Model.SectionReport;
 using System;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
@@ -110,6 +111,9 @@ public class Function
                         break;
                     case ReportType.UnitReport:
                         workbook = GenerateUnitReportWorkbook(reportGenerationRequest);
+                        break;
+                    case ReportType.SectionReport:
+                        workbook = GenerateSectionReportWorkbook(reportGenerationRequest);
                         break;
                 }
 
@@ -297,6 +301,16 @@ public class Function
             var workbook = reportService.GenerateAdditionalAwardsWorkbook(reportData.AwardSpecificationsList, reportData.SortedAdditionalAwardsList, reportData.DistinctAwards, reportGenerationRequest.GroupName, reportGenerationRequest.Section
                 , reportGenerationRequest.UnitName);
             return workbook;
+        }
+        return reportService.CreateWorkbookWithSheets(1);
+    }
+
+    private IWorkbook GenerateSectionReportWorkbook(ReportGenerationRequest reportGenerationRequest)
+    {
+        var reportData = JsonConvert.DeserializeObject<SectionReportSet>(reportGenerationRequest.ReportData);
+        if (reportData != null)
+        {
+            return reportService.GenerateSectionReportWorkbook(reportData, reportGenerationRequest.GroupName, reportGenerationRequest.Section, reportGenerationRequest.UnitName);
         }
         return reportService.CreateWorkbookWithSheets(1);
     }

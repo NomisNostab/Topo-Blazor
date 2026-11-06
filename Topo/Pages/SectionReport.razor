@@ -1,0 +1,116 @@
+@page "/sectionreport"
+@inherits Controller.SectionReportController
+@using Topo.Model.ReportGeneration
+@using Topo.Model.SectionReport
+
+<PageTitle>Topo / Section Report</PageTitle>
+
+<EditForm Model="@model">
+    <div class="mt-3 mb-3 row">
+        <h2>Section Report @model.GroupName</h2>
+    </div>
+
+    <div class="form-group mb-3 row">
+        <label for="unit" class="col-sm-2 col-form-label">Select Unit</label>
+        <div class="col-sm-3">
+            <select id="unit" class="form-select" value="@model.UnitId" @onchange="UnitChange">
+                <option value="">Select unit</option>
+                @foreach (var unit in model.Units)
+                {
+                    <option value="@unit.Key">@unit.Value</option>
+                }
+                @if (CanDoGroup)
+                {
+                    <option value="@SectionReportPageViewModel.WholeGroup">Whole group</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    @if (IsGroup)
+    {
+        <div class="mb-3 row">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-10 text-muted small">Each unit's events come from the calendar named after it.</div>
+        </div>
+    }
+    else
+    {
+        <div class="form-group mb-3 row">
+            <label class="col-sm-2 col-form-label">Calendars</label>
+            <div class="col-sm-10 col-form-label">
+                <div class="d-flex flex-wrap gap-4">
+                    @foreach (var column in CalendarColumns())
+                    {
+                        <div class="d-flex flex-column">
+                            @foreach (var calendar in column)
+                            {
+                                <label class="text-nowrap">
+                                    <input type="checkbox" checked="@model.SelectedCalendars.Contains(calendar.Key)"
+                                           @onchange="@(e => ToggleCalendar(calendar.Key, (bool)(e.Value ?? false)))" /> @calendar.Value
+                                </label>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="mt-3 mb-3 row">
+        <label class="col-sm-2 col-form-label">Period</label>
+        <div class="col-sm-10 col-form-label">
+            <button type="button" class="btn btn-outline-secondary btn-sm me-1" @onclick="LastMonth">Last month</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm me-1" @onclick="ThisQuarter">This quarter</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm me-1" @onclick="LastQuarter">Last quarter</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" @onclick="ThisYear">This year</button>
+        </div>
+    </div>
+    <div class="mt-3 mb-3 row">
+        <label class="col-sm-2 col-form-label">From Date</label>
+        <div class="col-sm-3">
+            <InputDate @bind-Value="@model.From" class="form-control" />
+        </div>
+        <label class="col-sm-2 col-form-label">To Date</label>
+        <div class="col-sm-3">
+            <InputDate @bind-Value="@model.To" class="form-control" />
+        </div>
+    </div>
+    <div class="mt-3 mb-3 row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-10">
+            <label>
+                <input type="checkbox" @bind="model.SaveRoster" /> Remember the roster when I download the report, so the next one can name who joined or left
+            </label>
+        </div>
+    </div>
+
+    <div class="mt-3 mb-3 row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-10">
+            <button type="button" class="btn btn-primary" disabled="@Busy" @onclick="GenerateClick">Generate Section Report</button>
+            @if (Busy)
+            {
+                <span class="ms-3">Reading @Progress... this can take a few minutes.</span>
+            }
+            @if (!string.IsNullOrEmpty(model.ErrorMessage))
+            {
+                <span class="ms-3 text-danger">@model.ErrorMessage</span>
+            }
+        </div>
+    </div>
+</EditForm>
+
+@if (Result != null)
+{
+    <div class="mb-3">
+        <button type="button" class="btn btn-primary" @onclick="@(() => DownloadClick(OutputType.PDF))">Section Report (pdf)</button>
+        <button type="button" class="btn btn-success" @onclick="@(() => DownloadClick(OutputType.Excel))">Section Report (xlsx)</button>
+        @if (!string.IsNullOrEmpty(model.Message))
+        {
+            <span class="ms-3 text-success">@model.Message</span>
+        }
+    </div>
+
+    <SectionReportView Report="Result.Report" />
+}

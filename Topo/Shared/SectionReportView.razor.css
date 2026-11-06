@@ -1,0 +1,108 @@
+/* Laid out like the exported pdf: a logo and centred titles, grey headed blocks, bold labels beside their details */
+.report {
+    max-width: 60rem;
+    font-size: 0.9rem;
+}
+
+.report-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.report-logo {
+    width: 6.5rem;
+    height: auto;
+}
+
+.report-title {
+    flex: 1;
+    text-align: center;
+    font-weight: bold;
+}
+
+.report-group {
+    font-size: 1.5rem;
+}
+
+.report-name {
+    font-size: 1.25rem;
+}
+
+.report-unit {
+    font-size: 1.1rem;
+}
+
+.block {
+    margin-top: 1.25rem;
+    padding: 0.15rem 0.4rem;
+    background-color: #c0c0c0;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.line {
+    display: flex;
+    gap: 1rem;
+    padding: 0.15rem 0.4rem;
+}
+
+.label {
+    flex: 0 0 12rem;
+    font-weight: bold;
+}
+
+.detail {
+    flex: 1;
+}
+
+.departed {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.15rem 0;
+}
+
+.ages {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.25rem;
+    margin-top: 0.25rem;
+}
+
+.age {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    width: 2rem;
+}
+
+.age-count,
+.age-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.age-bar {
+    width: 1.2rem;
+    min-height: 2px;
+    background-color: #0d6efd;
+}
+
+.age-bar.empty {
+    opacity: 0.25;
+}
+
+@media (max-width: 576px) {
+    .line {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .label {
+        flex: none;
+    }
+}

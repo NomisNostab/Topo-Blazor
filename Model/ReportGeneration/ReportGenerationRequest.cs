@@ -18,7 +18,8 @@
         PersonalProgress,
         TermProgram,
         ScoutingHistory,
-        UnitReport
+        UnitReport,
+        SectionReport
     }
 
     public enum OutputType
