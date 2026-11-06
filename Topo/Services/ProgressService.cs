@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Reflection;
 using Topo.Model.Members;
+using Topo.Model.Milestone;
 using Topo.Model.OAS;
 using Topo.Model.Progress;
 
@@ -121,9 +122,7 @@ namespace Topo.Services
                 switch (milestoneResult.status)
                 {
                     case "awarded":
-                        milestoneSummary.Awarded = string.IsNullOrEmpty(milestoneResult.imported.date_awarded)
-                            ? milestoneResult.status_updated
-                            : ConvertStringToDate(milestoneResult.imported.date_awarded, "yyyy-MM-dd");
+                        milestoneSummary.Awarded = MilestoneDates.AwardedDate(milestoneResult);
                         milestoneSummary.Status = "Awarded";
                         break;
                     case "not_required":
@@ -175,9 +174,7 @@ namespace Topo.Services
                                 importedLeadCount = (int)milestoneResult.imported.event_count.leader.outdoors;
                                 break;
                         }
-                        var importedDate = string.IsNullOrEmpty(milestoneResult.imported.date_awarded) 
-                            ? milestoneResult.status_updated 
-                            : ConvertStringToDate(milestoneResult.imported.date_awarded, "yyyy-MM-dd");
+                        var importedDate = MilestoneDates.AwardedDate(milestoneResult);
                         for (int i = 0; i < importedParticipantCount; i++)
                         {
                             milestoneSummary.ParticipateLogs.Add(
