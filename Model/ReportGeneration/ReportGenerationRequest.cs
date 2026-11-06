@@ -20,7 +20,8 @@
         ProgramIdeas,
         ProposedActivities,
         ScoutingHistory,
-        UnitReport
+        UnitReport,
+        SectionReport
     }
 
     public enum OutputType
