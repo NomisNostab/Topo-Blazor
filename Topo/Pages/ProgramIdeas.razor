@@ -1,14 +1,12 @@
-@page "/program/ideas"
+@page "/programideas"
 @inherits Controller.ProgramIdeasController
 @using Topo.Model.Program
 
 <PageTitle>Topo / Program Ideas</PageTitle>
 
 <div class="mt-3 mb-3 row">
-    <h2>Program @model.GroupName</h2>
+    <h2>Program Ideas @model.GroupName</h2>
 </div>
-
-<ProgramSubNav />
 
 <EditForm Model="@model">
     <div class="form-group mb-3 row">

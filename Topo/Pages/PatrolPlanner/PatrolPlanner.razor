@@ -1,15 +1,13 @@
 @* Drag-and-drop patrol reshuffle board. See PatrolPlannerController for the "why" behind most of
    the non-obvious behaviour here (UL banner, colour priority, local-only plan, etc). *@
-@page "/members/patrolplanner"
+@page "/patrolplanner"
 @inherits Controller.PatrolPlannerController
 
 <PageTitle>Topo / Patrol Planner</PageTitle>
 
 <div class="mt-3 mb-3 row">
-    <h2>Members @model.GroupName</h2>
+    <h2>Patrol Planner @model.GroupName</h2>
 </div>
-
-<MembersSubNav />
 
 <div class="form-group mb-3 row">
     <label for="unit" class="col-sm-2 col-form-label">
