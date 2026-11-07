@@ -192,7 +192,8 @@ public class Function
         if (reportData != null)
         {
             var workbook = reportService.GenerateSignInSheetWorkbook(reportData, reportGenerationRequest.GroupName, reportGenerationRequest.Section
-                , reportGenerationRequest.UnitName, reportGenerationRequest.EventName);
+                , reportGenerationRequest.UnitName, reportGenerationRequest.EventName
+                , reportGenerationRequest.SignInSheetOptions);
             return workbook;
         }
         return reportService.CreateWorkbookWithSheets(1);

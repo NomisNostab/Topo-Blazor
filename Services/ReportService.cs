@@ -23,7 +23,7 @@ namespace Topo.Services
         public IWorkbook GeneratePatrolListWorkbook(List<MemberListModel> sortedPatrolList, string groupName, string section, string unitName, bool includeLeaders);
         public IWorkbook GenerateMemberListWorkbook(List<MemberListModel> sortedMemberList, string groupName, string section, string unitName);
         public IWorkbook GeneratePatrolSheetsWorkbook(List<MemberListModel> sortedPatrolList, string section);
-        public IWorkbook GenerateSignInSheetWorkbook(List<MemberListModel> memberListModel, string groupName, string section, string unitName, string eventName);
+        public IWorkbook GenerateSignInSheetWorkbook(List<MemberListModel> memberListModel, string groupName, string section, string unitName, string eventName, SignInSheetOptions options);
         public IWorkbook GenerateEventAttendanceWorkbook(EventListModel eventListModel, string groupName, string section, string unitName);
         public IWorkbook GenerateAttendanceReportWorkbook(AttendanceReportModel attendanceReportData, string groupName, string section, string unitName, DateTime fromDate, DateTime toDate, bool forPdfOutput);
         public IWorkbook GenerateOASWorksheetWorkbook(List<OASWorksheetAnswers> worksheetAnswers, string groupName, string section, string unitName, bool forPdfOutput, bool formatLikeTerrain, bool showByPatrol = false);
@@ -653,104 +653,188 @@ namespace Topo.Services
 
         }
 
-        public IWorkbook GenerateSignInSheetWorkbook(List<MemberListModel> memberListModel, string groupName, string section, string unitName, string eventName)
+        public IWorkbook GenerateSignInSheetWorkbook(List<MemberListModel> memberListModel, string groupName, string section, string unitName, string eventName, SignInSheetOptions options)
         {
-            var workbook = CreateWorkbookWithLogo(groupName, section, 7);
+            // Optional narrow columns with sideways headings straight after Role, then the attendance columns:
+            // time in / signature / time out / signature, or a single tick box.
+            var infoHeadings = new List<string>();
+            if (options.IncludeRegisteredColumn)
+                infoHeadings.Add("Registered");
+            if (options.IncludePaidColumn)
+                infoHeadings.Add("Paid");
+            var attendanceHeadings = options.UseTimeInOutSignature
+                ? new[] { "Time In", "Signature", "Time Out", "Signature" }
+                : new[] { "Attended" };
+            const int textColumns = 3; // Name, Patrol, Role
+            var infoFirstColumn = textColumns + 1;
+            var attendanceFirstColumn = infoFirstColumn + infoHeadings.Count;
+            var lastColumn = attendanceFirstColumn + attendanceHeadings.Length - 1;
+
+            // Optional second block beside the main table (after a narrow spacer column): the person's
+            // name again plus tick columns for how they took part in the activity.
+            var participationHeadings = new[] { "Participate", "Assist", "Lead" };
+            var participationNameColumn = lastColumn + 2;
+            var participationLastColumn = participationNameColumn + participationHeadings.Length;
+
+            var workbook = CreateWorkbookWithLogo(groupName, section, lastColumn);
             IWorksheet sheet = workbook.Worksheets[0];
             int rowNumber = 1;
 
             IStyle headingStyle = workbook.Styles["headingStyle"];
 
-            // Add Unit name
             rowNumber++;
             var unit = sheet.Range[rowNumber, 2];
             unit.Text = unitName;
             unit.CellStyle = headingStyle;
-            sheet.Range[rowNumber, 2, rowNumber, 7].Merge();
+            sheet.Range[rowNumber, 2, rowNumber, lastColumn].Merge();
             sheet.SetRowHeight(rowNumber, 40);
 
-            // Add Title
+            // the row stays when no event was chosen (blank title) so the table still starts below the logo
             rowNumber++;
             var title = sheet.Range[rowNumber, 2];
             title.Text = eventName;
             title.CellStyle = headingStyle;
-            sheet.Range[rowNumber, 2, rowNumber, 7].Merge();
+            sheet.Range[rowNumber, 2, rowNumber, lastColumn].Merge();
             sheet.SetRowHeight(rowNumber, 30);
 
-            // Add Header
-            rowNumber++;
-            sheet.Range[rowNumber, 1].Text = "Name";
-            sheet.Range[rowNumber, 2].Text = "Patrol";
-            sheet.Range[rowNumber, 3].Text = "Role";
-            sheet.Range[rowNumber, 4].Text = " Registered";
-            sheet.Range[rowNumber, 5].Text = " Paid";
-            sheet.Range[rowNumber, 6].Text = " Attended";
-            sheet.Range[rowNumber, 4, rowNumber, 6].CellStyle.Rotation = 90;
-            sheet.Range[rowNumber, 4, rowNumber, 6].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-            sheet.Range[rowNumber, 7].Text = "Name";
-            sheet.Range[rowNumber, 1, rowNumber, 7].CellStyle.Font.Bold = true;
+            var displayNames = SignInSheetLayout.GetDisplayNames(memberListModel, options.UseFullNames);
 
-            foreach (var member in memberListModel.Where(m => m.isAdultLeader == 0))
+            void WriteHeader()
             {
-                rowNumber++;
-                sheet.Range[rowNumber, 1].Text = $"{member.first_name} {member.last_name}";
-                sheet.Range[rowNumber, 1].BorderAround();
-                sheet.Range[rowNumber, 2].Text = member.patrol_name;
-                sheet.Range[rowNumber, 2].BorderAround();
-                sheet.Range[rowNumber, 3].Text = member.patrol_duty;
-                sheet.Range[rowNumber, 3].BorderAround();
-                sheet.Range[rowNumber, 4].Text = "";
-                sheet.Range[rowNumber, 4].BorderAround();
-                sheet.Range[rowNumber, 5].Text = "";
-                sheet.Range[rowNumber, 5].BorderAround();
-                sheet.Range[rowNumber, 6].Text = "";
-                sheet.Range[rowNumber, 6].BorderAround();
-                sheet.Range[rowNumber, 7].Text = member.first_name;
-                sheet.Range[rowNumber, 7].BorderAround();
-                sheet.Range[rowNumber, 8].Text = "";
-                sheet.Range[rowNumber, 8].BorderAround();
-            }
-
-            if (memberListModel.Where(m => m.isAdultLeader == 1).Any())
-            {
-                rowNumber++;
-                // Add Header
                 rowNumber++;
                 sheet.Range[rowNumber, 1].Text = "Name";
                 sheet.Range[rowNumber, 2].Text = "Patrol";
                 sheet.Range[rowNumber, 3].Text = "Role";
-                sheet.Range[rowNumber, 4].Text = " Registered";
-                sheet.Range[rowNumber, 5].Text = " Paid";
-                sheet.Range[rowNumber, 6].Text = " Attended";
-                sheet.Range[rowNumber, 4, rowNumber, 6].CellStyle.Rotation = 90;
-                sheet.Range[rowNumber, 4, rowNumber, 6].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                sheet.Range[rowNumber, 7].Text = "Name";
-                sheet.Range[rowNumber, 1, rowNumber, 7].CellStyle.Font.Bold = true;
+                for (var i = 0; i < infoHeadings.Count; i++)
+                {
+                    var heading = sheet.Range[rowNumber, infoFirstColumn + i];
+                    heading.Text = infoHeadings[i];
+                    heading.CellStyle.Rotation = 90;
+                }
+                for (var i = 0; i < attendanceHeadings.Length; i++)
+                    sheet.Range[rowNumber, attendanceFirstColumn + i].Text = attendanceHeadings[i];
+                sheet.Range[rowNumber, 1, rowNumber, lastColumn].CellStyle.Font.Bold = true;
+                sheet.Range[rowNumber, 1, rowNumber, lastColumn].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                for (var c = 1; c <= lastColumn; c++)
+                    sheet.Range[rowNumber, c].BorderAround();
 
-                foreach (var member in memberListModel.Where(m => m.isAdultLeader == 1))
+                if (options.IncludeParticipationColumns)
+                {
+                    sheet.Range[rowNumber, participationNameColumn].Text = "Name";
+                    for (var i = 0; i < participationHeadings.Length; i++)
+                    {
+                        var heading = sheet.Range[rowNumber, participationNameColumn + 1 + i];
+                        heading.Text = participationHeadings[i];
+                        heading.CellStyle.Rotation = 90;
+                    }
+                    sheet.Range[rowNumber, participationNameColumn, rowNumber, participationLastColumn].CellStyle.Font.Bold = true;
+                    sheet.Range[rowNumber, participationNameColumn, rowNumber, participationLastColumn].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                    for (var c = participationNameColumn; c <= participationLastColumn; c++)
+                        sheet.Range[rowNumber, c].BorderAround();
+                }
+
+                // tall enough for the sideways headings
+                if (infoHeadings.Count > 0 || options.IncludeParticipationColumns)
+                    sheet.SetRowHeight(rowNumber, 62);
+            }
+
+            void WriteMembers(IEnumerable<MemberListModel> members)
+            {
+                foreach (var member in members)
                 {
                     rowNumber++;
-                    sheet.Range[rowNumber, 1].Text = $"{member.first_name} {member.last_name}";
-                    sheet.Range[rowNumber, 1].BorderAround();
-                    sheet.Range[rowNumber, 2].Text = "";
-                    sheet.Range[rowNumber, 2].BorderAround();
+                    sheet.Range[rowNumber, 1].Text = displayNames[member.id];
+                    sheet.Range[rowNumber, 2].Text = member.patrol_name;
                     sheet.Range[rowNumber, 3].Text = member.patrol_duty;
-                    sheet.Range[rowNumber, 3].BorderAround();
-                    sheet.Range[rowNumber, 4].Text = "";
-                    sheet.Range[rowNumber, 4].BorderAround();
-                    sheet.Range[rowNumber, 5].Text = "";
-                    sheet.Range[rowNumber, 5].BorderAround();
-                    sheet.Range[rowNumber, 6].Text = "";
-                    sheet.Range[rowNumber, 6].BorderAround();
-                    sheet.Range[rowNumber, 7].Text = member.first_name;
-                    sheet.Range[rowNumber, 7].BorderAround();
+                    for (var c = 1; c <= lastColumn; c++)
+                        sheet.Range[rowNumber, c].BorderAround();
+                    if (options.IncludeParticipationColumns)
+                    {
+                        sheet.Range[rowNumber, participationNameColumn].Text = displayNames[member.id];
+                        for (var c = participationNameColumn; c <= participationLastColumn; c++)
+                            sheet.Range[rowNumber, c].BorderAround();
+                    }
+                    // taller rows so there is room to write a signature
+                    sheet.SetRowHeight(rowNumber, options.UseTimeInOutSignature ? 24 : 18);
                 }
             }
 
+            // Youth by section then leaders (see SignInSheetLayout); a labelled heading row above each group.
+            var groups = SignInSheetLayout.GetGroups(memberListModel, displayNames);
+            if (!groups.Any())
+                WriteHeader();
+            foreach (var group in groups)
+            {
+                if (group.Heading != null)
+                {
+                    if (group != groups.First())
+                        rowNumber++; // a blank row between sections
+                    rowNumber++;
+                    sheet.Range[rowNumber, 1].Text = group.Heading;
+                    sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+                    sheet.Range[rowNumber, 1].CellStyle.Font.Size = 12;
+                }
+                WriteHeader();
+                WriteMembers(group.Members);
+            }
+
+            // Columns that hold text fit their content. The blank write-in columns autofit to nothing, so they
+            // start at a writable minimum. The page is portrait when the columns fit across it, otherwise
+            // landscape, and whatever page width is left over (in column width units) is shared out so the
+            // sheet fills the page instead of leaving a gap on the right.
             sheet.UsedRange.AutofitColumns();
+            const double portraitPageWidth = 97;
+            const double landscapePageWidth = 140;
+            const double tickColumnWidth = 5; // the narrow columns with sideways headings
+            for (var c = infoFirstColumn; c < attendanceFirstColumn; c++)
+                sheet.SetColumnWidth(c, tickColumnWidth);
+            if (options.IncludeParticipationColumns)
+            {
+                // autofit sizes the spacer and the sideways-headed tick columns badly
+                sheet.SetColumnWidth(lastColumn + 1, 3);
+                for (var c = participationNameColumn + 1; c <= participationLastColumn; c++)
+                    sheet.SetColumnWidth(c, tickColumnWidth);
+            }
+            if (options.UseTimeInOutSignature)
+            {
+                for (var c = attendanceFirstColumn; c <= lastColumn; c++)
+                    sheet.SetColumnWidth(c, (c - attendanceFirstColumn) % 2 == 0 ? 10 : 22);
+            }
+            else
+            {
+                sheet.SetColumnWidth(attendanceFirstColumn, 10);
+            }
+
+            var usedWidth = 0.0;
+            var lastUsedColumn = options.IncludeParticipationColumns ? participationLastColumn : lastColumn;
+            for (var c = 1; c <= lastUsedColumn; c++)
+                usedWidth += sheet.GetColumnWidth(c);
+            var portrait = usedWidth <= portraitPageWidth;
+            var spare = (portrait ? portraitPageWidth : landscapePageWidth) - usedWidth;
+            if (spare > 0)
+            {
+                if (options.UseTimeInOutSignature)
+                {
+                    // signatures need the most room: weight them over the times
+                    var weights = Enumerable.Range(0, attendanceHeadings.Length).Select(i => i % 2 == 0 ? 1.0 : 2.2).ToList();
+                    for (var i = 0; i < weights.Count; i++)
+                    {
+                        var c = attendanceFirstColumn + i;
+                        sheet.SetColumnWidth(c, sheet.GetColumnWidth(c) + spare * weights[i] / weights.Sum());
+                    }
+                }
+                else
+                {
+                    // a single tick box: spread the extra over the name/patrol/role and tick box columns
+                    var growing = Enumerable.Range(1, textColumns).Append(attendanceFirstColumn).ToList();
+                    var growingWidth = growing.Sum(c => sheet.GetColumnWidth(c));
+                    foreach (var c in growing)
+                        sheet.SetColumnWidth(c, sheet.GetColumnWidth(c) * (1 + spare / growingWidth));
+                }
+            }
 
             sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
-            sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
+            sheet.PageSetup.Orientation = portrait ? ExcelPageOrientation.Portrait : ExcelPageOrientation.Landscape;
             sheet.PageSetup.BottomMargin = 0.25;
             sheet.PageSetup.TopMargin = 0.25;
             sheet.PageSetup.LeftMargin = 0.25;
@@ -758,7 +842,7 @@ namespace Topo.Services
             sheet.PageSetup.HeaderMargin = 0;
             sheet.PageSetup.FooterMargin = 0;
             sheet.PageSetup.FitToPagesWide = 1;
-
+            sheet.PageSetup.FitToPagesTall = 0;
 
             return workbook;
         }

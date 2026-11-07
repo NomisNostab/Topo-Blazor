@@ -1,0 +1,124 @@
+@using Topo.Model.Members
+@using Topo.Model.Program
+
+@* On-page preview of the sign in sheet. Naming and grouping come from SignInSheetLayout, the same code the report uses. *@
+@if (Members.Count == 0)
+{
+    <div class="text-muted">No one is invited to this event.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle sign-in-preview mb-0">
+            @foreach (var group in _groups)
+            {
+                @if (group.Heading != null)
+                {
+                    <tbody>
+                        <tr>
+                            <th colspan="@_columnCount" class="border-0 pt-3">@group.Heading</th>
+                        </tr>
+                    </tbody>
+                }
+                <thead>
+                    <tr class="table-secondary">
+                        <th class="@_textClass">Name</th>
+                        <th class="@_textClass">Patrol</th>
+                        <th class="@_textClass">Role</th>
+                        @if (Options.IncludeRegisteredColumn)
+                        {
+                            <th class="sideways">Registered</th>
+                        }
+                        @if (Options.IncludePaidColumn)
+                        {
+                            <th class="sideways">Paid</th>
+                        }
+                        @if (Options.UseTimeInOutSignature)
+                        {
+                            <th class="time">Time In</th>
+                            <th class="signature">Signature</th>
+                            <th class="time">Time Out</th>
+                            <th class="signature">Signature</th>
+                        }
+                        else
+                        {
+                            <th class="attended">Attended</th>
+                        }
+                        @if (Options.IncludeParticipationColumns)
+                        {
+                            <th class="border-0 bg-transparent spacer"></th>
+                            <th class="fit">Name</th>
+                            <th class="sideways">Participate</th>
+                            <th class="sideways">Assist</th>
+                            <th class="sideways">Lead</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var member in group.Members)
+                    {
+                        <tr>
+                            <td class="@_textClass">@_displayNames[member.id]</td>
+                            <td class="@_textClass">@member.patrol_name</td>
+                            <td class="@_textClass">@member.patrol_duty</td>
+                            @if (Options.IncludeRegisteredColumn)
+                            {
+                                <td class="write-in tick"></td>
+                            }
+                            @if (Options.IncludePaidColumn)
+                            {
+                                <td class="write-in tick"></td>
+                            }
+                            @if (Options.UseTimeInOutSignature)
+                            {
+                                <td class="write-in time"></td>
+                                <td class="write-in signature"></td>
+                                <td class="write-in time"></td>
+                                <td class="write-in signature"></td>
+                            }
+                            else
+                            {
+                                <td class="write-in attended"></td>
+                            }
+                            @if (Options.IncludeParticipationColumns)
+                            {
+                                <td class="border-0 spacer"></td>
+                                <td class="fit">@_displayNames[member.id]</td>
+                                <td class="write-in tick"></td>
+                                <td class="write-in tick"></td>
+                                <td class="write-in tick"></td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            }
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public List<MemberListModel> Members { get; set; } = new List<MemberListModel>();
+
+    [Parameter]
+    public SignInSheetOptions Options { get; set; } = new SignInSheetOptions();
+
+    private Dictionary<string, string> _displayNames = new Dictionary<string, string>();
+    private List<SignInSheetGroup> _groups = new List<SignInSheetGroup>();
+
+    private int _columnCount => 3
+        + (Options.IncludeRegisteredColumn ? 1 : 0)
+        + (Options.IncludePaidColumn ? 1 : 0)
+        + (Options.UseTimeInOutSignature ? 4 : 1)
+        + (Options.IncludeParticipationColumns ? 5 : 0);
+
+    // Name, patrol and role take just the room their text needs when there are write-in columns to give the
+    // spare width to; with a single tick box they share the page instead.
+    private string _textClass => Options.UseTimeInOutSignature ? "fit" : "grow";
+
+    protected override void OnParametersSet()
+    {
+        _displayNames = SignInSheetLayout.GetDisplayNames(Members, Options.UseFullNames);
+        _groups = SignInSheetLayout.GetGroups(Members, _displayNames);
+    }
+}
