@@ -109,6 +109,45 @@ namespace TopoReportFunctionTest
         }
 
         [TestMethod]
+        public void SignInSheet_TheTitleRowIsTallEnoughForALongEventName()
+        {
+            SetEnvironment.SetSyncfusionLicense();
+            var members = JsonConvert.DeserializeObject<List<Topo.Model.Members.MemberListModel>>(File.ReadAllText("ReportData/SignInGroup.json"))!;
+            var options = new Topo.Model.Program.SignInSheetOptions { UseTimeInOutSignature = false, IncludeParticipationColumns = false };
+            var service = new Topo.Services.ReportService();
+
+            double TitleRowHeight(string eventName) =>
+                service.GenerateSignInSheetWorkbook(members, "Group", "scout", "Unit", eventName, options).Worksheets[0].GetRowHeight(3);
+
+            Assert.AreEqual(30, TitleRowHeight("Group Camp")); // a short name keeps the usual height
+            Assert.IsTrue(TitleRowHeight(new string('x', 110)) >= 60, "a long name needs more than one line");
+            Assert.IsTrue(TitleRowHeight(new string('x', 200)) > TitleRowHeight(new string('x', 110)), "a longer name needs more lines");
+        }
+
+        [DataTestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void SignInSheet_ALongEventNameIsNotCutOff(bool timeInOut)
+        {
+            _reportGenerationRequest.ReportData = File.ReadAllText("ReportData/SignInGroup.json");
+            _reportGenerationRequest.EventName = "Combined District Cub Scout and Scout Leaders' Planning Weekend at the Mountain Retreat for the Whole Region ENDWORD";
+            _reportGenerationRequest.SignInSheetOptions.UseTimeInOutSignature = timeInOut;
+            _reportGenerationRequest.SignInSheetOptions.IncludeParticipationColumns = false;
+            var proxyRequest = new Amazon.Lambda.APIGatewayEvents.APIGatewayProxyRequest();
+            proxyRequest.Body = JsonConvert.SerializeObject(_reportGenerationRequest);
+
+            var functionResult = _function.FunctionHandler(proxyRequest, null);
+
+            Assert.IsFalse(string.IsNullOrEmpty(functionResult));
+            File.WriteAllBytes($@"TestResults/SignInSheet_LongName_{(timeInOut ? "TimeInOut" : "Tick")}.pdf", Convert.FromBase64String(functionResult));
+            using var document = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(Convert.FromBase64String(functionResult));
+            var text = document.Pages[0].ExtractText().Replace("\r", " ").Replace("\n", " ");
+            // the whole name is there, however it wraps (the first and last words are what a cut-off loses)
+            StringAssert.Contains(text, "Combined");
+            StringAssert.Contains(text, "ENDWORD");
+        }
+
+        [TestMethod]
         public void SignInSheet_Group_NoEvent_ToPDF()
         {
             _reportGenerationRequest.ReportData = File.ReadAllText("ReportData/SignInGroup.json");

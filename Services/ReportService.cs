@@ -994,10 +994,13 @@ namespace Topo.Services
 
             // the row stays when no event was chosen (blank title) so the table still starts below the logo
             rowNumber++;
+            var titleRow = rowNumber;
             var title = sheet.Range[rowNumber, 2];
             title.Text = eventName;
             title.CellStyle = headingStyle;
             sheet.Range[rowNumber, 2, rowNumber, lastColumn].Merge();
+            // a long name runs onto more lines; its row is made tall enough once the column widths are known
+            title.CellStyle.WrapText = true;
             sheet.SetRowHeight(rowNumber, 30);
 
             var displayNames = SignInSheetLayout.GetDisplayNames(memberListModel, options.UseFullNames);
@@ -1135,6 +1138,13 @@ namespace Topo.Services
                         sheet.SetColumnWidth(c, sheet.GetColumnWidth(c) * (1 + spare / growingWidth));
                 }
             }
+
+            // the title is 14 point bold, so about 0.7 characters to each unit of the width it is merged across
+            var titleWidth = 0.0;
+            for (var c = 2; c <= lastColumn; c++)
+                titleWidth += sheet.GetColumnWidth(c);
+            var titleLines = Math.Max(1, (int)Math.Ceiling((eventName ?? "").Length / (titleWidth * 0.7)));
+            sheet.SetRowHeight(titleRow, Math.Max(30, titleLines * 21));
 
             sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
             sheet.PageSetup.Orientation = portrait ? ExcelPageOrientation.Portrait : ExcelPageOrientation.Landscape;
