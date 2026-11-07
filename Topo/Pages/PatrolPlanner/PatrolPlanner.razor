@@ -1,0 +1,157 @@
+@* Drag-and-drop patrol reshuffle board. See PatrolPlannerController for the "why" behind most of
+   the non-obvious behaviour here (UL banner, colour priority, local-only plan, etc). *@
+@page "/members/patrolplanner"
+@inherits Controller.PatrolPlannerController
+
+<PageTitle>Topo / Patrol Planner</PageTitle>
+
+<div class="mt-3 mb-3 row">
+    <h2>Members @model.GroupName</h2>
+</div>
+
+<MembersSubNav />
+
+<div class="form-group mb-3 row">
+    <label for="unit" class="col-sm-2 col-form-label">
+        Select Unit
+    </label>
+    <div class="col-sm-3">
+        <select id="unit" class="form-select" value="@model.UnitId" @onchange="UnitChange">
+            <option value="">Select unit</option>
+            @foreach (var unit in model.Units)
+            {
+                <option value="@unit.Key">@unit.Value</option>
+            }
+        </select>
+    </div>
+    <div class="col-sm-3">
+        <button type="button" class="btn btn-primary" @onclick="RefreshClick" disabled="@(string.IsNullOrEmpty(model.UnitId))">Refresh from Terrain</button>
+    </div>
+</div>
+
+@if (model.Members.Any())
+{
+    <p class="text-muted">
+        Drag a member's card into another patrol to plan a reshuffle. Click the left badge to cycle gender (M/F/NB, saved on this device only).
+        Click the right badge to cycle role (Member/APL/PL/UL) &mdash; promoting to APL or higher also adds them to Unit Council.
+        Nothing is sent to Terrain automatically &mdash; use the buttons below once you're happy with the plan.
+    </p>
+
+    <div class="mb-3 row">
+        <div class="col-sm-auto">
+            <button type="button" class="btn btn-secondary" @onclick="ResetChanges" disabled="@(!HasChanges)">Reset to Terrain data</button>
+        </div>
+    </div>
+
+    <div class="export-panel mb-3">
+        <div class="export-panel-label">Export the updated plan (includes everything you've changed above)</div>
+        <div class="export-panel-buttons">
+            <button type="button" class="btn btn-primary" @onclick="PatrolListPdfClick">Updated Patrol List (PDF)</button>
+            <button type="button" class="btn btn-success" @onclick="PatrolListXlsxClick">Updated Patrol List (XLSX)</button>
+            <button type="button" class="btn btn-warning" @onclick="DownloadChangesClick" disabled="@(!HasChanges)">Changes to Apply in Terrain (CSV)</button>
+        </div>
+    </div>
+
+    <div class="mb-3 d-flex align-items-center gap-2">
+        <input type="text" class="form-control form-control-sm add-patrol-input" placeholder="New patrol name"
+               value="@model.NewPatrolName" @oninput="(e) => model.NewPatrolName = e.Value?.ToString() ?? string.Empty"
+               @onkeydown="@(e => { if (e.Key == "Enter") AddPatrolClick(); })" />
+        <button type="button" class="btn btn-outline-primary btn-sm" @onclick="AddPatrolClick">Add Patrol</button>
+    </div>
+
+    @if (ULMembers.Any())
+    {
+        <div class="patrol-column patrol-column-ul mb-3">
+            <div class="patrol-header">Unit Leader</div>
+            <div class="patrol-cards patrol-cards-row">
+                @foreach (var member in ULMembers)
+                {
+                    @* Plain white here, not GetPatrolColor: a UL still has a patrol_name in Terrain's
+                       data, but showing that patrol's colour on their banner card would wrongly imply
+                       they're still "in" that column below. *@
+                    <PatrolMemberCard Member="member" OriginPatrolColor="#ffffff" OnDragStart="OnDragStart" OnDutyChanged="HandleDutyChanged" OnGenderCycle="CycleGenderClick" />
+                }
+            </div>
+        </div>
+    }
+
+    <div class="patrol-board">
+        @foreach (var patrolName in AllColumnNames)
+        {
+            var tally = GetColumnStats(patrolName);
+            <div class="patrol-column" style="--patrol-color:@GetPatrolColor(patrolName)"
+                 @ondragover:preventDefault="true" @ondrop="() => OnDropToPatrol(patrolName)">
+                <div class="patrol-header">
+                    <span class="patrol-header-title">
+                        @(string.IsNullOrEmpty(patrolName) ? "Unassigned" : patrolName)
+                        <span class="patrol-count @GetCountClass(patrolName)">@tally.total</span>
+                    </span>
+                    @if (!string.IsNullOrEmpty(patrolName))
+                    {
+                        <span class="patrol-header-actions">
+                            @* The real <input type="color"> is invisible (opacity:0) and just sits on top
+                               to catch the click/value; the rainbow wheel the user sees is a plain CSS
+                               background on the wrapping span. Browsers won't let CSS fully replace the
+                               native colour swatch's own fill, so this overlay is the reliable way to
+                               show a fixed "pick a colour" icon instead of the browser's default square. *@
+                            <span class="patrol-color-picker-wrap" title="Set this patrol's colour">
+                                <input type="color" class="patrol-color-picker-input" value="@GetPatrolColor(patrolName)"
+                                       @onchange="(e) => SetPatrolColor(patrolName, e.Value?.ToString() ?? string.Empty)" />
+                            </span>
+                            <button type="button" class="patrol-remove-btn" title="Remove patrol (members move to Unassigned)" @onclick="() => RemovePatrol(patrolName)">&times;</button>
+                        </span>
+                    }
+                </div>
+                @* Same M/F/NB/-- labels as the card badges (not symbols) so this tally and the
+                   cards it's summarising never disagree on how gender is written. *@
+                <div class="patrol-gender-tally">
+                    @tally.male M &nbsp; @tally.female F &nbsp; @tally.nonBinary NB
+                    @(tally.unspecified > 0 ? $"  {tally.unspecified}–" : "")
+                    @(string.IsNullOrEmpty(tally.averageAge) ? "" : $"· avg {tally.averageAge}")
+                </div>
+                <div class="patrol-cards">
+                    @foreach (var member in GetColumnMembers(patrolName))
+                    {
+                        <PatrolMemberCard Member="member" OriginPatrolColor="@GetPatrolColor(member.OriginalPatrolName)" OnDragStart="OnDragStart" OnDutyChanged="HandleDutyChanged" OnGenderCycle="CycleGenderClick" />
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (ChangedMembers.Any())
+    {
+        <h4 class="mt-4">Changes to make in Terrain</h4>
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Duty</th>
+                    <th>Patrol</th>
+                    <th>Unit Council</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var member in ChangedMembers)
+                {
+                    <tr>
+                        <td>@member.FirstName</td>
+                        <td>@member.LastName</td>
+                        <td>@member.PatrolDuty</td>
+                        <td>@DescribePatrolChange(member)</td>
+                        <td>@(member.UnitCouncil ? "Yes" : "")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    private Task HandleDutyChanged((Model.PatrolPlanner.PatrolPlannerMember member, string duty) args)
+    {
+        OnDutyChange(args.member, args.duty);
+        return Task.CompletedTask;
+    }
+}
