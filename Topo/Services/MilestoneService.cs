@@ -5,7 +5,9 @@ namespace Topo.Services
 {
     public interface IMilestoneService
     {
-        public Task<List<MilestoneSummaryListModel>> GetMilestoneSummaries(string selectedUnitId);
+        public Task<List<MilestoneSummaryListModel>> GetMilestoneSummaries(string selectedUnitId, Action<string>? progress = null);
+        // Names the summaries again, for when the last names are shown or hidden after they were read
+        public Task RenameMembers(string selectedUnitId, List<MilestoneSummaryListModel> summaries);
     }
 
     public class MilestoneService : IMilestoneService
@@ -21,12 +23,14 @@ namespace Topo.Services
             _storageService = storageService;
         }
 
-        public async Task<List<MilestoneSummaryListModel>> GetMilestoneSummaries(string selectedUnitId)
+        public async Task<List<MilestoneSummaryListModel>> GetMilestoneSummaries(string selectedUnitId, Action<string>? progress = null)
         {
             var unitMilestoneSummary = new List<MilestoneSummaryListModel>();
-            var members = await _membersService.GetMembersAsync(selectedUnitId);
-            foreach (var member in members.Where(m => m.isAdultLeader == 0))
+            var members = (await _membersService.GetMembersAsync(selectedUnitId)).Where(m => m.isAdultLeader == 0).ToList();
+            for (var i = 0; i < members.Count; i++)
             {
+                var member = members[i];
+                progress?.Invoke($"{member.first_name} {member.last_name} ({i + 1} of {members.Count})");
                 var memberMilestones = await _terrainAPIService.GetMilestoneResultsForMember(member.id);
                 MilestoneResult milestone1 = new MilestoneResult();
                 MilestoneResult milestone2 = new MilestoneResult();
@@ -92,7 +96,8 @@ namespace Topo.Services
                 unitMilestoneSummary.Add(
                     new MilestoneSummaryListModel
                     {
-                        memberName = $"{member.first_name} {_membersService.GetMemberLastName(selectedUnitId, member.id).Result}",
+                        memberId = member.id,
+                        memberName = await MemberName(selectedUnitId, member),
                         memberPatrol = member.patrol_name,
                         currentLevel = currentLevel,
                         percentComplete = percentComplete,
@@ -143,6 +148,21 @@ namespace Topo.Services
             }
             return unitMilestoneSummary;
         }
+
+        public async Task RenameMembers(string selectedUnitId, List<MilestoneSummaryListModel> summaries)
+        {
+            var members = await _membersService.GetMembersAsync(selectedUnitId);
+            foreach (var summary in summaries)
+            {
+                var member = members.FirstOrDefault(m => m.id == summary.memberId);
+                if (member != null)
+                    summary.memberName = await MemberName(selectedUnitId, member);
+            }
+        }
+
+        // The first name and as much of the last as the Suppress Last Name setting allows
+        private async Task<string> MemberName(string selectedUnitId, Topo.Model.Members.MemberListModel member) =>
+            $"{member.first_name} {await _membersService.GetMemberLastName(selectedUnitId, member.id)}";
 
         private static bool IsAwardedOrApproved(string status) => status == "awarded" || status == "approved";
 

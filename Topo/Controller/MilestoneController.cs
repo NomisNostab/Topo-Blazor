@@ -29,17 +29,28 @@ namespace Topo.Controller
         public IMilestoneService _milestoneService { get; set; }
 
         public MilestonePageViewModel model = new MilestonePageViewModel();
+        public bool Loading;
+        public string Progress = "";
+        public string ErrorMessage = "";
+        // Laid out again whenever an option changes, from what was read for the unit
+        public List<MilestonePatrolGroup>? Groups;
+        private List<MilestoneSummaryListModel>? _summaries;
 
-        protected override void OnInitialized()
+        protected override async Task OnInitializedAsync()
         {
             if (!_storageService.IsAuthenticated)
+            {
                 NavigationManager.NavigateTo("index");
+                return;
+            }
 
             model.UnitId = _storageService.UnitId;
             model.UnitName = _storageService.UnitName;
             model.GroupName = _storageService.GroupNameDisplay;
             model.Units = _storageService.Units;
             model.SuppressLastName = _storageService.SuppressLastName;
+            if (!string.IsNullOrEmpty(model.UnitId))
+                await Load();
         }
 
         internal async Task UnitChange(ChangeEventArgs e)
@@ -48,45 +59,72 @@ namespace Topo.Controller
             model.UnitId = unitId;
             _storageService.UnitId = model.UnitId;
             model.UnitName = _storageService.UnitName;
+            await Load();
         }
 
-        internal async Task MilestoneReportPdfClick()
+        // Reads the unit's milestones once; the preview then follows the options
+        private async Task Load()
         {
+            Groups = null;
+            _summaries = null;
+            ErrorMessage = "";
             if (string.IsNullOrEmpty(model.UnitId))
                 return;
 
-            byte[] report = await MilestoneReport(OutputType.PDF);
-            var fileName = $"Milestone_Report_{model.UnitName.Replace(' ', '_')}.pdf";
-
-            // Send the data to JS to actually download the file
-            await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, "application/pdf", report);
+            Loading = true;
+            try
+            {
+                _storageService.SuppressLastName = model.SuppressLastName;
+                _summaries = await _milestoneService.GetMilestoneSummaries(model.UnitId, step => { Progress = step; InvokeAsync(StateHasChanged); });
+                Recalculate();
+            }
+            catch (Exception)
+            {
+                ErrorMessage = "Couldn't read the milestones from Terrain.";
+            }
+            finally
+            {
+                Loading = false;
+                Progress = "";
+            }
         }
 
-        internal async Task MilestoneReportXlsxClick()
-        {
-            if (string.IsNullOrEmpty(model.UnitId))
-                return;
+        internal void BreakByPatrolChanged() => Recalculate();
 
-            byte[] report = await MilestoneReport(OutputType.Excel);
-            var fileName = $"Milestone_Report_{model.UnitName.Replace(' ', '_')}.xlsx";
-
-            // Send the data to JS to actually download the file
-            await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, "application/vnd.ms-excel", report);
-        }
-
-        private async Task<byte[]> MilestoneReport(OutputType outputType = OutputType.PDF)
+        internal async Task SuppressLastNameChanged()
         {
             _storageService.SuppressLastName = model.SuppressLastName;
-            var milestoneSummaries = await _milestoneService.GetMilestoneSummaries(model.UnitId);
+            if (_summaries != null)
+                await _milestoneService.RenameMembers(model.UnitId, _summaries);
+            Recalculate();
+        }
 
-            var groupName = _storageService.GroupName ?? "";
-            var unitName = _storageService.UnitName ?? "";
-            var section = _storageService.Section;
+        private void Recalculate() => Groups = _summaries == null ? null : MilestoneLayout.Build(_summaries, model.BreakByPatrol);
 
-            var serialisedMilestoneSummaries = JsonConvert.SerializeObject(milestoneSummaries);
+        internal async Task MilestoneReportPdfClick() => await Download(OutputType.PDF, "pdf", "application/pdf");
 
-            var report = await _reportService.GetMilestoneReport(groupName, section, unitName, outputType, serialisedMilestoneSummaries, model.BreakByPatrol);
-            return report;
+        internal async Task MilestoneReportXlsxClick() => await Download(OutputType.Excel, "xlsx", "application/vnd.ms-excel");
+
+        // The report is made from what is on the page, so it is the same as the preview
+        private async Task Download(OutputType outputType, string extension, string contentType)
+        {
+            if (_summaries == null)
+                return;
+
+            try
+            {
+                var groupName = _storageService.GroupName ?? "";
+                var unitName = _storageService.UnitName ?? "";
+                var report = await _reportService.GetMilestoneReport(groupName, _storageService.Section, unitName, outputType, JsonConvert.SerializeObject(_summaries), model.BreakByPatrol);
+                var fileName = $"Milestone_Report_{model.UnitName.Replace(' ', '_')}.{extension}";
+
+                // Send the data to JS to actually download the file
+                await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, contentType, report);
+            }
+            catch (Exception)
+            {
+                ErrorMessage = "Couldn't build the report.";
+            }
         }
     }
 }

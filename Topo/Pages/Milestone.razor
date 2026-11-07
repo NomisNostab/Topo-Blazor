@@ -30,14 +30,14 @@
     <div class="mt-3 mb-3 row">
         <div class="col-sm-3">
             <InputCheckbox id="breakByPatrol" class="form-check-input"
-                           @bind-Value="model.BreakByPatrol" />
+                           @bind-Value="model.BreakByPatrol" @bind-Value:after="BreakByPatrolChanged" />
             <label class="form-check-label" for="breakByPatrol">
                 Break by Patrol
             </label>
         </div>
         <div class="col-sm-3">
             <InputCheckbox id="suppressLastName" class="form-check-input"
-                           @bind-Value="model.SuppressLastName" />
+                           @bind-Value="model.SuppressLastName" @bind-Value:after="SuppressLastNameChanged" />
             <label class="form-check-label" for="suppressLastName">
                 Suppress Last Name
             </label>
@@ -46,11 +46,25 @@
         </div>
     </div>
 
-    <div class="mt-3 mb-3 row">
-        <div class="col-sm">
-            <button type="submit" name="button" @onclick="MilestoneReportPdfClick" class="btn btn-primary">Milestone Report (pdf)</button>
-            <button type="submit" name="button" @onclick="MilestoneReportXlsxClick" class="btn btn-success">Milestone Report (xlsx)</button>
+    @if (Loading)
+    {
+        <div class="mt-3 mb-3">Reading @Progress...</div>
+    }
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="mt-3 mb-3 text-danger">@ErrorMessage</div>
+    }
+
+    @if (Groups != null)
+    {
+        <div class="mt-3 mb-3 row">
+            <div class="col-sm">
+                <button type="button" class="btn btn-primary" @onclick="MilestoneReportPdfClick">Milestone Report (pdf)</button>
+                <button type="button" class="btn btn-success" @onclick="MilestoneReportXlsxClick">Milestone Report (xlsx)</button>
+            </div>
         </div>
-    </div>
+
+        <MilestonePreview Groups="Groups" UnitName="@model.UnitName" />
+    }
 
 </EditForm>

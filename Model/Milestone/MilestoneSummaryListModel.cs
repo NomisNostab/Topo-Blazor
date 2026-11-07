@@ -2,6 +2,7 @@
 {
     public class MilestoneSummaryListModel
     {
+        public string memberId { get; set; } = string.Empty;
         public string memberName { get; set; } = string.Empty;
         public string memberPatrol { get; set; } = string.Empty;
         public int currentLevel { get; set; }
