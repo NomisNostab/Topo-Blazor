@@ -18,7 +18,8 @@
         PersonalProgress,
         TermProgram,
         ProgramIdeas,
-        ProposedActivities
+        ProposedActivities,
+        ReadyToSubmit
     }
 
     public enum OutputType
