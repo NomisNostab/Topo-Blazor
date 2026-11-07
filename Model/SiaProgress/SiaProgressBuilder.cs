@@ -76,6 +76,18 @@ namespace Topo.Model.SiaProgress
             return report;
         }
 
+        // The projects a Scout has in the section, oldest first, to pick one to report on
+        public static List<SiaProjectChoice> ProjectChoices(GetSIAResultsModel results, string section) =>
+            results.results
+                .Where(r => Key(r.section) == Key(section))
+                .OrderBy(r => r.status_updated)
+                .Select(r => new SiaProjectChoice
+                {
+                    Id = r.id,
+                    Label = $"{(string.IsNullOrWhiteSpace(r.answers.project_name) ? "(no name yet)" : r.answers.project_name)} - {StatusText(r.status)}"
+                })
+                .ToList();
+
         // The unit leader first, then by patrol (people without one last); within a patrol the patrol leader, then the
         // assistant patrol leader, then everyone else by name. The same order as the sign in sheet.
         public static List<MemberListModel> InPatrolOrder(IEnumerable<MemberListModel> members) =>

@@ -1,0 +1,106 @@
+@using System.Globalization
+@using Topo.Model.SiaProgress
+
+@* What the downloaded report will hold: the summary when asked for, then a page for each project with the Scout's plan and review
+   as they wrote it. Several projects are folded up, because a unit's worth is a long read. *@
+@if (Report.Projects.Count == 0 && !Report.IncludeSummary)
+{
+    <div class="text-muted">No Special Interest Area projects to show.</div>
+}
+
+@if (Report.IncludeSummary)
+{
+    <div class="block">Summary</div>
+    <table class="table table-sm table-striped">
+        <thead>
+            <tr><th>Name</th><th class="text-center">Completed</th><th class="text-center">In progress</th><th class="text-center">Areas completed</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Report.Summary)
+            {
+                <tr>
+                    <td>@row.MemberName</td>
+                    <td class="text-center">@Report.CompletedText(row)</td>
+                    <td class="text-center">@row.InProgress</td>
+                    <td class="text-center">@Report.AreasText(row)</td>
+                </tr>
+            }
+            @if (Report.Summary.Count == 0)
+            {
+                <tr><td colspan="4" class="text-muted">No members to show</td></tr>
+            }
+        </tbody>
+    </table>
+    <div class="small text-muted mb-3">@Report.SummaryNote()</div>
+}
+
+@if (Report.Projects.Count > 0)
+{
+    <div class="mb-2">
+        <strong>@Report.Projects.Count @(Report.Projects.Count == 1 ? "project" : "projects")</strong>,
+        @Report.Projects.Select(p => p.MemberId).Distinct().Count() @(Report.Projects.Select(p => p.MemberId).Distinct().Count() == 1 ? "Scout" : "Scouts")
+        @if (Report.DoubleSided && Report.Projects.Select(p => p.MemberId).Distinct().Count() > 1)
+        {
+            <span class="text-muted"> - blank pages are added so each Scout starts on a new sheet</span>
+        }
+    </div>
+}
+
+@foreach (var project in Report.Projects)
+{
+    <details class="project" open="@(Report.Projects.Count == 1)">
+        <summary>
+            <strong>@project.MemberName</strong> - @(string.IsNullOrWhiteSpace(project.ProjectName) ? "(no name yet)" : project.ProjectName)
+            <span class="text-muted">(@project.Area@(project.Area == "" ? "" : ", ")@project.Status.ToLowerInvariant())</span>
+        </summary>
+
+        <div class="block">Project</div>
+        @Line("Name", project.ProjectName)
+        @Line("Special Interest Area", project.Area)
+        @Line("Where it is up to", project.Status)
+        @Line("Last updated", Date(project.StatusUpdated))
+        @if (project.DateAwarded.HasValue)
+        {
+            @Line("Awarded", Date(project.DateAwarded.Value))
+        }
+
+        <div class="block">Plan</div>
+        @foreach (var item in project.Plan)
+        {
+            @Answer(item)
+        }
+
+        <div class="block">Review</div>
+        @foreach (var item in project.Review)
+        {
+            @Answer(item)
+        }
+
+        <div class="block">Files attached</div>
+        @if (project.Files.Count == 0)
+        {
+            @Line("Files", "None")
+        }
+        else
+        {
+            <div class="line"><div class="label">Files</div><div class="detail">@foreach (var file in project.Files) { <div>@file</div> }</div></div>
+        }
+
+        <div class="block">Notes to talk through</div>
+        <div class="line"><div class="label">Next steps</div><div class="detail blank"></div></div>
+        <div class="line"><div class="label">Leader comments</div><div class="detail blank"></div></div>
+    </details>
+}
+
+@code {
+    [Parameter]
+    public SiaProgressReport Report { get; set; } = new SiaProgressReport();
+
+    private static string Date(DateTime date) => date.ToString("d MMM yyyy", CultureInfo.InvariantCulture);
+
+    private static RenderFragment Line(string label, string text) => @<div class="line"><div class="label">@label</div><div class="detail">@text</div></div>;
+
+    // A question the Scout left blank is shown as room to write the answer in by hand, as it is printed
+    private static RenderFragment Answer(SiaAnswer item) =>
+        @<div class="line"><div class="label">@item.Question</div><div class="detail @(string.IsNullOrWhiteSpace(item.Answer) ? "blank" : "")">@item.Answer?.Trim()</div></div>;
+}
