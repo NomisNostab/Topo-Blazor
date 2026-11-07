@@ -133,6 +133,10 @@
         max-height: calc(100vh - 3.5rem);
         overflow-y: auto;
         overflow-x: hidden;
+        /* Keep room for the scrollbar on both sides, so the items stay centred whether or not it is showing */
+        scrollbar-width: thin;
+        scrollbar-gutter: stable both-edges;
+        scrollbar-color: rgba(255,255,255,0.35) transparent;
     }
 
     .collapse {
@@ -141,9 +145,16 @@
     }
 }
 
-.icon-only .nav-text,
-.icon-only .nav-group-label {
+.icon-only .nav-text {
     display: none;
+}
+
+/* In icon mode a group is just its chevron, centred, so a collapsed group can still be opened */
+.icon-only .nav-group-label {
+    justify-content: center;
+    margin-top: 0.4rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
 }
 
 .icon-only .container-fluid {
@@ -162,6 +173,13 @@
 
 .icon-only .nav-item ::deep a {
     justify-content: center;
+}
+
+/* The bar is only 4rem wide and the scrollbar's gutters take 20px of it, so the usual 1rem each side would leave the icon
+   less room than its own width and push it off centre */
+.icon-only .nav-item.px-3 {
+    padding-left: 0.25rem !important;
+    padding-right: 0.25rem !important;
 }
 
 .icon-only .oi {
