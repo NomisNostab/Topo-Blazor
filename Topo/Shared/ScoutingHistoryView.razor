@@ -1,0 +1,154 @@
+@using Topo.Model.History
+
+@* The history for one member: a card per section, then a summary of everything. *@
+<div class="mb-3">
+    @if (History.ScoutingStart != null)
+    {
+        <div>In Scouting since @History.ScoutingStart.Value.ToString("d MMM yyyy") (@History.TimeInScouting)</div>
+    }
+</div>
+
+@foreach (var block in History.Sections)
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            <strong>@block.SectionName</strong>
+            @if (!string.IsNullOrEmpty(block.Units))
+            {
+                <span> &ndash; @block.Units</span>
+            }
+            @if (block.From != null)
+            {
+                <div class="text-muted small">
+                    @block.From.Value.ToString("d MMM yyyy") to @(block.To?.ToString("d MMM yyyy")) @(string.IsNullOrEmpty(block.TimeInSection) ? "" : $"({block.TimeInSection})")
+                </div>
+            }
+        </div>
+        <div class="card-body">
+            <div class="row mb-2">
+                <div class="col-sm-2"><strong>Milestones</strong></div>
+                <div class="col-sm-10">
+                    @if (block.Milestones.Count == 0)
+                    {
+                        <span class="text-muted">None</span>
+                    }
+                    else
+                    {
+                        <div>Final level: @block.FinalMilestone</div>
+                        @foreach (var milestone in block.Milestones)
+                        {
+                            <div class="small">Milestone @milestone.Stage &ndash; @milestone.Status@(milestone.Date != null ? " " + milestone.Date.Value.ToString("d MMM yyyy") : "")</div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-2"><strong>Outdoor Adventure Skills</strong></div>
+                <div class="col-sm-10">
+                    @if (block.Oas.Count == 0)
+                    {
+                        <span class="text-muted">None</span>
+                    }
+                    else
+                    {
+                        <div>@block.OasProgressions progression@(block.OasProgressions == 1 ? "" : "s") in this section</div>
+                        @foreach (var stream in block.Oas)
+                        {
+                            <div class="small">@stream.Stream &ndash; final stage @stream.FinalStage (stage@(stream.Stages.Count == 1 ? "" : "s") @string.Join(", ", stream.Stages.Select(s => s.Stage)) in this section)</div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-2"><strong>Special Interest Areas</strong></div>
+                <div class="col-sm-10">
+                    @if (block.Sia.Count == 0)
+                    {
+                        <span class="text-muted">None</span>
+                    }
+                    else
+                    {
+                        @foreach (var sia in block.Sia)
+                        {
+                            <div class="small">@sia.Area@(string.IsNullOrEmpty(sia.Project) ? "" : " – " + sia.Project)@(sia.Date != null ? " " + sia.Date.Value.ToString("d MMM yyyy") : "")</div>
+                        }
+                    }
+                    @if (block.SiaInProgress > 0)
+                    {
+                        <div class="small text-muted">@block.SiaInProgress not yet awarded</div>
+                    }
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-2"><strong>Additional Awards</strong></div>
+                <div class="col-sm-10">
+                    @if (block.AdditionalAwards.Count == 0)
+                    {
+                        <span class="text-muted">None</span>
+                    }
+                    else
+                    {
+                        @foreach (var award in block.AdditionalAwards)
+                        {
+                            <div class="small">@award.Name@(award.Date != null ? " " + award.Date.Value.ToString("d MMM yyyy") : "")</div>
+                        }
+                    }
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-2"><strong>Activities</strong></div>
+                <div class="col-sm-10">
+                    @block.Nights night@(block.Nights == 1 ? "" : "s") camped over @block.Camps camp@(block.Camps == 1 ? "" : "s");
+                    @block.Hikes hike@(block.Hikes == 1 ? "" : "s") (@block.HikeKm km)
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2"><strong>Roles</strong></div>
+                <div class="col-sm-10">
+                    Led @block.Led, assisted @block.Assisted, participated in @block.Participated logged activities
+                    @if (!string.IsNullOrEmpty(block.CurrentRole))
+                    {
+                        <div class="small">Current role: @block.CurrentRole</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="card mb-3 border-primary">
+    <div class="card-header"><strong>Summary</strong></div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-sm-2"><strong>Time in Scouting</strong></div>
+            <div class="col-sm-10">@History.TimeInScouting</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2"><strong>Badges</strong></div>
+            <div class="col-sm-10">
+                @History.Totals.Milestones milestone@(History.Totals.Milestones == 1 ? "" : "s"),
+                @History.Totals.OasProgressions Outdoor Adventure Skill progression@(History.Totals.OasProgressions == 1 ? "" : "s"),
+                @History.Totals.Sia Special Interest Area@(History.Totals.Sia == 1 ? "" : "s"),
+                @History.Totals.AdditionalAwards additional award@(History.Totals.AdditionalAwards == 1 ? "" : "s")
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2"><strong>Activities</strong></div>
+            <div class="col-sm-10">
+                @History.Totals.Nights nights camped over @History.Totals.Camps camps;
+                @History.Totals.Hikes hikes (@History.Totals.HikeKm km)
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2"><strong>Roles</strong></div>
+            <div class="col-sm-10">
+                Led @History.Totals.Led, assisted @History.Totals.Assisted, participated in @History.Totals.Participated logged activities
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public ScoutingHistoryModel History { get; set; } = new ScoutingHistoryModel();
+}

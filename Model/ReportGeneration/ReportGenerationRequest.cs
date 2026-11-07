@@ -17,7 +17,9 @@
         Approvals,
         PersonalProgress,
         TermProgram,
-        ProgramIdeas
+        ProgramIdeas,
+        ScoutingHistory,
+        UnitReport
     }
 
     public enum OutputType

@@ -11,6 +11,9 @@ using Topo.Model.OAS;
 using Topo.Model.SIA;
 using Topo.Model.Wallchart;
 using Topo.Model.Progress;
+using Topo.Model.History;
+using Topo.Model.UnitReport;
+using System.Globalization;
 using Syncfusion.EJ2.Spreadsheet;
 using System;
 using Syncfusion.EJ2.Linq;
@@ -33,6 +36,8 @@ namespace Topo.Services
         public IWorkbook GenerateWallchartWorkbook(List<WallchartItemModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput, bool breakByPatrol = false);
         public IWorkbook GenerateApprovalsWorkbook(List<ApprovalsListModel> selectedApprovals, string groupName, string section, string unitName, DateTime approvalSearchFromDate, DateTime approvalSearchToDate, bool groupByMember, bool forPdfOutput);
         public IWorkbook GenerateProgressWorkbook(ProgressDetailsPageViewModel progressEntries, string groupName, string section, string unitName);
+        public IWorkbook GenerateScoutingHistoryWorkbook(ScoutingHistoryModel history, string groupName, string section, string unitName);
+        public IWorkbook GenerateUnitReportWorkbook(UnitReportModel report, string groupName, string section, string unitName);
         public IWorkbook GenerateTermProgramWorkbook(List<EventListModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateProgramIdeasWorkbook(List<ProgramIdeaItemModel> programIdeas, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook CreateWorkbookWithSheets(int sheetsToCreate);
@@ -2164,6 +2169,258 @@ namespace Topo.Services
             return workbook;
         }
 
+
+        // Totals for one unit over a date range. Label and detail columns.
+        public IWorkbook GenerateUnitReportWorkbook(UnitReportModel report, string groupName, string section, string unitName)
+        {
+            const int labelWidth = 28;
+            const int detailWidth = 70;
+            const string dateFormat = "d MMM yyyy";
+            var culture = CultureInfo.InvariantCulture;
+
+            var workbook = CreateWorkbookWithLogo(groupName, section, 2);
+            IWorksheet sheet = workbook.Worksheets[0];
+            IStyle headingStyle = workbook.Styles["headingStyle"];
+            int rowNumber = 1;
+
+            rowNumber++;
+            sheet.Range[rowNumber, 2].Text = string.IsNullOrEmpty(report.UnitName) ? unitName : report.UnitName;
+            sheet.Range[rowNumber, 2].CellStyle = headingStyle;
+            sheet.SetRowHeight(rowNumber, 40);
+
+            rowNumber++;
+            sheet.Range[rowNumber, 2].Text = "Unit History";
+            sheet.Range[rowNumber, 2].CellStyle = headingStyle;
+            sheet.SetRowHeight(rowNumber, 30);
+
+            rowNumber++;
+            sheet.Range[rowNumber, 1, rowNumber, 2].Merge();
+            sheet.Range[rowNumber, 1].Text = report.AllTime
+                    ? $"All time (to {report.To.ToString(dateFormat, culture)})"
+                    : $"{report.From.ToString(dateFormat, culture)} to {report.To.ToString(dateFormat, culture)}";
+
+            void Block(string heading)
+            {
+                rowNumber += 2;
+                sheet.Range[rowNumber, 1, rowNumber, 2].Merge();
+                sheet.Range[rowNumber, 1].Text = heading;
+                sheet.Range[rowNumber, 1, rowNumber, 2].CellStyle.Font.Bold = true;
+                sheet.Range[rowNumber, 1, rowNumber, 2].CellStyle.Font.Size = 12;
+                sheet.Range[rowNumber, 1, rowNumber, 2].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                sheet.SetRowHeight(rowNumber, 20);
+            }
+
+            void Row(string label, IEnumerable<string> lines)
+            {
+                var text = lines.ToList();
+                if (text.Count == 0)
+                    text.Add("None");
+                rowNumber++;
+                sheet.Range[rowNumber, 1].Text = label;
+                sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+                sheet.Range[rowNumber, 1].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
+                sheet.Range[rowNumber, 1].CellStyle.WrapText = true;
+                sheet.Range[rowNumber, 2].Text = string.Join("\n", text);
+                sheet.Range[rowNumber, 2].CellStyle.WrapText = true;
+                sheet.Range[rowNumber, 2].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
+                var lineCount = text.Sum(l => Math.Max(1, (int)Math.Ceiling(l.Length / (double)(detailWidth - 8))));
+                sheet.SetRowHeight(rowNumber, Math.Max(15, lineCount * 15));
+            }
+
+            string Number(double value) => value.ToString("#,0.#", culture);
+            IEnumerable<string> Counts(IEnumerable<UnitBadgeCount> counts) => counts.Select(c => $"{c.Name}: {c.Count}");
+
+            var m = report.Members;
+            Block("Members");
+            var currentMembers = new List<string>
+            {
+                $"{m.CurrentYouth} youth (as at {report.AsAt.ToString(dateFormat, culture)})",
+                $"{m.CurrentLeaders} {(m.CurrentLeaders == 1 ? "leader" : "leaders")}"
+            };
+            if (m.YouthHelpers > 0)
+                currentMembers.Insert(1, $"{m.YouthHelpers} youth {(m.YouthHelpers == 1 ? "helper" : "helpers")}");
+            Row("Current members", currentMembers);
+            Row("Former members", new[] { $"{m.FormerAttendees} who attended the unit's events" });
+            Row("Been part of the unit", new[] { m.Total.ToString() });
+
+            var b = report.Badges;
+            Block("Badges earned");
+            Row("Peak Award", new[] { b.PeakAwards.ToString() });
+            Row("Milestones", new[] { $"Total: {b.MilestonesTotal}" }.Concat(Counts(b.Milestones)));
+            Row("Outdoor Adventure Skills", new[] { $"Progressions: {b.OasProgressions}" }.Concat(Counts(b.OasStreams)));
+            Row("Special Interest Areas", new[] { $"Total: {b.SiaTotal}" }.Concat(Counts(b.SiaCategories)));
+            Row("Additional Awards", new[] { $"Total: {b.AdditionalAwardsTotal}" }.Concat(Counts(b.AdditionalAwards)));
+
+            Block("Nights away");
+            Row("Nights run", new[] { report.NightsRun.ToString() });
+            Row("Person nights camped", new[] { $"{report.PersonNightsCamped} ({report.YouthPersonNights} youth, {report.LeaderPersonNights} {(report.LeaderPersonNights == 1 ? "leader" : "leaders")})" });
+
+            Block("Hiking");
+            Row("Km hiked", new[]
+            {
+                $"{Number(report.HikeKm)} km, {(report.KmPerPerson ? "added up for everyone on each hike" : "each hike counted once")}",
+                $"{report.HikeEvents} hike{(report.HikeEvents == 1 ? "" : "s")}, {report.HikeEventsWithDistance} with a distance recorded"
+            });
+
+            Block("Hours");
+            Row("Leaders volunteered", new[]
+            {
+                Number(report.LeaderHours) + " hours",
+                "Only the hours leaders were with the youth at events. It doesn't include planning or admin time."
+            });
+            Row("Youth participated", new[] { Number(report.YouthHours) + " hours" });
+
+            Block("About these numbers");
+            Row("Events", new[]
+            {
+                $"{report.EventsCounted} events, {report.EventsWithoutAttendance} with no attendance recorded",
+                "Nights, hours and km come from the events' dates, attendance and logbook data.",
+                "Badges are for current youth members, earned in this section."
+            });
+
+            sheet.SetColumnWidth(1, labelWidth);
+            sheet.SetColumnWidth(2, detailWidth);
+
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
+            sheet.PageSetup.BottomMargin = 0.25;
+            sheet.PageSetup.TopMargin = 0.25;
+            sheet.PageSetup.LeftMargin = 0.25;
+            sheet.PageSetup.RightMargin = 0.25;
+            sheet.PageSetup.HeaderMargin = 0;
+            sheet.PageSetup.FooterMargin = 0;
+            sheet.PageSetup.FitToPagesWide = 1;
+            sheet.PageSetup.FitToPagesTall = 0;
+
+            return workbook;
+        }
+
+        // One member's history: a block per section, then a summary of the lot. Label and detail columns.
+        public IWorkbook GenerateScoutingHistoryWorkbook(ScoutingHistoryModel history, string groupName, string section, string unitName)
+        {
+            const int labelWidth = 26;
+            const int detailWidth = 80;
+            const string dateFormat = "d MMM yyyy";
+            var culture = CultureInfo.InvariantCulture;
+
+            var workbook = CreateWorkbookWithLogo(groupName, section, 2);
+            IWorksheet sheet = workbook.Worksheets[0];
+            IStyle headingStyle = workbook.Styles["headingStyle"];
+            int rowNumber = 1;
+
+            rowNumber++;
+            sheet.Range[rowNumber, 2].Text = "Scouting History";
+            sheet.Range[rowNumber, 2].CellStyle = headingStyle;
+            sheet.SetRowHeight(rowNumber, 40);
+
+            rowNumber++;
+            sheet.Range[rowNumber, 2].Text = history.MemberName;
+            sheet.Range[rowNumber, 2].CellStyle = headingStyle;
+            sheet.SetRowHeight(rowNumber, 30);
+
+            rowNumber++;
+            if (history.ScoutingStart != null)
+            {
+                sheet.Range[rowNumber, 1, rowNumber, 2].Merge();
+                sheet.Range[rowNumber, 1].Text = $"In Scouting since {history.ScoutingStart.Value.ToString(dateFormat, culture)} ({history.TimeInScouting})";
+            }
+
+            void Block(string heading)
+            {
+                rowNumber += 2;
+                sheet.Range[rowNumber, 1, rowNumber, 2].Merge();
+                sheet.Range[rowNumber, 1].Text = heading;
+                sheet.Range[rowNumber, 1, rowNumber, 2].CellStyle.Font.Bold = true;
+                sheet.Range[rowNumber, 1, rowNumber, 2].CellStyle.Font.Size = 12;
+                sheet.Range[rowNumber, 1, rowNumber, 2].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                sheet.SetRowHeight(rowNumber, 20);
+            }
+
+            void Row(string label, IEnumerable<string> lines)
+            {
+                var text = lines.ToList();
+                if (text.Count == 0)
+                    text.Add("None");
+                rowNumber++;
+                sheet.Range[rowNumber, 1].Text = label;
+                sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
+                sheet.Range[rowNumber, 1].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
+                sheet.Range[rowNumber, 1].CellStyle.WrapText = true;
+                sheet.Range[rowNumber, 2].Text = string.Join("\n", text);
+                sheet.Range[rowNumber, 2].CellStyle.WrapText = true;
+                sheet.Range[rowNumber, 2].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
+                // room for every line, including ones that wrap
+                var lineCount = text.Sum(l => Math.Max(1, (int)Math.Ceiling(l.Length / (double)(detailWidth - 8))));
+                sheet.SetRowHeight(rowNumber, Math.Max(15, lineCount * 15));
+            }
+
+            string Plural(int count, string word) => $"{count} {word}{(count == 1 ? "" : "s")}";
+            string Date(DateTime? date) => date == null ? "" : date.Value.ToString(dateFormat, culture);
+
+            foreach (var s in history.Sections)
+            {
+                var title = s.SectionName + (string.IsNullOrEmpty(s.Units) ? "" : " - " + s.Units);
+                if (s.From != null)
+                    title += $"  ({Date(s.From)} to {Date(s.To)}{(string.IsNullOrEmpty(s.TimeInSection) ? "" : ", " + s.TimeInSection)})";
+                Block(title);
+
+                Row("Milestones", s.Milestones.Count == 0
+                    ? new string[0]
+                    : new[] { $"Final level: {s.FinalMilestone}" }
+                        .Concat(s.Milestones.Select(m => $"Milestone {m.Stage} - {m.Status}{(m.Date != null ? " " + Date(m.Date) : "")}")));
+                Row("Outdoor Adventure Skills", s.Oas.Count == 0
+                    ? new string[0]
+                    : new[] { $"{Plural(s.OasProgressions, "progression")} in this section" }
+                        .Concat(s.Oas.Select(o => $"{o.Stream} - final stage {o.FinalStage} ({Plural(o.Stages.Count, "stage")} in this section: {string.Join(", ", o.Stages.Select(st => st.Stage))})")));
+                var sia = s.Sia.Select(a => $"{a.Area}{(string.IsNullOrEmpty(a.Project) ? "" : " - " + a.Project)}{(a.Date != null ? " " + Date(a.Date) : "")}").ToList();
+                if (s.SiaInProgress > 0 && sia.Count > 0)
+                    sia.Add($"{s.SiaInProgress} not yet awarded");
+                Row("Special Interest Areas", sia);
+                Row("Additional Awards", s.AdditionalAwards.Select(a => $"{a.Name}{(a.Date != null ? " " + Date(a.Date) : "")}"));
+                Row("Activities", new[]
+                {
+                    $"{Plural(s.Nights, "night")} camped over {Plural(s.Camps, "camp")}",
+                    $"{Plural(s.Hikes, "hike")} ({s.HikeKm.ToString("0.#", culture)} km)"
+                });
+                var roles = new List<string> { $"Led {s.Led}, assisted {s.Assisted}, participated in {s.Participated} logged activities" };
+                if (!string.IsNullOrEmpty(s.CurrentRole))
+                    roles.Add($"Current role: {s.CurrentRole}");
+                Row("Roles", roles);
+            }
+
+            var t = history.Totals;
+            Block("Summary");
+            Row("Time in Scouting", new[] { history.TimeInScouting });
+            Row("Badges", new[]
+            {
+                Plural(t.Milestones, "milestone"),
+                $"{Plural(t.OasProgressions, "Outdoor Adventure Skill progression")}",
+                Plural(t.Sia, "Special Interest Area"),
+                Plural(t.AdditionalAwards, "additional award")
+            });
+            Row("Activities", new[]
+            {
+                $"{Plural(t.Nights, "night")} camped over {Plural(t.Camps, "camp")}",
+                $"{Plural(t.Hikes, "hike")} ({t.HikeKm.ToString("0.#", culture)} km)"
+            });
+            Row("Roles", new[] { $"Led {t.Led}, assisted {t.Assisted}, participated in {t.Participated} logged activities" });
+
+            sheet.SetColumnWidth(1, labelWidth);
+            sheet.SetColumnWidth(2, detailWidth);
+
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
+            sheet.PageSetup.BottomMargin = 0.25;
+            sheet.PageSetup.TopMargin = 0.25;
+            sheet.PageSetup.LeftMargin = 0.25;
+            sheet.PageSetup.RightMargin = 0.25;
+            sheet.PageSetup.HeaderMargin = 0;
+            sheet.PageSetup.FooterMargin = 0;
+            sheet.PageSetup.FitToPagesWide = 1;
+            sheet.PageSetup.FitToPagesTall = 0;
+
+            return workbook;
+        }
 
         public IWorkbook GenerateProgressWorkbook(ProgressDetailsPageViewModel progressEntries, string groupName, string section, string unitName)
         {
