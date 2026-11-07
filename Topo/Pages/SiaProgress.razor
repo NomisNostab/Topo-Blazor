@@ -58,7 +58,7 @@
         <div class="form-group mb-3 row">
             <label for="project" class="col-sm-2 col-form-label">Select Project</label>
             <div class="col-sm-5">
-                <select id="project" class="form-select" @bind="model.ProjectId">
+                <select id="project" class="form-select" @bind="model.ProjectId" @bind:after="OptionChanged">
                     <option value="">Select project</option>
                     @foreach (var project in model.Projects)
                     {
@@ -81,34 +81,45 @@
         <div class="col-sm-10">
             <div>
                 <label>
-                    <input type="checkbox" @bind="model.ExcludeCompleted" disabled="@(model.Scope == SiaScope.OneProject)" /> Leave out completed projects
+                    <input type="checkbox" @bind="model.ExcludeCompleted" @bind:after="OptionChanged" disabled="@(model.Scope == SiaScope.OneProject)" /> Leave out completed projects
                 </label>
             </div>
             <div>
                 <label>
-                    <input type="checkbox" @bind="model.IncludeSummary" /> Include a summary of where everyone in the report is up to
+                    <input type="checkbox" @bind="model.IncludeSummary" @bind:after="OptionChanged" /> Include a summary of where everyone in the report is up to
                 </label>
             </div>
             <div>
                 <label>
-                    <input type="checkbox" @bind="model.DoubleSided" /> Print double-sided: each Scout starts on a new sheet (adds blank pages)
+                    <input type="checkbox" @bind="model.DoubleSided" @bind:after="OptionChanged" /> Print double-sided: each Scout starts on a new sheet (adds blank pages)
                 </label>
             </div>
         </div>
     </div>
 
-    <div class="mt-3 mb-3 row">
-        <div class="col-sm">
-            <button type="button" class="btn btn-primary" disabled="@Busy" @onclick="PdfClick">SIA Progress (pdf)</button>
-            <button type="button" class="btn btn-success" disabled="@Busy" @onclick="XlsxClick">SIA Progress (xlsx)</button>
-            @if (Busy)
-            {
-                <span class="ms-3">Reading @Progress...</span>
-            }
-            @if (!string.IsNullOrEmpty(model.ErrorMessage))
-            {
-                <span class="ms-3 text-danger">@model.ErrorMessage</span>
-            }
+    @if (Loading)
+    {
+        <div class="mt-3 mb-3">Reading @Progress...</div>
+    }
+    @if (!string.IsNullOrEmpty(model.ErrorMessage))
+    {
+        <div class="mt-3 mb-3 text-danger">@model.ErrorMessage</div>
+    }
+
+    @if (Report != null)
+    {
+        <div class="mt-3 mb-3 row">
+            <div class="col-sm">
+                <button type="button" class="btn btn-primary" disabled="@(!CanExport)" @onclick="PdfClick">SIA Progress (pdf)</button>
+                <button type="button" class="btn btn-success" disabled="@(!CanExport)" @onclick="XlsxClick">SIA Progress (xlsx)</button>
+            </div>
         </div>
-    </div>
+
+        <div class="mt-3 mb-3 row">
+            <label class="col-sm-2 col-form-label">Preview</label>
+            <div class="col-sm-10">
+                <SiaProgressPreview Report="Report" />
+            </div>
+        </div>
+    }
 </EditForm>

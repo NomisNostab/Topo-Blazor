@@ -74,5 +74,14 @@ namespace Topo.Model.SiaProgress
         public int AreasRequired { get; set; }
         public List<SiaSummaryRow> Summary { get; set; } = new List<SiaSummaryRow>();
         public List<SiaProject> Projects { get; set; } = new List<SiaProject>();
+
+        // The summary's wording, so the page and the exported report say the same
+        public string CompletedText(SiaSummaryRow row) => SiaRequired > 0 ? $"{row.Completed}/{SiaRequired}" : row.Completed.ToString();
+
+        public string AreasText(SiaSummaryRow row) => AreasRequired > 0 ? $"{row.AreasCompleted}/{AreasRequired}" : row.AreasCompleted.ToString();
+
+        public string SummaryNote() => SiaRequired > 0
+            ? $"The {AwardName} asks for {SiaRequired} Special Interest Area projects over at least {AreasRequired} areas. Completed projects are awarded ones; in progress is every other project started in this section."
+            : "Completed projects are awarded ones; in progress is every other project started in this section.";
     }
 }
