@@ -395,6 +395,7 @@ namespace Topo.Services
                         var blank = workbook.Worksheets.Create(SheetName("Blank"));
                         // a space is enough for the page to be printed
                         blank.Range[1, 1].Text = " ";
+                        blank.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
                         blank.Move(sheet.Index);
                         pagesSoFar++;
                     }
