@@ -59,7 +59,7 @@
             }
             else
             {
-                <div class="nav-group-label px-3" @onclick="ToggleBadgework" @onclick:stopPropagation="true">
+                <div class="nav-group-label px-3" title="Badgework" @onclick="ToggleBadgework" @onclick:stopPropagation="true">
                     <span class="nav-text">Badgework</span>
                     <span class="oi @(badgeworkExpanded ? "oi-chevron-top" : "oi-chevron-bottom")" aria-hidden="true"></span>
                 </div>
@@ -87,7 +87,7 @@
                     </div>
                 }
 
-                <div class="nav-group-label px-3" @onclick="ToggleReports" @onclick:stopPropagation="true">
+                <div class="nav-group-label px-3" title="Reports" @onclick="ToggleReports" @onclick:stopPropagation="true">
                     <span class="nav-text">Reports</span>
                     <span class="oi @(reportsExpanded ? "oi-chevron-top" : "oi-chevron-bottom")" aria-hidden="true"></span>
                 </div>
@@ -130,7 +130,7 @@
                     </div>
                 }
 
-                <div class="nav-group-label px-3" @onclick="ToggleTools" @onclick:stopPropagation="true">
+                <div class="nav-group-label px-3" title="Tools" @onclick="ToggleTools" @onclick:stopPropagation="true">
                     <span class="nav-text">Tools</span>
                     <span class="oi @(toolsExpanded ? "oi-chevron-top" : "oi-chevron-bottom")" aria-hidden="true"></span>
                 </div>
@@ -154,7 +154,7 @@
                 }
             }
 
-            <div class="nav-group-label px-3" @onclick="ToggleSettings" @onclick:stopPropagation="true">
+            <div class="nav-group-label px-3" title="Settings" @onclick="ToggleSettings" @onclick:stopPropagation="true">
                 <span class="nav-text">Settings</span>
                 <span class="oi @(settingsExpanded ? "oi-chevron-top" : "oi-chevron-bottom")" aria-hidden="true"></span>
             </div>
@@ -199,7 +199,8 @@
 
     private string NavMenuCssClass => "nav-scroll-area " + (collapseNavMenu ? "collapse " : "") + (_storageService.NavMenuIconOnly ? "icon-only" : "");
 
-    private bool ShowGroup(bool expanded) => _storageService.NavMenuIconOnly || expanded;
+    // a group stays collapsed (or open) when the whole menu is shrunk to icons; its header stays so it can be opened again
+    private bool ShowGroup(bool expanded) => expanded;
 
     private void ToggleNavMenu()
     {
