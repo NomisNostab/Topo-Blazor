@@ -155,34 +155,17 @@ namespace Topo.Services
 
         private int CalculateMilestonePercentComplete(int currentLevel, Event_Count eventCount)
         {
-            int target = 0;
-            int participantTotal = (int)((currentLevel == 3 ? Math.Min(4.0, eventCount.participant.community) : eventCount.participant.community)
-                                + (currentLevel == 3 ? Math.Min(4.0, eventCount.participant.outdoors) : eventCount.participant.outdoors)
-                                + (currentLevel == 3 ? Math.Min(4.0, eventCount.participant.creative) : eventCount.participant.creative)
-                                + (currentLevel == 3 ? Math.Min(4.0, eventCount.participant.personal_growth) : eventCount.participant.personal_growth));
             int leaderTotal = (int)(eventCount.leader.community
                                  + eventCount.leader.creative
                                  + eventCount.leader.outdoors
                                  + eventCount.leader.personal_growth);
-            var total = currentLevel == 3
-                    ? participantTotal + Math.Min(6, leaderTotal)
-                    : participantTotal + leaderTotal;
-
-            switch (currentLevel)
-            {
-                case 1:
-                    target = 26;
-                    break;
-                case 2:
-                    target = 24;
-                    break;
-                case 3:
-                    target = 20;
-                    break;
-            }
-
-            var percentComplete = total * 100 / target;
-            return percentComplete;
+            return MilestoneProgressCalculator.CalculatePercentComplete(
+                currentLevel,
+                (int)eventCount.participant.community,
+                (int)eventCount.participant.outdoors,
+                (int)eventCount.participant.creative,
+                (int)eventCount.participant.personal_growth,
+                leaderTotal);
         }
 
     }

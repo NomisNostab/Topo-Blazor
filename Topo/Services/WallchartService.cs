@@ -53,12 +53,13 @@ namespace Topo.Services
 
                 // Get Milestone for member
                 var memberMilestones = await _terrainAPIService.GetMilestoneResultsForMember(member.id);
-                foreach (var milestoneResult in memberMilestones.results.Where(r => r.section == _storageService.Section).OrderBy(r => r.achievement_meta.stage))
+                foreach (var milestoneResult in AchievementSelection.OnePerMilestoneStage(memberMilestones.results.Where(r => r.section == _storageService.Section)))
                 {
                     MoveMilestoneAssistsToLeads(milestoneResult);
                     switch (milestoneResult.achievement_meta.stage)
                     {
                         case 1:
+                            wallchartItem.Milestone1Skipped = milestoneResult.status == "not_required";
                             if (milestoneResult.status == "awarded")
                             {
                                 wallchartItem.Milestone1Community = 6;
@@ -81,6 +82,7 @@ namespace Topo.Services
                             }
                             break;
                         case 2:
+                            wallchartItem.Milestone2Skipped = milestoneResult.status == "not_required";
                             if (milestoneResult.status == "awarded")
                             {
                                 wallchartItem.Milestone2Community = 5;
@@ -111,6 +113,7 @@ namespace Topo.Services
                             wallchartItem.Milestone3Lead = PALEventCountTotal(milestoneResult.event_count.leader);
                             wallchartItem.Milestone3Awarded = milestoneResult.status == "awarded" ? milestoneResult.status_updated : null;
                             wallchartItem.Milestone3Presented = GetPresentedDate(member.id, "Milestone 3");
+                            wallchartItem.Milestone3Skipped = milestoneResult.status == "not_required";
                             break;
                     }
                 }
@@ -149,15 +152,14 @@ namespace Topo.Services
                             break;
                     }
                 }
-                wallchartItem.OASStageProgressions = oasResults.results.Where(o => o.status == "awarded" && o.section == _storageService.Section).Count();
-                // Double Count OAS Stage Progressions for stages 7 and above.
-                wallchartItem.OASStageProgressions += oasResults.results.Where(o => o.achievement_meta.stage >=7 && o.status == "awarded" && o.section == _storageService.Section).Count();
+                wallchartItem.OASStageProgressions = AchievementSelection.OasProgressions(oasResults.results, _storageService.Section, includeApproved: false);
                 // Member
                 wallchartItem.MemberId = member.id;
                 wallchartItem.MemberName = $"{member.first_name} {_membersService.GetMemberLastName(selectedUnitId, member.id).Result}";
                 wallchartItem.MemberPatrol = member.patrol_name;
                 wallchartItem.IntroToScouting = await GetIntroToScouting(member.id);
                 wallchartItem.IntroToSection = await GetIntroToSection(member.id);
+                wallchartItem.YearsOfService = YearsOfServiceCalculator.CalculateCompletedYears(wallchartItem.IntroToSection, DateTime.Now);
                 // Logbook
                 await _terrainAPIService.AssumeProfile(member.id);
                 var getMemberLogbookMetrics = await _terrainAPIService.GetMemberLogbookMetrics(member.id);
@@ -198,25 +200,120 @@ namespace Topo.Services
                 }
                 // Peak Award
                 var courseReflectionResultModel = await _terrainAPIService.GetCourseReflectionResultsForMember(member.id);
-                wallchartItem.LeadershipCourse = courseReflectionResultModel.results
-                    .Where(r => r.status == "awarded" && r.section == _storageService.Section)
-                    .FirstOrDefault()?.status_updated;
+                wallchartItem.LeadershipCourse = AchievementSelection.LatestAwardedPeak(courseReflectionResultModel.results, _storageService.Section)?.status_updated;
 
                 var adventurousJourneyResultModel = await _terrainAPIService.GetAdventurousJourneyResultsForMember(member.id);
-                wallchartItem.AdventurousJourney = adventurousJourneyResultModel.results
-                    .Where(r => r.status == "awarded" && r.section == _storageService.Section)
-                    .FirstOrDefault()?.status_updated;
+                wallchartItem.AdventurousJourney = AchievementSelection.LatestAwardedPeak(adventurousJourneyResultModel.results, _storageService.Section)?.status_updated;
 
                 var personalReflectionResultModel = await _terrainAPIService.GetPersonalReflectionResultsForMember(member.id);
-                wallchartItem.PersonalReflection = personalReflectionResultModel.results
-                    .Where(r => r.status == "awarded" && r.section == _storageService.Section)
-                    .FirstOrDefault()?.status_updated;
+                wallchartItem.PersonalReflection = AchievementSelection.LatestAwardedPeak(personalReflectionResultModel.results, _storageService.Section)?.status_updated;
 
-                wallchartItem.PeakAward = 0;
+                var peakAwardResultModel = await _terrainAPIService.GetPeakAwardResultsForMember(member.id);
+                wallchartItem.PeakAwardAwarded = AchievementSelection.LatestAwardedPeak(peakAwardResultModel.results, _storageService.Section)?.status_updated;
+
+                // Percent complete, for display until the award itself is granted (see PeakAwardAwarded).
+                wallchartItem.PeakAward = ComputePeakAwardPercent(wallchartItem, _storageService.Section);
+
                 wallchartItems.Add(wallchartItem);
             }
             _storageService.CachedWallchartItems.Add(new KeyValuePair<string, List<WallchartItemModel>>(selectedUnitId, wallchartItems));
             return wallchartItems;
+        }
+
+        // Peak Award percent complete = an equal-weighted average of a few "buckets", each itself a
+        // 0.0-1.0 fraction: Milestones, OAS, SIA, and the three individual awards (Leadership Course,
+        // Adventurous Journey, Personal Reflection). See PeakAwardRequirements for the per-section
+        // numeric thresholds this depends on.
+        private static double ComputePeakAwardPercent(WallchartItemModel w, string section)
+        {
+            var buckets = new List<double>
+            {
+                ComputeMilestoneBucket(w),
+                w.LeadershipCourse.HasValue ? 1.0 : 0.0,
+                w.AdventurousJourney.HasValue ? 1.0 : 0.0,
+                w.PersonalReflection.HasValue ? 1.0 : 0.0,
+            };
+
+            // OAS and SIA need section-specific thresholds; if the section isn't one we have
+            // requirements for, those two buckets are simply left out rather than guessed at.
+            if (PeakAwardRequirements.BySection.TryGetValue(section, out var requirement))
+            {
+                buckets.Add(ComputeOASBucket(w, requirement));
+                buckets.Add(ComputeSIABucket(w, requirement));
+            }
+
+            return buckets.Average();
+        }
+
+        // Each milestone contributes its own percent-complete (same formula as the Milestone report)
+        // rather than a flat awarded/not-awarded count, so partial progress on the current milestone
+        // shows up here too. A milestone that's been awarded or marked "not required" always counts
+        // as fully done - the raw counts behind an awarded milestone don't necessarily add up to the
+        // formula's own targets (the award is a leader's call, not a strict numeric gate), and a
+        // skipped milestone's counts are 0 regardless of progress.
+        private static double ComputeMilestoneBucket(WallchartItemModel w)
+        {
+            var milestone1 = w.Milestone1Awarded.HasValue || w.Milestone1Skipped
+                ? 1.0
+                : MilestonePercentComplete(1, w.Milestone1Community, w.Milestone1Outdoors, w.Milestone1Creative, w.Milestone1PersonalGrowth, w.Milestone1Lead);
+            var milestone2 = w.Milestone2Awarded.HasValue || w.Milestone2Skipped
+                ? 1.0
+                : MilestonePercentComplete(2, w.Milestone2Community, w.Milestone2Outdoors, w.Milestone2Creative, w.Milestone2PersonalGrowth, w.Milestone2Lead);
+            var milestone3 = w.Milestone3Awarded.HasValue || w.Milestone3Skipped
+                ? 1.0
+                : MilestonePercentComplete(3, w.Milestone3Community, w.Milestone3Outdoors, w.Milestone3Creative, w.Milestone3PersonalGrowth, w.Milestone3Lead);
+            return new[] { milestone1, milestone2, milestone3 }.Average();
+        }
+
+        private static double MilestonePercentComplete(int level, int community, int outdoors, int creative, int personalGrowth, int lead)
+        {
+            return Math.Min(1.0, MilestoneProgressCalculator.CalculatePercentComplete(level, community, outdoors, creative, personalGrowth, lead) / 100.0);
+        }
+
+        private static double ComputeOASBucket(WallchartItemModel w, PeakAwardRequirements.SectionRequirement requirement)
+        {
+            var ratios = new List<double>
+            {
+                SafeRatio(w.OASStageProgressions, requirement.OASProgressionsRequired),
+                SafeRatio(w.OASBushcraftStage, requirement.OASCoreMinLevel),
+                SafeRatio(w.OASBushwalkingStage, requirement.OASCoreMinLevel),
+                SafeRatio(w.OASCampingStage, requirement.OASCoreMinLevel),
+            };
+
+            if (requirement.OASLevel4PlusRequired > 0)
+            {
+                var streamsAtLevel4Plus = new[]
+                {
+                    w.OASBushcraftStage, w.OASBushwalkingStage, w.OASCampingStage,
+                    w.OASAlpineStage, w.OASCyclingStage, w.OASVerticalStage,
+                    w.OASAquaticsStage, w.OASBoatingStage, w.OASPaddlingStage
+                }.Count(stage => stage >= 4);
+                ratios.Add(SafeRatio(streamsAtLevel4Plus, requirement.OASLevel4PlusRequired));
+            }
+
+            return ratios.Average();
+        }
+
+        private static double ComputeSIABucket(WallchartItemModel w, PeakAwardRequirements.SectionRequirement requirement)
+        {
+            var siaCountsByArea = new[]
+            {
+                w.SIAAdventureSport, w.SIAArtsLiterature, w.SIAEnvironment,
+                w.SIAStemInnovation, w.SIAGrowthDevelopment, w.SIACreatingABetterWorld
+            };
+            var totalRatio = SafeRatio(siaCountsByArea.Sum(), requirement.SIARequired);
+            var areaSpreadRatio = SafeRatio(siaCountsByArea.Count(count => count > 0), requirement.SIAMinAreasRequired);
+            return new[] { totalRatio, areaSpreadRatio }.Average();
+        }
+
+        // A requirement of 0 (or a negative typo) means "nothing needed", i.e. trivially 100% met -
+        // without this, PeakAwardRequirements.cs being hand-edited to a 0 would silently turn the
+        // whole Peak Award percentage into NaN (0/0) instead of a clear, harmless 100%.
+        private static double SafeRatio(double achieved, int required)
+        {
+            if (required <= 0)
+                return 1.0;
+            return Math.Min(1.0, achieved / required);
         }
 
         private void MoveMilestoneAssistsToLeads(MilestoneResult milestoneResult)
@@ -234,7 +331,7 @@ namespace Topo.Services
         private async Task<DateTime?> GetIntroToScouting(string memberId)
         {
             var introToScouting = await _terrainAPIService.GetIntroductionToScoutingResultsForMember(memberId);
-            var result = introToScouting.results.Where(r => r.status == "awarded").FirstOrDefault();
+            var result = AchievementSelection.LatestAwardedIntro(introToScouting.results);
             if (result != null)
             {
                 if (!string.IsNullOrEmpty(result.imported.date_awarded))
@@ -253,7 +350,7 @@ namespace Topo.Services
         private async Task<DateTime?> GetIntroToSection(string memberId)
         {
             var introToSection = await _terrainAPIService.GetIntroductionToSectionResultsForMember(memberId);
-            var result = introToSection.results.Where(r => r.section == _storageService.Section && r.status == "awarded").FirstOrDefault();
+            var result = AchievementSelection.LatestAwardedIntro(introToSection.results, _storageService.Section);
             if (result != null)
             {
                 if (!string.IsNullOrEmpty(result.imported.date_awarded))
