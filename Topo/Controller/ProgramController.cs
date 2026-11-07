@@ -40,10 +40,15 @@ namespace Topo.Controller
             DateParseHandling = DateParseHandling.None
         };
 
+        private bool _select2Bound;
+
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (firstRender)
+            // select2 is set up once the calendars are in the list, so a calendar already chosen (the only one there is)
+            // shows as selected
+            if (!_select2Bound && model.Calendars.Any())
             {
+                _select2Bound = true;
                 await JS.InvokeVoidAsync("BindSelect2");
             }
         }
@@ -57,6 +62,7 @@ namespace Topo.Controller
             model.Units = _storageService.Units;
             var calendars = await _programService.GetCalendars();
             model.Calendars = calendars;
+            model.SelectTheOnlyCalendar();
             var quarter = (DateTime.Now.Month + 2) / 3;
             var quarterStartMonth = (quarter - 1) * 3 + 1;
             model.CalendarSearchFromDate = new DateTime(DateTime.Now.Year, quarterStartMonth, 1);

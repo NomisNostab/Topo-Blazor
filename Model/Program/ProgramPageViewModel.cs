@@ -22,6 +22,13 @@ namespace Topo.Model.Program
         public bool IncludeProjectPatrols { get; set; } = false;
         public string GroupName { get; set; } = string.Empty;
         public string[] SelectedCalendars { get; set; } = new string[0];
+
+        // With only one calendar there is nothing to choose, so it starts selected
+        public void SelectTheOnlyCalendar()
+        {
+            if (Calendars.Count == 1)
+                SelectedCalendars = new[] { Calendars.Keys.First() };
+        }
         public string CalendarErrorMessage { get; set; } = string.Empty;
         public string UnitId { get; set; } = "";
         public string UnitName { get; set; } = "";
