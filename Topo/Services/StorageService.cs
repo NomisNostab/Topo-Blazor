@@ -142,6 +142,20 @@ namespace Topo.Services
 
         public bool SuppressLastName { get; set; }
 
+        private bool _navMenuIconOnly;
+        public bool NavMenuIconOnly
+        {
+            get { return _navMenuIconOnly; }
+            set
+            {
+                if (_navMenuIconOnly != value)
+                {
+                    _navMenuIconOnly = value;
+                    NotifyStateChanged();
+                }
+            }
+        }
+
         public bool LogToQueue { get; set; }
 
         public string Version = "2026.10.15";
