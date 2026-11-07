@@ -635,7 +635,7 @@ namespace Topo.Services
 
             sheet.UsedRange.AutofitColumns();
 
-            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA3;
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
             sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
             sheet.PageSetup.BottomMargin = 0.25;
             sheet.PageSetup.TopMargin = 0.25;
@@ -1528,7 +1528,7 @@ namespace Topo.Services
 
             sheet.Range[1, 1, rowNumber, 1].AutofitColumns();
 
-            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA3;
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
             sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
             sheet.PageSetup.CenterHorizontally = true;
             sheet.PageSetup.CenterVertically = true;
@@ -1775,7 +1775,7 @@ namespace Topo.Services
                 else
                     GenerateOASWorksheetBodyOriginal(sheet, groupedAnswers, ref rowNumber, ref columnNumber);
 
-                sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA3;
+                sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
                 sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
                 sheet.PageSetup.BottomMargin = 0.25;
                 sheet.PageSetup.TopMargin = 0.25;
