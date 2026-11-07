@@ -33,6 +33,7 @@ namespace Topo.Services
         public Task<GetUnitAchievementsResultsModel> GetUnitOASAchievements(string unit, string stream, string branch, int stage);
         public Task<GetSIAResultsModel> GetSIAResultsForMember(string memberId);
         public Task<GetSIAResultModel> GetSIAResultForMember(string memberId, string achievementId);
+        public Task<string> GetSIATemplateJsonAsync(string section, string part);
         public Task<GetGroupLifeResultModel> GetGroupLifeForUnit(string unitId);
         public Task RevokeAssumedProfiles();
         public Task AssumeProfile(string memberId);
@@ -299,6 +300,15 @@ namespace Topo.Services
             var getSIAResultsModel = DeserializeObject<GetSIAResultsModel>(result);
 
             return getSIAResultsModel ?? new GetSIAResultsModel();
+        }
+
+        // The questions of a section's SIA plan or review ("plan" or "review") as Terrain words them
+        public async Task<string> GetSIATemplateJsonAsync(string section, string part)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{templatesAddress}sia/{section}/{part}/latest.json";
+            return await SendRequest(HttpMethod.Get, requestUri);
         }
 
         public async Task<GetSIAResultModel> GetSIAResultForMember(string memberId, string achievementId)

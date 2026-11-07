@@ -46,6 +46,16 @@
         public string how_develop { get; set; } = string.Empty;
         public string strengths_improvements { get; set; } = string.Empty;
         public string[] which_goals { get; set; } = new string[0];
+        // Joey and Cub projects ask different questions
+        public string want_to_achieve { get; set; } = string.Empty;
+        public string who_is_helping { get; set; } = string.Empty;
+        public string step_1 { get; set; } = string.Empty;
+        public string step_2 { get; set; } = string.Empty;
+        public string step_3 { get; set; } = string.Empty;
+        public string share_with_unit { get; set; } = string.Empty;
+        public string hardest_part { get; set; } = string.Empty;
+        public string important_learned { get; set; } = string.Empty;
+        public string what_did_you_enjoy_about_your_project { get; set; } = string.Empty;
     }
 
     public class Imported

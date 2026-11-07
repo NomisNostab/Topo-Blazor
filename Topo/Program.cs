@@ -20,6 +20,7 @@ builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IProgramService, ProgramService>();
 builder.Services.AddScoped<IOASService, OASService>();
 builder.Services.AddScoped<ISIAService, SIAService>();
+builder.Services.AddScoped<ISiaProgressService, SiaProgressService>();
 builder.Services.AddScoped<IMilestoneService, MilestoneService>();
 builder.Services.AddScoped<ILogbookService, LogbookService>();
 builder.Services.AddScoped<IWallchartService, WallchartService>();
