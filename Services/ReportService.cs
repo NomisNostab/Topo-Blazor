@@ -284,7 +284,9 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 2].CellStyle = headingStyle;
                 sheet.SetRowHeight(rowNumber, 30);
 
-                rowNumber = RoomForLogo(sheet, rowNumber, 70);
+                // rows 1 to 3 are 100 points tall
+                rowNumber = RoomForLogo(sheet, rowNumber, 100);
+                var headerRows = rowNumber;
 
                 void Block(string heading)
                 {
@@ -383,9 +385,9 @@ namespace Topo.Services
                 sheet.SetColumnWidth(1, questionWidth);
                 sheet.SetColumnWidth(2, answerWidth);
                 var pages = SetUpPage(sheet, rowNumber, 2);
-                // a second page says whose it is
+                // a second page says whose it is; the rows include the one the logo sits in, or its top is cut off
                 if (pages > 1)
-                    sheet.PageSetup.PrintTitleRows = "$2:$3";
+                    sheet.PageSetup.PrintTitleRows = $"$1:${headerRows}";
                 printed.Add((project.MemberId, sheet, pages));
             }
 
