@@ -47,30 +47,6 @@ namespace Topo.Services
             lead
         }
 
-        private enum wallchartGroups
-        {
-            intro,
-            participate,
-            assist,
-            lead,
-            oasCore,
-            oasLand,
-            oasWater,
-            oasProgression,
-            siaOdd,
-            siaEven,
-            leadershipCourse,
-            adventurousJourney,
-            personalReflection,
-            peakAward
-        }
-
-        private Color[] MilestoneColours1 = new Color[]
-        {
-            Color.FromArgb(236, 82, 82),
-            Color.FromArgb(156, 242, 80)
-        };
-
         private Color[] MilestoneColours2 = new Color[]
         {
             Color.FromArgb(236, 82, 82),
@@ -1705,14 +1681,14 @@ namespace Topo.Services
 
         public IWorkbook GenerateWallchartWorkbook(List<WallchartItemModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput, bool breakByPatrol = false)
         {
-            var worksheetAnswersGroupedByTemplate = wallchartEntries.GroupBy(wa => breakByPatrol ? wa.MemberPatrol : "");
-            var workbook = CreateWorkbookWithSheets(worksheetAnswersGroupedByTemplate.Count());
+            var wallchartSheets = WallchartLayout.Build(wallchartEntries, breakByPatrol);
+            var workbook = CreateWorkbookWithSheets(wallchartSheets.Count);
             var worksheetIndex = 0;
 
-            foreach (var templatAnswerGroup in worksheetAnswersGroupedByTemplate.OrderBy(a => a.Key))
+            foreach (var wallchartSheet in wallchartSheets)
             {
                 IWorksheet sheet = AddLogoToSheet(workbook, worksheetIndex, groupName, section, 42);
-                sheet.Name = string.IsNullOrEmpty(templatAnswerGroup.Key) ? "Unit" : templatAnswerGroup.Key;
+                sheet.Name = string.IsNullOrEmpty(wallchartSheet.Patrol) ? "Unit" : wallchartSheet.Patrol;
                 int rowNumber = 1;
                 int columnNumber = 1;
 
@@ -1729,7 +1705,7 @@ namespace Topo.Services
                 // Add Title
                 rowNumber++;
                 var title = sheet.Range[rowNumber, 2];
-                title.Text = $"{(string.IsNullOrEmpty(templatAnswerGroup.Key) ? "" : templatAnswerGroup.Key) + " "}Group Life Wallchart as at {DateTime.Now.ToShortDateString()}";
+                title.Text = $"{(string.IsNullOrEmpty(wallchartSheet.Patrol) ? "" : wallchartSheet.Patrol) + " "}Group Life Wallchart as at {DateTime.Now.ToShortDateString()}";
                 title.CellStyle = headingStyle;
                 sheet.Range[rowNumber, 2, rowNumber, 42].Merge();
                 sheet.SetRowHeight(rowNumber, 25);
@@ -1838,101 +1814,21 @@ namespace Topo.Services
                 sheet.Range[rowNumber, 41].Text = " PEAK AWARD";
                 sheet.SetRowHeight(rowNumber, 120);
 
-                foreach (var wallchartEntry in templatAnswerGroup.OrderBy(x => x.MemberName))
+                foreach (var wallchartRow in wallchartSheet.Rows)
                 {
                     rowNumber++;
-                    sheet.Range[rowNumber, 1].Text = wallchartEntry.MemberName;
-                    SetWallchartCell(sheet.Range[rowNumber, 2], 0, wallchartGroups.intro, wallchartEntry.IntroToScouting);
-                    SetWallchartCell(sheet.Range[rowNumber, 3], 0, wallchartGroups.intro, wallchartEntry.IntroToSection);
-                    sheet.Range[rowNumber, 4].Number = wallchartEntry.YearsOfService ?? 0;
-                    if (wallchartEntry.Milestone1Presented.HasValue)
+                    sheet.Range[rowNumber, 1].Text = wallchartRow.Name;
+                    var column = 2;
+                    foreach (var cell in wallchartRow.Cells)
                     {
-                        sheet.Range[rowNumber, 5].DateTime = wallchartEntry.Milestone1Presented.Value;
-                        sheet.Range[rowNumber, 5, rowNumber, 9].Merge();
-                        sheet.Range[rowNumber, 5, rowNumber, 9].CellStyle.Color = MilestoneColours1[1];
+                        SetWallchartCell(sheet.Range[rowNumber, column], cell);
+                        // a milestone's date stands for all its columns
+                        if (cell.Span > 1)
+                            sheet.Range[rowNumber, column, rowNumber, column + cell.Span - 1].Merge();
+                        if (cell.Colour != null)
+                            sheet.Range[rowNumber, column, rowNumber, column + cell.Span - 1].CellStyle.Color = Colour(cell.Colour);
+                        column += cell.Span;
                     }
-                    else if (wallchartEntry.Milestone1Awarded.HasValue)
-                    {
-                        sheet.Range[rowNumber, 5].Text = $"{wallchartEntry.Milestone1Awarded.Value.ToShortDateString()}*";
-                        sheet.Range[rowNumber, 5, rowNumber, 9].Merge();
-                        sheet.Range[rowNumber, 5, rowNumber, 9].CellStyle.Color = MilestoneColours1[1];
-                    }
-                    else
-                    {
-                        SetWallchartCell(sheet.Range[rowNumber, 5], 1, wallchartGroups.participate, wallchartEntry.Milestone1Community);
-                        SetWallchartCell(sheet.Range[rowNumber, 6], 1, wallchartGroups.participate, wallchartEntry.Milestone1Outdoors);
-                        SetWallchartCell(sheet.Range[rowNumber, 7], 1, wallchartGroups.participate, wallchartEntry.Milestone1Creative);
-                        SetWallchartCell(sheet.Range[rowNumber, 8], 1, wallchartGroups.participate, wallchartEntry.Milestone1PersonalGrowth);
-                        SetWallchartCell(sheet.Range[rowNumber, 9], 1, wallchartGroups.lead, wallchartEntry.Milestone1Lead);
-                    }
-
-                    if (wallchartEntry.Milestone2Presented.HasValue)
-                    {
-                        sheet.Range[rowNumber, 10].DateTime = wallchartEntry.Milestone2Presented.Value;
-                        sheet.Range[rowNumber, 10, rowNumber, 14].Merge();
-                        sheet.Range[rowNumber, 10, rowNumber, 14].CellStyle.Color = MilestoneColours1[1];
-                    }
-                    else if (wallchartEntry.Milestone2Awarded.HasValue)
-                    {
-                        sheet.Range[rowNumber, 10].Text = $"{wallchartEntry.Milestone2Awarded.Value.ToShortDateString()}*";
-                        sheet.Range[rowNumber, 10, rowNumber, 14].Merge();
-                        sheet.Range[rowNumber, 10, rowNumber, 14].CellStyle.Color = MilestoneColours1[1];
-                    }
-                    else
-                    {
-                        SetWallchartCell(sheet.Range[rowNumber, 10], 2, wallchartGroups.participate, wallchartEntry.Milestone2Community);
-                        SetWallchartCell(sheet.Range[rowNumber, 11], 2, wallchartGroups.participate, wallchartEntry.Milestone2Outdoors);
-                        SetWallchartCell(sheet.Range[rowNumber, 12], 2, wallchartGroups.participate, wallchartEntry.Milestone2Creative);
-                        SetWallchartCell(sheet.Range[rowNumber, 13], 2, wallchartGroups.participate, wallchartEntry.Milestone2PersonalGrowth);
-                        SetWallchartCell(sheet.Range[rowNumber, 14], 2, wallchartGroups.lead, wallchartEntry.Milestone2Lead);
-                    }
-
-                    if (wallchartEntry.Milestone3Presented.HasValue)
-                    {
-                        sheet.Range[rowNumber, 15].DateTime = wallchartEntry.Milestone3Presented.Value;
-                        sheet.Range[rowNumber, 15, rowNumber, 19].Merge();
-                        sheet.Range[rowNumber, 15, rowNumber, 19].CellStyle.Color = MilestoneColours1[1];
-                    }
-                    else if (wallchartEntry.Milestone3Awarded.HasValue)
-                    {
-                        sheet.Range[rowNumber, 15].Text = $"{wallchartEntry.Milestone3Awarded.Value.ToShortDateString()}*";
-                        sheet.Range[rowNumber, 15, rowNumber, 19].Merge();
-                        sheet.Range[rowNumber, 15, rowNumber, 19].CellStyle.Color = MilestoneColours1[1];
-                    }
-                    else
-                    {
-                        SetWallchartCell(sheet.Range[rowNumber, 15], 3, wallchartGroups.participate, wallchartEntry.Milestone3Community);
-                        SetWallchartCell(sheet.Range[rowNumber, 16], 3, wallchartGroups.participate, wallchartEntry.Milestone3Outdoors);
-                        SetWallchartCell(sheet.Range[rowNumber, 17], 3, wallchartGroups.participate, wallchartEntry.Milestone3Creative);
-                        SetWallchartCell(sheet.Range[rowNumber, 18], 3, wallchartGroups.participate, wallchartEntry.Milestone3PersonalGrowth);
-                        SetWallchartCell(sheet.Range[rowNumber, 19], 3, wallchartGroups.lead, wallchartEntry.Milestone3Lead);
-                    }
-                    SetWallchartCell(sheet.Range[rowNumber, 20], 0, wallchartGroups.oasCore, wallchartEntry.OASBushcraftStage);
-                    SetWallchartCell(sheet.Range[rowNumber, 21], 0, wallchartGroups.oasCore, wallchartEntry.OASBushwalkingStage);
-                    SetWallchartCell(sheet.Range[rowNumber, 22], 0, wallchartGroups.oasCore, wallchartEntry.OASCampingStage);
-                    SetWallchartCell(sheet.Range[rowNumber, 23], 0, wallchartGroups.oasLand, wallchartEntry.OASAlpineStage);
-                    SetWallchartCell(sheet.Range[rowNumber, 24], 0, wallchartGroups.oasLand, wallchartEntry.OASCyclingStage);
-                    SetWallchartCell(sheet.Range[rowNumber, 25], 0, wallchartGroups.oasLand, wallchartEntry.OASVerticalStage);
-                    SetWallchartCell(sheet.Range[rowNumber, 26], 0, wallchartGroups.oasWater, wallchartEntry.OASAquaticsStage);
-                    SetWallchartCell(sheet.Range[rowNumber, 27], 0, wallchartGroups.oasWater, wallchartEntry.OASBoatingStage);
-                    SetWallchartCell(sheet.Range[rowNumber, 28], 0, wallchartGroups.oasWater, wallchartEntry.OASPaddlingStage);
-                    SetWallchartCell(sheet.Range[rowNumber, 29], 0, wallchartGroups.oasProgression, wallchartEntry.OASStageProgressions);
-                    SetWallchartCell(sheet.Range[rowNumber, 30], 0, wallchartGroups.oasProgression, wallchartEntry.NightsCamped);
-                    SetWallchartCell(sheet.Range[rowNumber, 31], 0, wallchartGroups.oasProgression, wallchartEntry.KMsHiked);
-                    SetWallchartCell(sheet.Range[rowNumber, 32], 0, wallchartGroups.siaOdd, wallchartEntry.SIAAdventureSport);
-                    SetWallchartCell(sheet.Range[rowNumber, 33], 0, wallchartGroups.siaEven, wallchartEntry.SIAArtsLiterature);
-                    SetWallchartCell(sheet.Range[rowNumber, 34], 0, wallchartGroups.siaOdd, wallchartEntry.SIAEnvironment);
-                    SetWallchartCell(sheet.Range[rowNumber, 35], 0, wallchartGroups.siaEven, wallchartEntry.SIAStemInnovation);
-                    SetWallchartCell(sheet.Range[rowNumber, 36], 0, wallchartGroups.siaOdd, wallchartEntry.SIAGrowthDevelopment);
-                    SetWallchartCell(sheet.Range[rowNumber, 37], 0, wallchartGroups.siaEven, wallchartEntry.SIACreatingABetterWorld);
-                    SetWallchartCell(sheet.Range[rowNumber, 38], 0, wallchartGroups.leadershipCourse, wallchartEntry.LeadershipCourse);
-                    SetWallchartCell(sheet.Range[rowNumber, 39], 0, wallchartGroups.adventurousJourney, wallchartEntry.AdventurousJourney);
-                    SetWallchartCell(sheet.Range[rowNumber, 40], 0, wallchartGroups.personalReflection, wallchartEntry.PersonalReflection);
-                    // Percentage complete until the award itself is granted, then the awarded date.
-                    if (wallchartEntry.PeakAwardAwarded.HasValue)
-                        SetWallchartCell(sheet.Range[rowNumber, 41], 0, wallchartGroups.peakAward, wallchartEntry.PeakAwardAwarded);
-                    else
-                        SetWallchartCell(sheet.Range[rowNumber, 41], 0, wallchartGroups.peakAward, wallchartEntry.PeakAward);
                     sheet.Range[rowNumber, 1, rowNumber, 41].BorderAround();
                     sheet.Range[rowNumber, 1, rowNumber, 41].BorderInside();
                     sheet.Range[rowNumber, 2, rowNumber, 41].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
@@ -2714,100 +2610,33 @@ namespace Topo.Services
             return Color.White;
         }
 
-        private void SetWallchartCell(IRange cell, int currentLevel, wallchartGroups wallchartGroups, int count)
-        {
-            if (count > 0)
-                cell.Number = count;
-            SetWallchartCellBackground(cell, currentLevel, wallchartGroups, count);
-        }
+        private static Color Colour(string hex) =>
+            Color.FromArgb(Convert.ToInt32(hex.Substring(1, 2), 16), Convert.ToInt32(hex.Substring(3, 2), 16), Convert.ToInt32(hex.Substring(5, 2), 16));
 
-        private void SetWallchartCell(IRange cell, int currentLevel, wallchartGroups wallchartGroups, DateTime? dateAwarded)
+        private void SetWallchartCell(IRange range, WallchartCell cell)
         {
-            if (dateAwarded.HasValue)
+            switch (cell.Kind)
             {
-                cell.DateTime = dateAwarded.Value;
-                cell.NumberFormat = "dd/MM/yy";
-            }
-            SetWallchartCellBackground(cell, currentLevel, wallchartGroups, 0);
-        }
-
-        private void SetWallchartCell(IRange cell, int currentLevel, wallchartGroups wallchartGroups, double percent)
-        {
-            cell.Number = percent;
-            cell.NumberFormat = "0%";
-            SetWallchartCellBackground(cell, currentLevel, wallchartGroups, 0);
-        }
-
-        private void SetWallchartCellBackground(IRange cell, int currentLevel, wallchartGroups wallchartGroup, int count)
-        {
-            switch (wallchartGroup)
-            {
-                case wallchartGroups.intro:
-                    cell.CellStyle.Color = Color.Gainsboro;
+                case WallchartCellKind.Count:
+                    if (cell.Count > 0)
+                        range.Number = cell.Count;
                     break;
-                case wallchartGroups.participate:
-                    switch (currentLevel)
-                    {
-                        case 1:
-                            if (count == 6)
-                                cell.CellStyle.Color = MilestoneColours6[6];
-                            break;
-                        case 2:
-                            if (count == 5)
-                                cell.CellStyle.Color = MilestoneColours5[5];
-                            break;
-                        case 3:
-                            if (count >= 4)
-                                cell.CellStyle.Color = MilestoneColours4[4];
-                            break;
-                    }
+                case WallchartCellKind.Number:
+                    range.Number = cell.Count;
                     break;
-                case wallchartGroups.lead:
-                    switch (currentLevel)
-                    {
-                        case 1:
-                            if (count == 2)
-                                cell.CellStyle.Color = MilestoneColours2[2];
-                            else
-                                cell.CellStyle.Color = Color.Gainsboro;
-                            break;
-                        case 2:
-                            if (count == 4)
-                                cell.CellStyle.Color = MilestoneColours4[4];
-                            else
-                                cell.CellStyle.Color = Color.Gainsboro;
-                            break;
-                        case 3:
-                            if (count >= 6)
-                                cell.CellStyle.Color = MilestoneColours6[6];
-                            else
-                                cell.CellStyle.Color = Color.Gainsboro;
-                            break;
-                    }
+                case WallchartCellKind.Date:
+                    range.DateTime = cell.Date!.Value;
+                    range.NumberFormat = "dd/MM/yy";
                     break;
-                case wallchartGroups.oasCore:
-                case wallchartGroups.adventurousJourney:
-                    cell.CellStyle.Color = Color.DarkSeaGreen;
+                case WallchartCellKind.PresentedDate:
+                    range.DateTime = cell.Date!.Value;
                     break;
-                case wallchartGroups.oasLand:
-                case wallchartGroups.personalReflection:
-                    cell.CellStyle.Color = Color.LightSalmon;
+                case WallchartCellKind.AwardedDate:
+                    range.Text = $"{cell.Date!.Value.ToShortDateString()}*";
                     break;
-                case wallchartGroups.oasWater:
-                case wallchartGroups.leadershipCourse:
-                    cell.CellStyle.Color = Color.LightBlue;
-                    break;
-                case wallchartGroups.oasProgression:
-                    cell.CellStyle.Color = Color.Gainsboro;
-                    break;
-                case wallchartGroups.siaOdd:
-                    cell.CellStyle.Color = Color.MistyRose;
-                    break;
-                case wallchartGroups.siaEven:
-                    cell.CellStyle.Color = Color.LightYellow;
-                    break;
-                case wallchartGroups.peakAward:
-                    cell.CellStyle.Color = Color.Thistle;
+                case WallchartCellKind.Percent:
+                    range.Number = cell.Fraction;
+                    range.NumberFormat = "0%";
                     break;
             }
         }
