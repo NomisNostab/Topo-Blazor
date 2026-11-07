@@ -51,9 +51,11 @@ namespace Topo.Services
                 input.AreasRequired = requirement.SIAMinAreasRequired;
             }
 
+            // the Reading line names each Scout the short way, as the reports do
+            var shortNames = SiaProgressBuilder.ShortNames(members);
             for (var i = 0; i < members.Count; i++)
             {
-                progress?.Invoke($"{members[i].first_name} {members[i].last_name} ({i + 1} of {members.Count})");
+                progress?.Invoke($"{(shortNames.TryGetValue(members[i].id, out var shortName) ? shortName : members[i].first_name)} ({i + 1} of {members.Count})");
                 input.Members.Add(new SiaMemberInput
                 {
                     MemberId = members[i].id,

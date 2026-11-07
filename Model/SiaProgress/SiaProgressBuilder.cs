@@ -88,6 +88,38 @@ namespace Topo.Model.SiaProgress
                 })
                 .ToList();
 
+        // First name only unless that is shared; where several Scouts share a first name the first letters of their surname are added
+        // (one more letter at a time) until each is different. Anyone still identical gets a number. The same as the sign in sheet.
+        public static Dictionary<string, string> ShortNames(IEnumerable<MemberListModel> members)
+        {
+            var names = new Dictionary<string, string>();
+            string Left(string? value, int length) { value ??= ""; return value.Length <= length ? value : value.Substring(0, length); }
+
+            foreach (var sameFirstName in members.GroupBy(m => (m.first_name ?? "").Trim(), StringComparer.OrdinalIgnoreCase))
+            {
+                var people = sameFirstName.ToList();
+                var first = people[0].first_name?.Trim() ?? "";
+                if (people.Count == 1)
+                {
+                    names[people[0].id] = first;
+                    continue;
+                }
+
+                var longest = people.Max(p => (p.last_name ?? "").Length);
+                var letters = 1;
+                while (letters < longest && people.GroupBy(p => Left(p.last_name, letters), StringComparer.OrdinalIgnoreCase).Any(g => g.Count() > 1))
+                    letters++;
+
+                foreach (var same in people.GroupBy(p => $"{first} {Left(p.last_name, letters)}".Trim(), StringComparer.OrdinalIgnoreCase))
+                {
+                    var duplicates = same.ToList();
+                    for (var i = 0; i < duplicates.Count; i++)
+                        names[duplicates[i].id] = duplicates.Count > 1 ? $"{same.Key} ({i + 1})" : same.Key;
+                }
+            }
+            return names;
+        }
+
         // The unit leader first, then by patrol (people without one last); within a patrol the patrol leader, then the
         // assistant patrol leader, then everyone else by name. The same order as the sign in sheet.
         public static List<MemberListModel> InPatrolOrder(IEnumerable<MemberListModel> members) =>
