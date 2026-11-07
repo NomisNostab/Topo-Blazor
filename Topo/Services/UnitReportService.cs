@@ -5,6 +5,8 @@ namespace Topo.Services
     public interface IUnitReportService
     {
         public Task<UnitReportModel> GetUnitReport(string unitId, DateTime from, DateTime to, string[] calendarIds, Action<string>? progress = null);
+        // Every event in the range from the chosen calendars, in full (attendance, logbook data) with its scope
+        public Task<List<UnitEventInput>> GetEventsForCalendars(DateTime from, DateTime to, string[] calendarIds);
     }
 
     public class UnitReportService : IUnitReportService
@@ -13,9 +15,6 @@ namespace Topo.Services
         private readonly ITerrainAPIService _terrainAPIService;
         private readonly IMembersService _membersService;
         private readonly IProgramService _programService;
-
-        // award id -> title; the same for everyone so fetched once
-        private static Dictionary<string, string>? _awardNames;
 
         public UnitReportService(StorageService storageService, ITerrainAPIService terrainAPIService, IMembersService membersService, IProgramService programService)
         {
@@ -41,7 +40,7 @@ namespace Topo.Services
             input.CurrentMembers = await _membersService.GetMembersAsync(unitId);
 
             progress?.Invoke("events");
-            input.Events = await GetEvents(from, to, calendarIds);
+            input.Events = await GetEventsForCalendars(from, to, calendarIds);
 
             // Badges come from each current youth member's records
             var youth = input.CurrentMembers.Where(m => !UnitReportBuilder.IsLeader(m)).ToList();
@@ -59,13 +58,13 @@ namespace Topo.Services
 
             progress?.Invoke("additional awards");
             input.AdditionalAwards = await _terrainAPIService.GetUnitAdditionalAwardAchievements(unitId);
-            input.AwardNames = await GetAwardNames();
+            input.AwardNames = await AdditionalAwardNames.Get(_terrainAPIService);
 
             return UnitReportBuilder.Build(input);
         }
 
         // Terrain only shows the calendars the user has switched on, so they are switched to the chosen ones and back
-        private async Task<List<UnitEventInput>> GetEvents(DateTime from, DateTime to, string[] calendarIds)
+        public async Task<List<UnitEventInput>> GetEventsForCalendars(DateTime from, DateTime to, string[] calendarIds)
         {
             await _programService.SetCalendar(calendarIds);
             try
@@ -99,16 +98,6 @@ namespace Topo.Services
                 }
             }
             return events;
-        }
-
-        private async Task<Dictionary<string, string>> GetAwardNames()
-        {
-            if (_awardNames == null)
-            {
-                var specifications = await _terrainAPIService.GetAdditionalAwardSpecifications();
-                _awardNames = specifications.AwardDescriptions.GroupBy(a => a.id).ToDictionary(g => g.Key, g => g.First().title);
-            }
-            return _awardNames;
         }
     }
 }

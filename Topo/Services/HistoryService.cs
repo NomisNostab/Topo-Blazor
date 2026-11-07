@@ -13,9 +13,6 @@ namespace Topo.Services
         private readonly StorageService _storageService;
         private readonly ITerrainAPIService _terrainAPIService;
 
-        // award id -> title; the same for everyone so fetched once
-        private static Dictionary<string, string>? _awardNames;
-
         public HistoryService(StorageService storageService, ITerrainAPIService terrainAPIService)
         {
             _storageService = storageService;
@@ -40,7 +37,7 @@ namespace Topo.Services
             input.IntroToSection = await _terrainAPIService.GetIntroductionToSectionResultsForMember(memberId);
             input.AllAchievements = await _terrainAPIService.GetAllAchievementsForMember(memberId);
             input.UnitNames = await GetUnitNames();
-            input.AwardNames = await GetAwardNames();
+            input.AwardNames = await AdditionalAwardNames.Get(_terrainAPIService);
             input.Logbook = await GetLogbook(memberId);
 
             return ScoutingHistoryBuilder.Build(input);
@@ -72,16 +69,6 @@ namespace Topo.Services
                     names[unit.id] = unit.name;
             }
             return names;
-        }
-
-        private async Task<Dictionary<string, string>> GetAwardNames()
-        {
-            if (_awardNames == null)
-            {
-                var specifications = await _terrainAPIService.GetAdditionalAwardSpecifications();
-                _awardNames = specifications.AwardDescriptions.GroupBy(a => a.id).ToDictionary(g => g.Key, g => g.First().title);
-            }
-            return _awardNames;
         }
 
         // The logbook needs the member's profile taken on, as the logbook report does

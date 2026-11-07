@@ -19,7 +19,8 @@
         TermProgram,
         ProgramIdeas,
         ScoutingHistory,
-        UnitReport
+        UnitReport,
+        SectionReport
     }
 
     public enum OutputType
