@@ -60,6 +60,10 @@ main {
         height: 100vh;
         position: sticky;
         top: 0;
+        /* When there are enough nav links to exceed one viewport height (e.g. the full leader
+           menu), scroll them inside this box instead of letting them overflow past its bottom
+           edge onto the page's plain white background - see issue #197. */
+        overflow-y: auto;
     }
 
     .top-row {
