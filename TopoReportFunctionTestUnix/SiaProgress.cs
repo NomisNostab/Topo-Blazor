@@ -237,6 +237,24 @@ namespace TopoReportFunctionTest
         }
 
         [TestMethod]
+        public void TheReadingLineNamesScoutsTheShortWay()
+        {
+            MemberListModel Scout(string id, string first, string last) => new MemberListModel { id = id, first_name = first, last_name = last };
+            var names = SiaProgressBuilder.ShortNames(new[]
+            {
+                Scout("1", "Amy", "Chen"), Scout("2", "Sam", "Brown"), Scout("3", "Sam", "Black"), Scout("4", "Pat", "Lee"), Scout("5", "Pat", "Lee"), Scout("6", "Eve", "")
+            });
+
+            Assert.AreEqual("Amy", names["1"]); // a first name that is not shared stands alone
+            Assert.AreEqual("Sam Br", names["2"]); // shared ones get letters of the surname until they differ
+            Assert.AreEqual("Sam Bl", names["3"]);
+            Assert.AreEqual("Pat Lee (1)", names["4"]); // the same name twice is numbered
+            Assert.AreEqual("Pat Lee (2)", names["5"]);
+            Assert.AreEqual("Eve", names["6"]);
+            Assert.AreEqual(0, SiaProgressBuilder.ShortNames(new List<MemberListModel>()).Count);
+        }
+
+        [TestMethod]
         public void TheUnitIsInPatrolOrderLikeTheSignInSheet()
         {
             MemberListModel Scout(string first, string patrol, string duty = "") =>
