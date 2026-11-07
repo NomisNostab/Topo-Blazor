@@ -109,6 +109,20 @@ namespace TopoReportFunctionTest
         }
 
         [TestMethod]
+        public void SignInSheet_ThePatrolColumnIsWideEnoughForTheLongestPatrolName()
+        {
+            SetEnvironment.SetSyncfusionLicense();
+            var members = JsonConvert.DeserializeObject<List<Topo.Model.Members.MemberListModel>>(File.ReadAllText("ReportData/SignInGroup.json"))!;
+            members[0].patrol_name = "Tassie Tigers (Yellow)";
+            var options = new Topo.Model.Program.SignInSheetOptions { UseTimeInOutSignature = false, IncludeParticipationColumns = true };
+
+            var sheet = new Topo.Services.ReportService().GenerateSignInSheetWorkbook(members, "Group", "scout", "Unit", "Camp", options).Worksheets[0];
+
+            // 22 characters need more than 22 units of width, or the text runs into the Role column
+            Assert.IsTrue(sheet.GetColumnWidth(2) >= "Tassie Tigers (Yellow)".Length * 1.1, $"the patrol column is {sheet.GetColumnWidth(2)} wide");
+        }
+
+        [TestMethod]
         public void SignInSheet_TheTitleRowIsTallEnoughForALongEventName()
         {
             SetEnvironment.SetSyncfusionLicense();

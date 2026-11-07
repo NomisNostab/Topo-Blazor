@@ -1094,6 +1094,13 @@ namespace Topo.Services
             // landscape, and whatever page width is left over (in column width units) is shared out so the
             // sheet fills the page instead of leaving a gap on the right.
             sheet.UsedRange.AutofitColumns();
+            // The PDF drops the border to the next column from text it judges too wide for its cell, which it does at about
+            // 1.1 units of width for each character: "Tassie Tigers (Yellow)" (22 characters) in a column 24.1 wide lost the
+            // border to the Role column. So the name and patrol columns are never narrower than that with a little to spare.
+            var longestName = memberListModel.Select(m => displayNames[m.id].Length).DefaultIfEmpty(0).Max();
+            var longestPatrol = memberListModel.Select(m => (m.patrol_name ?? "").Length).DefaultIfEmpty(0).Max();
+            sheet.SetColumnWidth(1, Math.Max(sheet.GetColumnWidth(1), longestName * 1.15 + 0.5));
+            sheet.SetColumnWidth(2, Math.Max(sheet.GetColumnWidth(2), longestPatrol * 1.15 + 0.5));
             const double portraitPageWidth = 97;
             const double landscapePageWidth = 140;
             const double tickColumnWidth = 5; // the narrow columns with sideways headings
