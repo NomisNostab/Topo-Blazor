@@ -194,6 +194,49 @@ namespace TopoReportFunctionTest
         }
 
         [TestMethod]
+        public void TheProjectsToPickFromAreThisSectionsOldestFirstWithTheirStatus()
+        {
+            var results = new GetSIAResultsModel
+            {
+                results = new[]
+                {
+                    Project("p2", "Compost", "sia_environment", "awarded", month: 4),
+                    Project("p1", "", "sia_adventure_sport", "in_progress", month: 2),
+                    Project("p3", "Cub project", "sia_environment", "awarded", section: "cub"),
+                    Project("p4", "Robot", "sia_stem_innovation", "pending_review", section: "Scout", month: 5) // section named as Terrain may write it
+                }
+            };
+
+            var choices = SiaProgressBuilder.ProjectChoices(results, "scout");
+
+            CollectionAssert.AreEqual(new[] { "p1", "p2", "p4" }, choices.Select(c => c.Id).ToList());
+            CollectionAssert.AreEqual(new[] { "(no name yet) - In progress", "Compost - Awarded", "Robot - Pending review" }, choices.Select(c => c.Label).ToList());
+            Assert.AreEqual(0, SiaProgressBuilder.ProjectChoices(new GetSIAResultsModel(), "scout").Count);
+            Assert.AreEqual(0, SiaProgressBuilder.ProjectChoices(results, "").Count);
+        }
+
+        [TestMethod]
+        public void TheSummaryIsWordedAgainstTheAwardWhenTheSectionHasOne()
+        {
+            var input = Input();
+            input.IncludeSummary = true;
+            var report = SiaProgressBuilder.Build(input);
+            var sam = report.Summary.Single(s => s.MemberName == "Sam Sample");
+
+            Assert.AreEqual("2/6", report.CompletedText(sam));
+            Assert.AreEqual("2/3", report.AreasText(sam));
+            StringAssert.StartsWith(report.SummaryNote(), "The Australian Scout Award asks for 6 Special Interest Area projects over at least 3 areas.");
+
+            // a section with no top award to compare with just gives the counts
+            input.SiaRequired = 0;
+            input.AreasRequired = 0;
+            var plain = SiaProgressBuilder.Build(input);
+            Assert.AreEqual("2", plain.CompletedText(sam));
+            Assert.AreEqual("2", plain.AreasText(sam));
+            Assert.IsFalse(plain.SummaryNote().Contains("asks for"));
+        }
+
+        [TestMethod]
         public void TheUnitIsInPatrolOrderLikeTheSignInSheet()
         {
             MemberListModel Scout(string first, string patrol, string duty = "") =>
