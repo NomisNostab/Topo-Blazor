@@ -1,0 +1,10 @@
+@* Shared tab bar for Program and Program Ideas. Match="NavLinkMatch.All" on "program" stops it
+   staying highlighted on the Program Ideas page too (its URL starts with "program/..."). *@
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+        <NavLink class="nav-link" href="program" Match="NavLinkMatch.All">Calendar</NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink class="nav-link" href="program/ideas">Program Ideas</NavLink>
+    </li>
+</ul>
