@@ -37,10 +37,13 @@ namespace Topo.Services
         {
             var data = new ReadyToSubmitData();
             var ordered = ReadyToSubmitBuilder.InPatrolOrder(youth);
+            // the Reading line names each Scout the short way, as the report does
+            var named = ordered.Select(m => new ReadyMemberInput { MemberId = m.id, MemberName = $"{m.first_name} {m.last_name}".Trim(), FirstName = m.first_name, LastName = m.last_name }).ToList();
+            var shortNames = ReadyToSubmitBuilder.DisplayNames(named, false);
             for (var i = 0; i < ordered.Count; i++)
             {
                 var member = ordered[i];
-                progress?.Invoke($"{member.first_name} {member.last_name} ({i + 1} of {ordered.Count})");
+                progress?.Invoke($"{shortNames[named[i]]} ({i + 1} of {ordered.Count})");
                 var responses = await Task.WhenAll(Types.Select(type => _terrainAPIService.GetAchievementsJsonAsync(member.id, type)));
                 data.Members.Add(new ReadyMemberInput
                 {
