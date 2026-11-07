@@ -226,9 +226,9 @@ namespace Topo.Services
                 {
                     rowNumber++;
                     sheet.Range[rowNumber, 1].Text = row.MemberName;
-                    sheet.Range[rowNumber, 2].Text = report.SiaRequired > 0 ? $"{row.Completed}/{report.SiaRequired}" : row.Completed.ToString();
+                    sheet.Range[rowNumber, 2].Text = report.CompletedText(row);
                     sheet.Range[rowNumber, 3].Text = row.InProgress.ToString();
-                    sheet.Range[rowNumber, 4].Text = report.AreasRequired > 0 ? $"{row.AreasCompleted}/{report.AreasRequired}" : row.AreasCompleted.ToString();
+                    sheet.Range[rowNumber, 4].Text = report.AreasText(row);
                     sheet.Range[rowNumber, 2, rowNumber, 4].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                 }
                 if (report.Summary.Count == 0)
@@ -239,9 +239,7 @@ namespace Topo.Services
 
                 rowNumber += 2;
                 sheet.Range[rowNumber, 1, rowNumber, 4].Merge();
-                sheet.Range[rowNumber, 1].Text = report.SiaRequired > 0
-                    ? $"The {report.AwardName} asks for {report.SiaRequired} Special Interest Area projects over at least {report.AreasRequired} areas. Completed projects are awarded ones; in progress is every other project started in this section."
-                    : "Completed projects are awarded ones; in progress is every other project started in this section.";
+                sheet.Range[rowNumber, 1].Text = report.SummaryNote();
                 sheet.Range[rowNumber, 1].CellStyle.WrapText = true;
                 sheet.Range[rowNumber, 1].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
                 sheet.SetRowHeight(rowNumber, 45);
