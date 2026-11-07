@@ -28,10 +28,15 @@ namespace Topo.Controller
 
         public ProgramIdeasPageViewModel model = new ProgramIdeasPageViewModel();
 
+        private bool _select2Bound;
+
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (firstRender)
+            // select2 is set up once the calendars are in the list, so a calendar already chosen (the only one there is)
+            // shows as selected
+            if (!_select2Bound && model.Calendars.Any())
             {
+                _select2Bound = true;
                 await JS.InvokeVoidAsync("BindSelect2");
             }
         }
@@ -46,6 +51,7 @@ namespace Topo.Controller
 
             model.GroupName = _storageService.GroupNameDisplay;
             model.Calendars = await _programService.GetCalendars();
+            model.SelectTheOnlyCalendar();
         }
 
         public async Task<bool> GetSelections()
