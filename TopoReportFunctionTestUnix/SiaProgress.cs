@@ -260,6 +260,8 @@ namespace TopoReportFunctionTest
 
             Assert.AreEqual(4, document.Pages.Count); // 2 + 1 + 1
             StringAssert.Contains(document.Pages[1].ExtractText(), "Wordy Scout");
+            // the heading rows repeat from the first row, which is also where the logo hangs from
+            StringAssert.Contains(document.Pages[1].ExtractText(), "Sample Group");
         }
 
         [TestMethod]
