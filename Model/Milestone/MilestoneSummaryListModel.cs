@@ -3,8 +3,13 @@
     public class MilestoneSummaryListModel
     {
         public string memberName { get; set; } = string.Empty;
+        public string memberPatrol { get; set; } = string.Empty;
         public int currentLevel { get; set; }
         public int percentComplete { get; set; }
+        // True once Milestone 3 itself is awarded/approved - there's no "Milestone 4" to move on to,
+        // so currentLevel stays at 3 either way. The report uses this to split "still working on
+        // Milestone 3" from "has completed Milestone 3" into separate sections.
+        public bool milestone3Awarded { get; set; }
         public int milestone1ParticipateCommunity { get; set; }
         public int milestone1ParticipateOutdoors { get; set; }
         public int milestone1ParticipateCreative { get; set; }

@@ -31,6 +31,12 @@ namespace Topo.Services
                 MilestoneResult milestone1 = new MilestoneResult();
                 MilestoneResult milestone2 = new MilestoneResult();
                 MilestoneResult milestone3 = new MilestoneResult();
+                // "Awarded" here also covers Terrain's "approved" status: once a leader has approved
+                // a milestone it's effectively done (awarding is just the formal presentation step
+                // that follows later), so a member should move on to progress at the next milestone
+                // as soon as the current one is approved, not only once it's been formally awarded.
+                // See IsAwardedOrApproved - the same "awarded" + "approved" pairing is already used
+                // for OAS elsewhere in this app (OASService/ProgressService).
                 bool milestone1Awarded = false;
                 bool milestone2Awarded = false;
                 bool milestone3Awarded = false;
@@ -45,20 +51,20 @@ namespace Topo.Services
                     {
                         case 1:
                             milestone1 = milestoneResult;
-                            milestone1Awarded = milestone1.status == "awarded";
+                            milestone1Awarded = IsAwardedOrApproved(milestone1.status);
                             milestone1Skipped = milestone1.status == "not_required";
                             currentLevel = (milestone1Awarded || milestone1Skipped) ? 2 : 1;
                             break;
                         case 2:
                             milestone2 = milestoneResult;
-                            milestone2Awarded = milestone2.status == "awarded";
+                            milestone2Awarded = IsAwardedOrApproved(milestone2.status);
                             milestone2Skipped = milestone2.status == "not_required";
                             currentLevel = (milestone1Awarded || milestone1Skipped) ? 2 : 1;
                             currentLevel = (milestone1Awarded || milestone1Skipped) && (milestone2Awarded || milestone2Skipped) ? 3 : currentLevel;
                             break;
                         case 3:
                             milestone3 = milestoneResult;
-                            milestone3Awarded = milestone3.status == "awarded";
+                            milestone3Awarded = IsAwardedOrApproved(milestone3.status);
                             milestone3Skipped = milestone3.status == "not_required";
                             currentLevel = (milestone1Awarded || milestone1Skipped) ? 2 : 1;
                             currentLevel = (milestone1Awarded || milestone1Skipped) && (milestone2Awarded || milestone2Skipped) ? 3 : currentLevel;
@@ -76,15 +82,21 @@ namespace Topo.Services
                         percentComplete = CalculateMilestonePercentComplete(2, milestone2.event_count);
                         break; 
                     case 3:
-                        percentComplete = CalculateMilestonePercentComplete(3, milestone3.event_count);
+                        // Unlike milestones 1 and 2, there's no "Milestone 4" to move on to once this
+                        // is awarded, so the raw event-count formula below would otherwise keep showing
+                        // a member's progress as it stood at the point of award, even though the report
+                        // now lists them as having completed it (see milestone3Awarded above).
+                        percentComplete = milestone3Awarded ? 100 : CalculateMilestonePercentComplete(3, milestone3.event_count);
                         break;
                 }
                 unitMilestoneSummary.Add(
                     new MilestoneSummaryListModel
                     {
                         memberName = $"{member.first_name} {_membersService.GetMemberLastName(selectedUnitId, member.id).Result}",
+                        memberPatrol = member.patrol_name,
                         currentLevel = currentLevel,
                         percentComplete = percentComplete,
+                        milestone3Awarded = milestone3Awarded,
                         milestone1ParticipateCommunity = milestone1Skipped ? 0 : (milestone1Awarded ? 6 : (int)milestone1.event_count.participant.community),
                         milestone1ParticipateOutdoors = milestone1Skipped ? 0 : (milestone1Awarded ? 6 : (int)milestone1.event_count.participant.outdoors),
                         milestone1ParticipateCreative = milestone1Skipped ? 0 : (milestone1Awarded ? 6 : (int)milestone1.event_count.participant.creative),
@@ -131,6 +143,8 @@ namespace Topo.Services
             }
             return unitMilestoneSummary;
         }
+
+        private static bool IsAwardedOrApproved(string status) => status == "awarded" || status == "approved";
 
         private void MoveMilestoneAssistsToLeads(MilestoneResult milestoneResult)
         {
