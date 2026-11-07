@@ -48,6 +48,8 @@ namespace Topo.Services
         public Task<GetPeakAwardsResultsModel> GetCourseReflectionResultsForMember(string memberId);
         public Task<GetPeakAwardsResultsModel> GetPersonalReflectionResultsForMember(string memberId);
         public Task<GetPeakAwardsResultsModel> GetPeakAwardResultsForMember(string memberId);
+        public Task<string> GetAchievementsJsonAsync(string memberId, string type);
+        public Task<string> GetTemplateJsonAsync(string templatePath);
     }
 
     public class TerrainAPIService : ITerrainAPIService
@@ -491,6 +493,24 @@ namespace Topo.Services
             var getPersonalReflectionResultsModel = DeserializeObject<GetPeakAwardsResultsModel>(result);
 
             return getPersonalReflectionResultsModel ?? new GetPeakAwardsResultsModel();
+        }
+
+        // A member's achievements of one type exactly as Terrain returns them, for reports that need every answer
+        public async Task<string> GetAchievementsJsonAsync(string memberId, string type)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{achievementsAddress}members/{memberId}/achievements?type={type}";
+            return await SendRequest(HttpMethod.Get, requestUri);
+        }
+
+        // What a template asks, by its path, for example "sia/cub/plan" or "oas/bushcraft/3"
+        public async Task<string> GetTemplateJsonAsync(string templatePath)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{templatesAddress}{templatePath}/latest.json";
+            return await SendRequest(HttpMethod.Get, requestUri);
         }
 
         public async Task<GetPeakAwardsResultsModel> GetPeakAwardResultsForMember(string memberId)
