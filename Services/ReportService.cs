@@ -403,6 +403,7 @@ namespace Topo.Services
                         var blank = workbook.Worksheets.Create(SheetName("Blank"));
                         // a space is enough for the page to be printed
                         blank.Range[1, 1].Text = " ";
+                        blank.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
                         blank.Move(sheet.Index);
                         pagesSoFar++;
                     }
@@ -433,6 +434,10 @@ namespace Topo.Services
 
             // Creating new workbook
             IWorkbook workbook = application.Workbooks.Create(sheetsToCreate);
+
+            // Every sheet starts as A4, so a report that doesn't choose a size prints on A4 (not the default Letter)
+            foreach (IWorksheet worksheet in workbook.Worksheets)
+                worksheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
 
             //Adding cell style.               
             IStyle headingStyle = workbook.Styles.Add("headingStyle");

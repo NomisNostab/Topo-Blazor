@@ -200,6 +200,24 @@ namespace TopoReportFunctionTest
         }
 
         [TestMethod]
+        public void AttendanceList_ToPDF_IsA4()
+        {
+            _reportGenerationRequest.ReportType = ReportType.EventAttendance;
+            _reportGenerationRequest.ReportData = _attendanceListReportData;
+            _reportGenerationRequest.OutputType = OutputType.PDF;
+            var proxyRequest = new Amazon.Lambda.APIGatewayEvents.APIGatewayProxyRequest();
+            proxyRequest.Body = JsonConvert.SerializeObject(_reportGenerationRequest);
+
+            var functionResult = _function.FunctionHandler(proxyRequest, null);
+
+            using var document = new Syncfusion.Pdf.Parsing.PdfLoadedDocument(Convert.FromBase64String(functionResult));
+            var size = document.Pages[0].Size;
+            // A4 is 595 x 842 points, either way up (Letter is 612 x 792)
+            Assert.AreEqual(595, Math.Min(size.Width, size.Height), 2);
+            Assert.AreEqual(842, Math.Max(size.Width, size.Height), 2);
+        }
+
+        [TestMethod]
         public void AttendanceList_ToExcel()
         {
             _reportGenerationRequest.ReportType = ReportType.EventAttendance;
