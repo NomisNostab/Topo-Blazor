@@ -2086,11 +2086,10 @@ namespace Topo.Services
                 sheet.SetRowHeight(rowNumber, 20);
             }
 
+            // A row with nothing to say is left out, so every caller only passes rows that have something in them
             void Row(string label, IEnumerable<string> lines)
             {
                 var text = lines.ToList();
-                if (text.Count == 0)
-                    text.Add("None");
                 rowNumber++;
                 sheet.Range[rowNumber, 1].Text = label;
                 sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
@@ -2123,14 +2122,22 @@ namespace Topo.Services
                     $"Outdoor Adventure Skill progressions: {badges.OasProgressions}",
                     $"Additional Awards: {badges.AdditionalAwardsTotal}"
                 });
+                if (!badges.AnyUsed)
+                    return;
                 Block(unitPrefix == "" ? "Badges used" : $"{unitPrefix} badges used");
-                Row("Peak Award", new[] { badges.PeakAwards.ToString() });
-                Row("Milestones", new[] { $"Total: {badges.MilestonesTotal}" }.Concat(Counts(badges.Milestones)));
-                Row("Outdoor Adventure Skills", new[] { $"Badges: {badges.OasBadgesTotal}" }
-                    .Concat(badges.OasStages.Select(o => $"{o.Stream} stage {o.Stage}: {o.Count}")));
-                Row("Special Interest Areas", new[] { $"Total: {badges.SiaTotal}" }.Concat(Counts(badges.SiaCategories)));
-                Row("Other badges", new[] { $"Total: {badges.AdditionalAwardsTotal}" }.Concat(Counts(badges.AdditionalAwards)));
-                Row("For new members", Counts(badges.InvestitureItems));
+                if (badges.PeakAwards > 0)
+                    Row("Peak Award", new[] { badges.PeakAwards.ToString() });
+                if (badges.MilestonesTotal > 0)
+                    Row("Milestones", new[] { $"Total: {badges.MilestonesTotal}" }.Concat(Counts(badges.Milestones)));
+                if (badges.OasBadgesTotal > 0)
+                    Row("Outdoor Adventure Skills", new[] { $"Badges: {badges.OasBadgesTotal}" }
+                        .Concat(badges.OasStages.Select(o => $"{o.Stream} stage {o.Stage}: {o.Count}")));
+                if (badges.SiaTotal > 0)
+                    Row("Special Interest Areas", new[] { $"Total: {badges.SiaTotal}" }.Concat(Counts(badges.SiaCategories)));
+                if (badges.AdditionalAwardsTotal > 0)
+                    Row("Other badges", new[] { $"Total: {badges.AdditionalAwardsTotal}" }.Concat(Counts(badges.AdditionalAwards)));
+                if (badges.InvestitureItems.Count > 0)
+                    Row("For new members", Counts(badges.InvestitureItems));
             }
 
             if (report.IsGroup)
@@ -2141,19 +2148,22 @@ namespace Topo.Services
                     $"{report.TotalYouth} current youth {(report.TotalYouth == 1 ? "member" : "members")} (as at {Day(report.GeneratedAt)})",
                     $"{report.TotalInvested} invested, {report.TotalInvestedInPeriod} invested in this period"
                 });
-                Row("New members", new[]
-                {
-                    $"From a younger section: {report.TotalNewFromYounger}",
-                    $"Off the street: {report.TotalNewOffTheStreet}",
-                    $"From another group: {report.TotalNewFromAnotherGroup}"
-                });
-                Row("Members leaving", new[]
-                {
-                    $"Moving up: {report.TotalMovedUp}",
-                    $"Moved groups: {report.TotalMovedGroup}",
-                    $"Left Scouting: {report.TotalLeftScouting}"
-                });
-                Row("Youth helpers", new[] { $"{report.TotalYouthHelpers}" });
+                if (report.AnyNewMembers)
+                    Row("New members", new[]
+                    {
+                        $"From a younger section: {report.TotalNewFromYounger}",
+                        $"Off the street: {report.TotalNewOffTheStreet}",
+                        $"From another group: {report.TotalNewFromAnotherGroup}"
+                    });
+                if (report.AnyLeaving)
+                    Row("Members leaving", new[]
+                    {
+                        $"Moving up: {report.TotalMovedUp}",
+                        $"Moved groups: {report.TotalMovedGroup}",
+                        $"Left Scouting: {report.TotalLeftScouting}"
+                    });
+                if (report.TotalYouthHelpers > 0)
+                    Row("Youth helpers", new[] { $"{report.TotalYouthHelpers}" });
                 Row("Leaders", new[] { $"{report.TotalLeaders} current {(report.TotalLeaders == 1 ? "leader" : "leaders")}" });
                 Row("Awarded in the period", new[]
                 {
@@ -2163,11 +2173,13 @@ namespace Topo.Services
                     $"Outdoor Adventure Skill progressions: {report.TotalOasProgressions}",
                     $"Additional Awards: {report.TotalAdditionalAwards}"
                 });
-                Row("Badges needed", new[]
-                {
-                    $"Outdoor Adventure Skill badges: {report.TotalOasBadges}"
-                });
-                Row("For new members", Counts(report.TotalInvestitureItems));
+                if (report.TotalOasBadges > 0)
+                    Row("Badges needed", new[]
+                    {
+                        $"Outdoor Adventure Skill badges: {report.TotalOasBadges}"
+                    });
+                if (report.TotalInvestitureItems.Count > 0)
+                    Row("For new members", Counts(report.TotalInvestitureItems));
             }
 
             foreach (var unit in report.Sections)
@@ -2192,7 +2204,8 @@ namespace Topo.Services
                     newMembers.Add($"From the {Section(SectionReportBuilder.PreviousSectionOf(unit.Section))}: {unit.NewFromYoungerSection}{Names(unit.NewMembers.Where(n => n.Origin == NewMemberOrigin.YoungerSection).Select(n => n.Name))}");
                 newMembers.Add($"Off the street: {unit.NewOffTheStreet}{Names(unit.NewMembers.Where(n => n.Origin == NewMemberOrigin.OffTheStreet).Select(n => n.Name))}");
                 newMembers.Add($"From another group: {unit.NewFromAnotherGroup}{Names(unit.NewMembers.Where(n => n.Origin == NewMemberOrigin.AnotherGroup).Select(n => n.Name))}");
-                Row("New members", newMembers);
+                if (unit.AnyNewMembers)
+                    Row("New members", newMembers);
 
                 var leaving = new List<string>();
                 if (unit.NextSection != "")
@@ -2201,24 +2214,32 @@ namespace Topo.Services
                 leaving.Add($"Left Scouting: {unit.LeftScouting}{Names(unit.Departed.Where(d => d.Status == DepartureStatus.LeftScouting).Select(d => d.Name))}");
                 if (unit.DepartedUnset > 0)
                     leaving.Add($"Not yet sorted: {unit.DepartedUnset}{Names(unit.Departed.Where(d => d.Status == DepartureStatus.Unset).Select(d => d.Name))}");
-                Row("Members leaving", leaving);
+                if (unit.AnyLeaving)
+                    Row("Members leaving", leaving);
 
                 var leaders = new List<string> { $"{unit.CurrentLeaders} current {(unit.CurrentLeaders == 1 ? "leader" : "leaders")}" };
                 if (unit.SavedRosterDate == null)
                 {
                     leaders.Add("New leaders can't be named: no earlier report's roster has been saved");
                 }
-                else
+                else if (unit.NewLeaders.Count > 0)
                 {
-                    leaders.Add(unit.NewLeaders.Count == 0 ? "New: none" : "New: " + string.Join(", ", unit.NewLeaders));
+                    leaders.Add("New: " + string.Join(", ", unit.NewLeaders));
                 }
-                leaders.Add(unit.DepartedLeaders.Count == 0 ? "Departed: none" : "Departed: " + string.Join(", ", unit.DepartedLeaders));
-                Row("Youth helpers", new[] { $"{unit.YouthHelpers.Count} (under 18 with a leader role in the unit)" });
+                if (unit.DepartedLeaders.Count > 0)
+                    leaders.Add("Departed: " + string.Join(", ", unit.DepartedLeaders));
+                if (unit.YouthHelpers.Count > 0)
+                    Row("Youth helpers", new[] { $"{unit.YouthHelpers.Count} (under 18 with a leader role in the unit)" });
                 Row("Leaders", leaders);
 
-                Block(report.IsGroup ? $"{unit.UnitName}: activities" : "Activities");
-                Row("Past events", unit.PastEvents.Select(e => $"{Day(e.Start)} - {e.Title} ({e.ChallengeArea}) - {e.YouthAttended} youth, {e.LeadersAttended} {(e.LeadersAttended == 1 ? "leader" : "leaders")}"));
-                Row("Upcoming events", unit.UpcomingEvents.Select(e => $"{Day(e.Start)} - {e.Title} ({e.ChallengeArea})"));
+                if (unit.AnyEvents)
+                {
+                    Block(report.IsGroup ? $"{unit.UnitName}: activities" : "Activities");
+                    if (unit.PastEvents.Count > 0)
+                        Row("Past events", unit.PastEvents.Select(e => $"{Day(e.Start)} - {e.Title} ({e.ChallengeArea}) - {e.YouthAttended} youth, {e.LeadersAttended} {(e.LeadersAttended == 1 ? "leader" : "leaders")}"));
+                    if (unit.UpcomingEvents.Count > 0)
+                        Row("Upcoming events", unit.UpcomingEvents.Select(e => $"{Day(e.Start)} - {e.Title} ({e.ChallengeArea})"));
+                }
                 Badges(unit.Badges, report.IsGroup ? unit.UnitName + ":" : "");
             }
 
