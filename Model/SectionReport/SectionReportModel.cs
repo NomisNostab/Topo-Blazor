@@ -115,6 +115,8 @@ namespace Topo.Model.SectionReport
         public int SiaTotal => SiaCategories.Sum(s => s.Count);
         public List<UnitBadgeCount> AdditionalAwards { get; set; } = new List<UnitBadgeCount>();
         public int AdditionalAwardsTotal => AdditionalAwards.Sum(a => a.Count);
+        // Whether the "badges used" part has anything in it
+        public bool AnyUsed => PeakAwards > 0 || MilestonesTotal > 0 || OasBadgesTotal > 0 || SiaTotal > 0 || AdditionalAwardsTotal > 0 || InvestitureItems.Count > 0;
     }
 
     // One unit's figures for the period
@@ -135,12 +137,16 @@ namespace Topo.Model.SectionReport
         public int NewFromYoungerSection => NewMembers.Count(n => n.Origin == NewMemberOrigin.YoungerSection);
         public int NewOffTheStreet => NewMembers.Count(n => n.Origin == NewMemberOrigin.OffTheStreet);
         public int NewFromAnotherGroup => NewMembers.Count(n => n.Origin == NewMemberOrigin.AnotherGroup);
+        public bool AnyNewMembers => NewMembers.Count > 0;
 
         public List<DepartedMember> Departed { get; set; } = new List<DepartedMember>();
         public int MovedUp => Departed.Count(d => d.Status == DepartureStatus.MovedUp);
         public int MovedGroup => Departed.Count(d => d.Status == DepartureStatus.MovedGroup);
         public int LeftScouting => Departed.Count(d => d.Status == DepartureStatus.LeftScouting);
         public int DepartedUnset => Departed.Count(d => d.Status == DepartureStatus.Unset);
+        public bool AnyLeaving => Departed.Count > 0;
+        // Whether there are activities to list, so the part can be left out when there are none
+        public bool AnyEvents => PastEvents.Count > 0 || UpcomingEvents.Count > 0;
 
         public int CurrentLeaders { get; set; }
         // Who the current leaders are; only used to count each person once across a group
@@ -183,6 +189,8 @@ namespace Topo.Model.SectionReport
             .GroupBy(i => i.Name)
             .Select(g => new UnitBadgeCount { Name = g.Key, Count = g.Sum(i => i.Count) })
             .ToList();
+        public bool AnyNewMembers => Sections.Any(s => s.AnyNewMembers);
+        public bool AnyLeaving => Sections.Any(s => s.AnyLeaving);
         public int TotalMovedUp => Sections.Sum(s => s.MovedUp);
         public int TotalMovedGroup => Sections.Sum(s => s.MovedGroup);
         public int TotalLeftScouting => Sections.Sum(s => s.LeftScouting);

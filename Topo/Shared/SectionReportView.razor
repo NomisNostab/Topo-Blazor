@@ -30,17 +30,26 @@
             <div>@Report.TotalYouth current youth @(Report.TotalYouth == 1 ? "member" : "members") (as at @AsAt)</div>
             <div>@Report.TotalInvested invested, @Report.TotalInvestedInPeriod invested in this period</div>
         </div></div>
-        <div class="line"><div class="label">New members</div><div class="detail">
-            <div>From a younger section: @Report.TotalNewFromYounger</div>
-            <div>Off the street: @Report.TotalNewOffTheStreet</div>
-            <div>From another group: @Report.TotalNewFromAnotherGroup</div>
-        </div></div>
-        <div class="line"><div class="label">Members leaving</div><div class="detail">
-            <div>Moving up: @Report.TotalMovedUp</div>
-            <div>Moved groups: @Report.TotalMovedGroup</div>
-            <div>Left Scouting: @Report.TotalLeftScouting</div>
-        </div></div>
-        <div class="line"><div class="label">Youth helpers</div><div class="detail">@Report.TotalYouthHelpers</div></div>
+        @if (Report.AnyNewMembers)
+        {
+            <div class="line"><div class="label">New members</div><div class="detail">
+                <div>From a younger section: @Report.TotalNewFromYounger</div>
+                <div>Off the street: @Report.TotalNewOffTheStreet</div>
+                <div>From another group: @Report.TotalNewFromAnotherGroup</div>
+            </div></div>
+        }
+        @if (Report.AnyLeaving)
+        {
+            <div class="line"><div class="label">Members leaving</div><div class="detail">
+                <div>Moving up: @Report.TotalMovedUp</div>
+                <div>Moved groups: @Report.TotalMovedGroup</div>
+                <div>Left Scouting: @Report.TotalLeftScouting</div>
+            </div></div>
+        }
+        @if (Report.TotalYouthHelpers > 0)
+        {
+            <div class="line"><div class="label">Youth helpers</div><div class="detail">@Report.TotalYouthHelpers</div></div>
+        }
         <div class="line"><div class="label">Leaders</div><div class="detail">@Report.TotalLeaders current @(Report.TotalLeaders == 1 ? "leader" : "leaders")</div></div>
         <div class="line"><div class="label">Awarded in the period</div><div class="detail">
             <div>Peak Awards: @Report.TotalPeakAwards</div>
@@ -49,19 +58,21 @@
             <div>Outdoor Adventure Skill progressions: @Report.TotalOasProgressions</div>
             <div>Additional Awards: @Report.TotalAdditionalAwards</div>
         </div></div>
-        <div class="line"><div class="label">Badges needed</div><div class="detail">
-            <div>Outdoor Adventure Skill badges: @Report.TotalOasBadges</div>
-        </div></div>
-        <div class="line"><div class="label">For new members</div><div class="detail">
-            @foreach (var item in Report.TotalInvestitureItems)
-            {
-                <div>@item.Name: @item.Count</div>
-            }
-            @if (!Report.TotalInvestitureItems.Any())
-            {
-                <div>None</div>
-            }
-        </div></div>
+        @if (Report.TotalOasBadges > 0)
+        {
+            <div class="line"><div class="label">Badges needed</div><div class="detail">
+                <div>Outdoor Adventure Skill badges: @Report.TotalOasBadges</div>
+            </div></div>
+        }
+        @if (Report.TotalInvestitureItems.Any())
+        {
+            <div class="line"><div class="label">For new members</div><div class="detail">
+                @foreach (var item in Report.TotalInvestitureItems)
+                {
+                    <div>@item.Name: @item.Count</div>
+                }
+            </div></div>
+        }
     }
 
     @foreach (var unit in Report.Sections)
@@ -91,76 +102,85 @@
                 </div>
             </div></div>
         }
-        <div class="line"><div class="label">New members</div><div class="detail">
-            @if (unit.Section != "joey")
-            {
-                <div>From the @Title(SectionReportBuilder.PreviousSectionOf(unit.Section))s: @unit.NewFromYoungerSection@NamesOf(unit, NewMemberOrigin.YoungerSection)</div>
-            }
-            <div>Off the street: @unit.NewOffTheStreet@NamesOf(unit, NewMemberOrigin.OffTheStreet)</div>
-            <div>From another group: @unit.NewFromAnotherGroup@NamesOf(unit, NewMemberOrigin.AnotherGroup)</div>
-        </div></div>
-        <div class="line"><div class="label">Members leaving</div><div class="detail">
-            @if (unit.NextSection != "")
-            {
-                <div>Moving up to the @(Title(unit.NextSection))s: @unit.MovedUp</div>
-            }
-            <div>Moved groups: @unit.MovedGroup</div>
-            <div>Left Scouting: @unit.LeftScouting</div>
-            @if (unit.DepartedUnset > 0)
-            {
-                <div class="text-danger">Not yet sorted: @unit.DepartedUnset</div>
-            }
-            @if (unit.Departed.Count == 0)
-            {
-                <div class="text-muted">No one found who has left the unit.</div>
-            }
-            @foreach (var departed in unit.Departed)
-            {
-                <div class="departed">
-                    <span>@departed.Name</span>
-                    @if (!string.IsNullOrEmpty(departed.Source))
-                    {
-                        <span class="small text-muted">@departed.Source</span>
-                    }
-                    <span class="ms-auto"><DepartureToggle Member="departed" Changed="@(_ => StateHasChanged())" /></span>
-                </div>
-            }
-        </div></div>
-        <div class="line"><div class="label">Youth helpers</div><div class="detail">@unit.YouthHelpers.Count (under 18 with a leader role in the unit)</div></div>
+        @if (unit.AnyNewMembers)
+        {
+            <div class="line"><div class="label">New members</div><div class="detail">
+                @if (unit.Section != "joey")
+                {
+                    <div>From the @Title(SectionReportBuilder.PreviousSectionOf(unit.Section))s: @unit.NewFromYoungerSection@NamesOf(unit, NewMemberOrigin.YoungerSection)</div>
+                }
+                <div>Off the street: @unit.NewOffTheStreet@NamesOf(unit, NewMemberOrigin.OffTheStreet)</div>
+                <div>From another group: @unit.NewFromAnotherGroup@NamesOf(unit, NewMemberOrigin.AnotherGroup)</div>
+            </div></div>
+        }
+        @if (unit.AnyLeaving)
+        {
+            <div class="line"><div class="label">Members leaving</div><div class="detail">
+                @if (unit.NextSection != "")
+                {
+                    <div>Moving up to the @(Title(unit.NextSection))s: @unit.MovedUp</div>
+                }
+                <div>Moved groups: @unit.MovedGroup</div>
+                <div>Left Scouting: @unit.LeftScouting</div>
+                @if (unit.DepartedUnset > 0)
+                {
+                    <div class="text-danger">Not yet sorted: @unit.DepartedUnset</div>
+                }
+                @foreach (var departed in unit.Departed)
+                {
+                    <div class="departed">
+                        <span>@departed.Name</span>
+                        @if (!string.IsNullOrEmpty(departed.Source))
+                        {
+                            <span class="small text-muted">@departed.Source</span>
+                        }
+                        <span class="ms-auto"><DepartureToggle Member="departed" Changed="@(_ => StateHasChanged())" /></span>
+                    </div>
+                }
+            </div></div>
+        }
+        @if (unit.YouthHelpers.Count > 0)
+        {
+            <div class="line"><div class="label">Youth helpers</div><div class="detail">@unit.YouthHelpers.Count (under 18 with a leader role in the unit)</div></div>
+        }
         <div class="line"><div class="label">Leaders</div><div class="detail">
             <div>@unit.CurrentLeaders current @(unit.CurrentLeaders == 1 ? "leader" : "leaders")</div>
             @if (unit.SavedRosterDate == null)
             {
                 <div class="text-muted">New leaders can't be named: no earlier report's roster has been saved</div>
             }
-            else
+            else if (unit.NewLeaders.Count > 0)
             {
-                <div>New: @(unit.NewLeaders.Count == 0 ? "none" : string.Join(", ", unit.NewLeaders))</div>
+                <div>New: @string.Join(", ", unit.NewLeaders)</div>
             }
-            <div>Departed: @(unit.DepartedLeaders.Count == 0 ? "none" : string.Join(", ", unit.DepartedLeaders))</div>
+            @if (unit.DepartedLeaders.Count > 0)
+            {
+                <div>Departed: @string.Join(", ", unit.DepartedLeaders)</div>
+            }
         </div></div>
 
-        <div class="block">@(Report.IsGroup ? unit.UnitName + ": activities" : "Activities")</div>
-        <div class="line"><div class="label">Past events</div><div class="detail">
-            @foreach (var evt in unit.PastEvents)
+        @if (unit.AnyEvents)
+        {
+            <div class="block">@(Report.IsGroup ? unit.UnitName + ": activities" : "Activities")</div>
+            @if (unit.PastEvents.Count > 0)
             {
-                <div>@evt.Start.ToString("d MMM yyyy") - @evt.Title (@evt.ChallengeArea) - @evt.YouthAttended youth, @evt.LeadersAttended @(evt.LeadersAttended == 1 ? "leader" : "leaders")</div>
+                <div class="line"><div class="label">Past events</div><div class="detail">
+                    @foreach (var evt in unit.PastEvents)
+                    {
+                        <div>@evt.Start.ToString("d MMM yyyy") - @evt.Title (@evt.ChallengeArea) - @evt.YouthAttended youth, @evt.LeadersAttended @(evt.LeadersAttended == 1 ? "leader" : "leaders")</div>
+                    }
+                </div></div>
             }
-            @if (unit.PastEvents.Count == 0)
+            @if (unit.UpcomingEvents.Count > 0)
             {
-                <div>None</div>
+                <div class="line"><div class="label">Upcoming events</div><div class="detail">
+                    @foreach (var evt in unit.UpcomingEvents)
+                    {
+                        <div>@evt.Start.ToString("d MMM yyyy") - @evt.Title (@evt.ChallengeArea)</div>
+                    }
+                </div></div>
             }
-        </div></div>
-        <div class="line"><div class="label">Upcoming events</div><div class="detail">
-            @foreach (var evt in unit.UpcomingEvents)
-            {
-                <div>@evt.Start.ToString("d MMM yyyy") - @evt.Title (@evt.ChallengeArea)</div>
-            }
-            @if (unit.UpcomingEvents.Count == 0)
-            {
-                <div>None</div>
-            }
-        </div></div>
+        }
 
         <div class="block">@(Report.IsGroup ? unit.UnitName + ": awarded in the period" : "Awarded in the period")</div>
         <div class="line"><div class="label">Totals</div><div class="detail">
@@ -171,31 +191,48 @@
             <div>Additional Awards: @badges.AdditionalAwardsTotal</div>
         </div></div>
 
-        <div class="block">@(Report.IsGroup ? unit.UnitName + ": badges used" : "Badges used")</div>
-        <div class="line"><div class="label">Peak Award</div><div class="detail">@badges.PeakAwards</div></div>
-        <div class="line"><div class="label">Milestones</div><div class="detail">
-            <div>Total: @badges.MilestonesTotal</div>
-            @foreach (var m in badges.Milestones) { <div>@m.Name: @m.Count</div> }
-        </div></div>
-        <div class="line"><div class="label">Outdoor Adventure Skills</div><div class="detail">
-            <div>Badges: @badges.OasBadgesTotal</div>
-            @foreach (var o in badges.OasStages) { <div>@o.Stream stage @o.Stage: @o.Count</div> }
-        </div></div>
-        <div class="line"><div class="label">Special Interest Areas</div><div class="detail">
-            <div>Total: @badges.SiaTotal</div>
-            @foreach (var s in badges.SiaCategories) { <div>@s.Name: @s.Count</div> }
-        </div></div>
-        <div class="line"><div class="label">Other badges</div><div class="detail">
-            <div>Total: @badges.AdditionalAwardsTotal</div>
-            @foreach (var a in badges.AdditionalAwards) { <div>@a.Name: @a.Count</div> }
-        </div></div>
-        <div class="line"><div class="label">For new members</div><div class="detail">
-            @foreach (var i in badges.InvestitureItems) { <div>@i.Name: @i.Count</div> }
-            @if (!badges.InvestitureItems.Any())
+        @if (badges.AnyUsed)
+        {
+            <div class="block">@(Report.IsGroup ? unit.UnitName + ": badges used" : "Badges used")</div>
+            @if (badges.PeakAwards > 0)
             {
-                <div>None</div>
+                <div class="line"><div class="label">Peak Award</div><div class="detail">@badges.PeakAwards</div></div>
             }
-        </div></div>
+            @if (badges.MilestonesTotal > 0)
+            {
+                <div class="line"><div class="label">Milestones</div><div class="detail">
+                    <div>Total: @badges.MilestonesTotal</div>
+                    @foreach (var m in badges.Milestones) { <div>@m.Name: @m.Count</div> }
+                </div></div>
+            }
+            @if (badges.OasBadgesTotal > 0)
+            {
+                <div class="line"><div class="label">Outdoor Adventure Skills</div><div class="detail">
+                    <div>Badges: @badges.OasBadgesTotal</div>
+                    @foreach (var o in badges.OasStages) { <div>@o.Stream stage @o.Stage: @o.Count</div> }
+                </div></div>
+            }
+            @if (badges.SiaTotal > 0)
+            {
+                <div class="line"><div class="label">Special Interest Areas</div><div class="detail">
+                    <div>Total: @badges.SiaTotal</div>
+                    @foreach (var s in badges.SiaCategories) { <div>@s.Name: @s.Count</div> }
+                </div></div>
+            }
+            @if (badges.AdditionalAwardsTotal > 0)
+            {
+                <div class="line"><div class="label">Other badges</div><div class="detail">
+                    <div>Total: @badges.AdditionalAwardsTotal</div>
+                    @foreach (var a in badges.AdditionalAwards) { <div>@a.Name: @a.Count</div> }
+                </div></div>
+            }
+            @if (badges.InvestitureItems.Count > 0)
+            {
+                <div class="line"><div class="label">For new members</div><div class="detail">
+                    @foreach (var i in badges.InvestitureItems) { <div>@i.Name: @i.Count</div> }
+                </div></div>
+            }
+        }
     }
 
     <div class="block">About these numbers</div>

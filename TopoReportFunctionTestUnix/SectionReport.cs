@@ -172,6 +172,61 @@ namespace TopoReportFunctionTest
             File.WriteAllBytes($@"TestResults/SectionReport_{(group ? "Group" : "Section")}.{extension}", Convert.FromBase64String(result));
         }
 
+        // A unit where no one joined or left, with no events and no badges in the period
+        private static SectionReportSet QuietSet()
+        {
+            var input = new SectionReportInput
+            {
+                UnitId = "u-cub", UnitName = "Cub Unit", Section = "cub",
+                From = new DateTime(2026, 1, 1), To = new DateTime(2026, 6, 30), AsOf = new DateTime(2026, 7, 1),
+                CurrentMembers = new List<MemberListModel> { Member("y1", "1", "Yara"), Member("l1", "10", "Lee", adult: 1) },
+                GroupUnitIds = new HashSet<string> { "u-cub" }
+            };
+            input.Records["y1"] = Records("cub", "2025-02-01", "cub@u-cub");
+            return new SectionReportSet
+            {
+                GeneratedAt = new DateTime(2026, 7, 1), GeneratedBy = "Sample Leader", GroupName = "Sample Group",
+                From = input.From, To = input.To, Sections = new List<SectionReportModel> { SectionReportBuilder.Build(input) }
+            };
+        }
+
+        private static List<string> RowLabels(SectionReportSet report)
+        {
+            SetEnvironment.SetSyncfusionLicense();
+            var sheet = new Topo.Services.ReportService().GenerateSectionReportWorkbook(report, "Sample Group", "cub", "Cub Unit").Worksheets[0];
+            return Enumerable.Range(1, sheet.UsedRange.LastRow).Select(row => sheet.Range[row, 1].Text).Where(t => !string.IsNullOrEmpty(t)).ToList();
+        }
+
+        [TestMethod]
+        public void RowsWithNothingInThemAreLeftOut()
+        {
+            var quiet = QuietSet();
+            var unit = quiet.Sections[0];
+            Assert.IsFalse(unit.AnyNewMembers);
+            Assert.IsFalse(unit.AnyLeaving);
+            Assert.IsFalse(unit.AnyEvents);
+            Assert.IsFalse(unit.Badges.AnyUsed);
+
+            var labels = RowLabels(quiet);
+            foreach (var left in new[] { "New members", "Members leaving", "Youth helpers", "Past events", "Upcoming events", "For new members", "Milestones", "Peak Award" })
+                CollectionAssert.DoesNotContain(labels, left);
+            foreach (var kept in new[] { "Youth", "Leaders", "Totals" })
+                CollectionAssert.Contains(labels, kept);
+        }
+
+        [TestMethod]
+        public void RowsWithSomethingInThemAreKept()
+        {
+            var busy = SetOf(false);
+            Assert.IsTrue(busy.Sections[0].AnyNewMembers);
+            Assert.IsTrue(busy.Sections[0].AnyLeaving);
+            Assert.IsTrue(busy.AnyNewMembers);
+
+            var labels = RowLabels(busy);
+            foreach (var kept in new[] { "New members", "Members leaving", "Past events", "Milestones" })
+                CollectionAssert.Contains(labels, kept);
+        }
+
         [TestMethod]
         public void TheReportSurvivesBeingSentToTheReportFunction()
         {
