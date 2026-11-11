@@ -34,6 +34,8 @@ namespace Topo.Services
         public IWorkbook GenerateApprovalsWorkbook(List<ApprovalsListModel> selectedApprovals, string groupName, string section, string unitName, DateTime approvalSearchFromDate, DateTime approvalSearchToDate, bool groupByMember, bool forPdfOutput);
         public IWorkbook GenerateProgressWorkbook(ProgressDetailsPageViewModel progressEntries, string groupName, string section, string unitName);
         public IWorkbook GenerateTermProgramWorkbook(List<EventListModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput);
+        public IWorkbook GenerateProgramIdeasWorkbook(List<ProgramIdeaItemModel> programIdeas, string groupName, string section, string unitName, bool forPdfOutput);
+        public IWorkbook GenerateProposedActivitiesWorkbook(ProposedActivitiesReportData reportData, string groupName, string section, string unitName);
         public IWorkbook CreateWorkbookWithSheets(int sheetsToCreate);
     }
     public class ReportService : IReportService
@@ -2542,6 +2544,281 @@ namespace Topo.Services
 
             return workbook;
 
+        }
+
+        public IWorkbook GenerateProgramIdeasWorkbook(List<ProgramIdeaItemModel> programIdeas, string groupName, string section, string unitName, bool forPdfOutput)
+        {
+            var areas = new[] { "Community", "Creative", "Outdoors", "Personal Growth" };
+
+            if (forPdfOutput)
+                return GenerateProgramIdeasPdfWorkbook(programIdeas, groupName, section, unitName, areas);
+
+            var workbook = CreateWorkbookWithSheets(areas.Length);
+
+            for (int sheetIndex = 0; sheetIndex < areas.Length; sheetIndex++)
+            {
+                var area = areas[sheetIndex];
+                // Merged through column 6 (not just 3, the last data column) so the heading text has
+                // enough width to avoid overlapping the logo - the data table itself stays 3 columns.
+                var sheet = AddLogoToSheet(workbook, sheetIndex, groupName, section, 6);
+                sheet.Name = area;
+
+                int rowNumber = 2;
+                var unitCell = sheet.Range[rowNumber, 2];
+                unitCell.Text = unitName;
+                unitCell.CellStyle = workbook.Styles["headingStyle"];
+                sheet.Range[rowNumber, 2, rowNumber, 6].Merge();
+                sheet.SetRowHeight(rowNumber, 25);
+
+                rowNumber++;
+                var titleCell = sheet.Range[rowNumber, 2];
+                titleCell.Text = $"Program Ideas - {area}";
+                titleCell.CellStyle = workbook.Styles["headingStyle"];
+                sheet.Range[rowNumber, 2, rowNumber, 6].Merge();
+                sheet.SetRowHeight(rowNumber, 25);
+
+                rowNumber += 2;
+                var headerRowNumber = rowNumber;
+                sheet.Range[rowNumber, 1].Text = "Activity";
+                sheet.Range[rowNumber, 2].Text = "Last Run";
+                sheet.Range[rowNumber, 3].Text = "Times Run";
+                sheet.Range[rowNumber, 1, rowNumber, 3].CellStyle.Font.Bold = true;
+                sheet.Range[rowNumber, 1, rowNumber, 3].CellStyle.ColorIndex = ExcelKnownColors.Grey_40_percent;
+                sheet.Range[rowNumber, 1].BorderAround();
+                sheet.Range[rowNumber, 2].BorderAround();
+                sheet.Range[rowNumber, 3].BorderAround();
+
+                // Preserves the order programIdeas arrives in (the caller's current on-page sort),
+                // rather than re-sorting here - the report should match what the user was looking at.
+                var areaIdeas = programIdeas.Where(i => i.ChallengeArea == area);
+                foreach (var idea in areaIdeas)
+                {
+                    rowNumber++;
+                    sheet.Range[rowNumber, 1].Text = idea.ActivityName;
+                    sheet.Range[rowNumber, 1].BorderAround();
+                    sheet.Range[rowNumber, 2].Text = idea.LastRunDate.ToString("dd/MM/yyyy");
+                    sheet.Range[rowNumber, 2].BorderAround();
+                    sheet.Range[rowNumber, 3].Number = idea.TimesRun;
+                    sheet.Range[rowNumber, 3].BorderAround();
+
+                    if (idea.Highlight)
+                    {
+                        sheet.Range[rowNumber, 1, rowNumber, 3].CellStyle.Color = Color.Yellow;
+                    }
+                }
+
+                if (rowNumber > headerRowNumber)
+                {
+                    sheet.AutoFilters.FilterRange = sheet.Range[headerRowNumber, 1, rowNumber, 3];
+                }
+
+                sheet.Range[1, 1, rowNumber, 3].AutofitColumns();
+
+                sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+                sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
+                sheet.PageSetup.BottomMargin = 0.25;
+                sheet.PageSetup.TopMargin = 0.25;
+                sheet.PageSetup.LeftMargin = 0.25;
+                sheet.PageSetup.RightMargin = 0.25;
+                sheet.PageSetup.HeaderMargin = 0;
+                sheet.PageSetup.FooterMargin = 0;
+                sheet.PageSetup.FitToPagesWide = 1;
+            }
+
+            workbook.Worksheets[0].Activate();
+            return workbook;
+        }
+
+        // PDF gets its own single-sheet layout (rather than the xlsx's one-sheet-per-area, which the
+        // Excel-to-PDF renderer always starts on a fresh page) so short categories can share a page:
+        // a category only forces a page break before the next one if it used more than half a page
+        // itself, otherwise the next category continues right below it.
+        private IWorkbook GenerateProgramIdeasPdfWorkbook(List<ProgramIdeaItemModel> programIdeas, string groupName, string section, string unitName, string[] areas)
+        {
+            // Calibrated empirically: a single-category A4 portrait page at these margins/default row
+            // height fits ~47-50 rows (header + logo overhead included) before naturally paginating.
+            const int RowsPerPage = 48;
+            const int HalfPageRows = RowsPerPage / 2;
+
+            var workbook = CreateWorkbookWithSheets(1);
+            var sheet = AddLogoToSheet(workbook, 0, groupName, section, 6);
+            sheet.Name = "Program Ideas";
+
+            int rowNumber = 2;
+            var unitCell = sheet.Range[rowNumber, 2];
+            unitCell.Text = unitName;
+            unitCell.CellStyle = workbook.Styles["headingStyle"];
+            sheet.Range[rowNumber, 2, rowNumber, 6].Merge();
+            sheet.SetRowHeight(rowNumber, 25);
+
+            rowNumber++;
+            var titleCell = sheet.Range[rowNumber, 2];
+            titleCell.Text = "Program Ideas";
+            titleCell.CellStyle = workbook.Styles["headingStyle"];
+            sheet.Range[rowNumber, 2, rowNumber, 6].Merge();
+            sheet.SetRowHeight(rowNumber, 25);
+
+            rowNumber += 2;
+
+            for (int areaIndex = 0; areaIndex < areas.Length; areaIndex++)
+            {
+                var area = areas[areaIndex];
+                var categoryStartRow = rowNumber;
+
+                var areaHeadingCell = sheet.Range[rowNumber, 1];
+                areaHeadingCell.Text = area;
+                areaHeadingCell.CellStyle.Font.Bold = true;
+                areaHeadingCell.CellStyle.Font.Size = 12;
+                rowNumber++;
+
+                sheet.Range[rowNumber, 1].Text = "Activity";
+                sheet.Range[rowNumber, 2].Text = "Last Run";
+                sheet.Range[rowNumber, 3].Text = "Times Run";
+                sheet.Range[rowNumber, 1, rowNumber, 3].CellStyle.Font.Bold = true;
+                sheet.Range[rowNumber, 1, rowNumber, 3].CellStyle.ColorIndex = ExcelKnownColors.Grey_40_percent;
+                sheet.Range[rowNumber, 1].BorderAround();
+                sheet.Range[rowNumber, 2].BorderAround();
+                sheet.Range[rowNumber, 3].BorderAround();
+
+                var areaIdeas = programIdeas.Where(i => i.ChallengeArea == area);
+                foreach (var idea in areaIdeas)
+                {
+                    rowNumber++;
+                    sheet.Range[rowNumber, 1].Text = idea.ActivityName;
+                    sheet.Range[rowNumber, 1].BorderAround();
+                    sheet.Range[rowNumber, 2].Text = idea.LastRunDate.ToString("dd/MM/yyyy");
+                    sheet.Range[rowNumber, 2].BorderAround();
+                    sheet.Range[rowNumber, 3].Number = idea.TimesRun;
+                    sheet.Range[rowNumber, 3].BorderAround();
+
+                    if (idea.Highlight)
+                    {
+                        sheet.Range[rowNumber, 1, rowNumber, 3].CellStyle.Color = Color.Yellow;
+                    }
+                }
+
+                var rowsUsedByCategory = rowNumber - categoryStartRow + 1;
+                var isLastCategory = areaIndex == areas.Length - 1;
+                rowNumber += 2;
+
+                if (!isLastCategory && rowsUsedByCategory > HalfPageRows)
+                {
+                    sheet.HPageBreaks.Add(sheet.Range[rowNumber, 1]);
+                }
+            }
+
+            sheet.Range[1, 1, rowNumber, 6].AutofitColumns();
+
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
+            sheet.PageSetup.BottomMargin = 0.25;
+            sheet.PageSetup.TopMargin = 0.25;
+            sheet.PageSetup.LeftMargin = 0.25;
+            sheet.PageSetup.RightMargin = 0.25;
+            sheet.PageSetup.HeaderMargin = 0;
+            sheet.PageSetup.FooterMargin = 0;
+            // FitToPagesWide alone (with FitToPagesTall left at its default) shrinks everything to
+            // fit on a single page vertically too, which silently defeats both natural pagination and
+            // the manual HPageBreaks above - 0 means "as many pages tall as needed" instead.
+            sheet.PageSetup.FitToPagesWide = 1;
+            sheet.PageSetup.FitToPagesTall = 0;
+
+            return workbook;
+        }
+
+        // The activities the youth have proposed in Terrain, one sheet that is the same for the spreadsheet and the pdf: what they
+        // proposed and why, who by, and how many times the activity has been proposed and run before. The rows come in the order the
+        // page showed them.
+        public IWorkbook GenerateProposedActivitiesWorkbook(ProposedActivitiesReportData reportData, string groupName, string section, string unitName)
+        {
+            const int columns = 10;
+            var workbook = CreateWorkbookWithSheets(1);
+            var sheet = AddLogoToSheet(workbook, 0, groupName, section, 6);
+            sheet.Name = "Proposed Activities";
+
+            int rowNumber = 2;
+            var unitCell = sheet.Range[rowNumber, 2];
+            unitCell.Text = unitName;
+            unitCell.CellStyle = workbook.Styles["headingStyle"];
+            sheet.Range[rowNumber, 2, rowNumber, 6].Merge();
+            sheet.SetRowHeight(rowNumber, 25);
+
+            rowNumber++;
+            var titleCell = sheet.Range[rowNumber, 2];
+            titleCell.Text = "Proposed Activities";
+            titleCell.CellStyle = workbook.Styles["headingStyle"];
+            sheet.Range[rowNumber, 2, rowNumber, 6].Merge();
+            sheet.SetRowHeight(rowNumber, 25);
+
+            rowNumber++;
+            var proposals = reportData.Proposals ?? new List<ProposedActivityModel>();
+            sheet.Range[rowNumber, 2].Text = proposals.Any(p => p.TimesRun == null)
+                ? "Times run are not shown: the unit's events could not be read"
+                : reportData.Since == null
+                    ? "Times run: all events up to today, with the same main words in the name"
+                    : $"Times run: events from {reportData.Since.Value:dd/MM/yyyy} up to today, with the same main words in the name";
+            sheet.Range[rowNumber, 2].CellStyle.Font.Italic = true;
+
+            rowNumber += 2;
+            var headerRowNumber = rowNumber;
+            var headings = new[] { "Activity", "Challenge Area", "Date Submitted", "Proposed By", "Suggested Lead", "Times Proposed", "Times Run", "Last Run", "What", "Why" };
+            for (int column = 1; column <= columns; column++)
+            {
+                sheet.Range[rowNumber, column].Text = headings[column - 1];
+                sheet.Range[rowNumber, column].BorderAround();
+            }
+            sheet.Range[rowNumber, 1, rowNumber, columns].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 1, rowNumber, columns].CellStyle.ColorIndex = ExcelKnownColors.Grey_40_percent;
+
+            foreach (var proposal in proposals)
+            {
+                rowNumber++;
+                sheet.Range[rowNumber, 1].Text = proposal.Title;
+                sheet.Range[rowNumber, 2].Text = proposal.ChallengeArea;
+                sheet.Range[rowNumber, 3].Text = proposal.Submitted?.ToString("dd/MM/yyyy") ?? "";
+                sheet.Range[rowNumber, 4].Text = proposal.Patrol == "" ? proposal.ProposedBy : $"{proposal.ProposedBy}, {proposal.Patrol}";
+                sheet.Range[rowNumber, 5].Text = proposal.SuggestedLead;
+                sheet.Range[rowNumber, 6].Number = proposal.TimesProposed;
+                if (proposal.TimesRun != null)
+                    sheet.Range[rowNumber, 7].Number = proposal.TimesRun.Value;
+                sheet.Range[rowNumber, 8].Text = proposal.LastRun?.ToString("dd/MM/yyyy") ?? "";
+                sheet.Range[rowNumber, 9].Text = proposal.Description;
+                sheet.Range[rowNumber, 10].Text = proposal.Justification;
+                for (int column = 1; column <= columns; column++)
+                    sheet.Range[rowNumber, column].BorderAround();
+                sheet.Range[rowNumber, 6, rowNumber, 8].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                sheet.Range[rowNumber, 1, rowNumber, columns].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
+            }
+
+            // The text columns are a fixed width and wrap, so a long description does not make the page too wide to read
+            sheet.Range[headerRowNumber, 1, rowNumber, 8].AutofitColumns();
+            sheet.SetColumnWidth(1, Math.Min(sheet.GetColumnWidth(1), 28));
+            sheet.SetColumnWidth(5, Math.Min(sheet.GetColumnWidth(5), 28));
+            sheet.SetColumnWidth(9, 40);
+            sheet.SetColumnWidth(10, 40);
+            if (rowNumber > headerRowNumber)
+            {
+                sheet.Range[headerRowNumber + 1, 1, rowNumber, columns].WrapText = true;
+                for (int row = headerRowNumber + 1; row <= rowNumber; row++)
+                    sheet.AutofitRow(row);
+                sheet.AutoFilters.FilterRange = sheet.Range[headerRowNumber, 1, rowNumber, columns];
+            }
+
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
+            sheet.PageSetup.BottomMargin = 0.25;
+            sheet.PageSetup.TopMargin = 0.25;
+            sheet.PageSetup.LeftMargin = 0.25;
+            sheet.PageSetup.RightMargin = 0.25;
+            sheet.PageSetup.HeaderMargin = 0;
+            sheet.PageSetup.FooterMargin = 0;
+            sheet.PageSetup.PrintTitleRows = $"${headerRowNumber}:${headerRowNumber}";
+            // as many pages tall as the proposals need, but one wide
+            sheet.PageSetup.FitToPagesWide = 1;
+            sheet.PageSetup.FitToPagesTall = 0;
+
+            workbook.Worksheets[0].Activate();
+            return workbook;
         }
 
         private DateTime ConvertToClientLocalTime(DateTime dateTime)

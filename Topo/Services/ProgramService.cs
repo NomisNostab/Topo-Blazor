@@ -17,6 +17,8 @@ namespace Topo.Services
         public Task<EventListModel> GetAttendanceForEvent(string eventId);
         public Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string[] selectedCalendars);
         public Task<List<MemberListModel>> GetInviteesForEvent(string eventId);
+        public Task<List<ProgramIdeaItemModel>?> GetProgramIdeas(DateTime fromDate, DateTime? highlightFromDate, string[] selectedCalendars);
+        public Task<List<ProposedActivityModel>?> GetProposedActivities(DateTime? since = null);
     }
 
     public class ProgramService : IProgramService
@@ -293,6 +295,65 @@ namespace Topo.Services
             }
 
             return eventListModel;
+        }
+
+        // The activities the unit's youth have proposed in Terrain, or null when they could not be read, with how many times each has
+        // been proposed and run before (from the given date, or all of them). The runs come from the events on the calendars selected in Terrain (nothing is changed there),
+        // and are left unknown if those events could not be read.
+        public async Task<List<ProposedActivityModel>?> GetProposedActivities(DateTime? since = null)
+        {
+            if (string.IsNullOrEmpty(_storageService.UnitId))
+                return new List<ProposedActivityModel>();
+            var proposals = await _terrainAPIService.GetProposedActivitiesAsync(_storageService.UnitId);
+            if (proposals == null)
+                return null;
+
+            var now = DateTime.Now;
+            var from = since != null && since.Value > EarliestEventDate ? since.Value : EarliestEventDate;
+            var events = proposals.Count == 0 ? null : await _terrainAPIService.GetEventsAsync(GetUser(), from, now);
+            ProposedActivities.AddHistory(proposals, events?.results?.Where(e => !string.IsNullOrWhiteSpace(e.title)).Select(e => (e.title, e.start_datetime)), now);
+            return proposals;
+        }
+
+        // Terrain's events API does not take a minimum date, so "all of the unit's history" starts well before Terrain existed
+        private static readonly DateTime EarliestEventDate = new DateTime(2015, 1, 1);
+
+        public async Task<List<ProgramIdeaItemModel>?> GetProgramIdeas(DateTime fromDate, DateTime? highlightFromDate, string[] selectedCalendars)
+        {
+            TextInfo myTI = new CultureInfo("en-AU", false).TextInfo;
+            await SetCalendar(selectedCalendars);
+            // Matches GetEventsForDates' own fromDate.AddDays(-1) above - without the day of buffer,
+            // an event right at the lookback boundary can be silently excluded.
+            var getEventsResultModel = await _terrainAPIService.GetEventsAsync(GetUser(), fromDate.AddDays(-1), DateTime.Now);
+            await ResetCalendar();
+
+            // null (not an empty list) distinguishes "the request failed" from "genuinely no matches",
+            // since TerrainAPIService swallows request failures and returns a null result model.
+            if (getEventsResultModel == null || getEventsResultModel.results == null)
+                return null;
+
+            // Only the four SIA challenge areas get a sheet/section in the report (matching the other
+            // reports' convention) - filtering here too keeps the on-page list consistent with what
+            // actually ends up in the exported file, rather than showing items that then vanish on export.
+            var knownChallengeAreas = new[] { "community", "creative", "outdoors", "personal_growth" };
+
+            var ideas = new List<ProgramIdeaItemModel>();
+            var grouped = getEventsResultModel.results
+                .Where(e => !string.IsNullOrWhiteSpace(e.title) && knownChallengeAreas.Contains(e.challenge_area))
+                .GroupBy(e => new { Name = e.title.Trim().ToLowerInvariant(), e.challenge_area });
+            foreach (var group in grouped)
+            {
+                var lastRunEvent = group.OrderByDescending(e => e.start_datetime).First();
+                ideas.Add(new ProgramIdeaItemModel
+                {
+                    ActivityName = lastRunEvent.title.Trim(),
+                    ChallengeArea = myTI.ToTitleCase((group.Key.challenge_area ?? "").Replace("_", " ")),
+                    LastRunDate = lastRunEvent.start_datetime,
+                    TimesRun = group.Count(),
+                    Highlight = highlightFromDate.HasValue && lastRunEvent.start_datetime >= highlightFromDate.Value
+                });
+            }
+            return ideas.OrderBy(i => i.ChallengeArea).ThenBy(i => i.ActivityName).ToList();
         }
 
         public async Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string[] selectedCalendars)

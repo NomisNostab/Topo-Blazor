@@ -13,6 +13,8 @@ namespace TopoReportFunctionTest
         private string _attendanceListReportData = "";
         private string _attendanceReportData = "";
         private string _termProgramReportData = "";
+        private string _programIdeasReportData = "";
+        private string _programIdeasPaginationReportData = "";
 
         [TestInitialize]
         public void SetUp()
@@ -32,6 +34,8 @@ namespace TopoReportFunctionTest
             _attendanceListReportData = File.ReadAllText("ReportData/EventAttendanceList.json");
             _attendanceReportData = File.ReadAllText("ReportData/EventAttendance.json");
             _termProgramReportData = File.ReadAllText("ReportData/EventTermProgram.json");
+            _programIdeasReportData = File.ReadAllText("ReportData/ProgramIdeas.json");
+            _programIdeasPaginationReportData = File.ReadAllText("ReportData/ProgramIdeasPagination.json");
             if (!Directory.Exists("TestResults"))
                 Directory.CreateDirectory("TestResults");
         }
@@ -117,6 +121,59 @@ namespace TopoReportFunctionTest
             //Convert Base64String into PDF document
             byte[] bytes = Convert.FromBase64String(functionResult);
             FileStream fileStream = new FileStream(@"TestResults/TermProgram_ToExcel.xlsx", FileMode.Create);
+            BinaryWriter writer = new BinaryWriter(fileStream);
+            writer.Write(bytes, 0, bytes.Length);
+            writer.Close();
+        }
+
+        [TestMethod]
+        public void ProgramIdeas_ToPDF()
+        {
+            _reportGenerationRequest.ReportType = ReportType.ProgramIdeas;
+            _reportGenerationRequest.ReportData = _programIdeasReportData;
+            _reportGenerationRequest.OutputType = OutputType.PDF;
+            var proxyRequest = new Amazon.Lambda.APIGatewayEvents.APIGatewayProxyRequest();
+            proxyRequest.Body = JsonConvert.SerializeObject(_reportGenerationRequest);
+            var functionResult = _function.FunctionHandler(proxyRequest, null);
+            //Convert Base64String into PDF document
+            byte[] bytes = Convert.FromBase64String(functionResult);
+            FileStream fileStream = new FileStream(@"TestResults/ProgramIdeas_ToPDF.pdf", FileMode.Create);
+            BinaryWriter writer = new BinaryWriter(fileStream);
+            writer.Write(bytes, 0, bytes.Length);
+            writer.Close();
+        }
+
+        [TestMethod]
+        public void ProgramIdeas_ToExcel()
+        {
+            _reportGenerationRequest.ReportType = ReportType.ProgramIdeas;
+            _reportGenerationRequest.ReportData = _programIdeasReportData;
+            _reportGenerationRequest.OutputType = OutputType.Excel;
+            var proxyRequest = new Amazon.Lambda.APIGatewayEvents.APIGatewayProxyRequest();
+            proxyRequest.Body = JsonConvert.SerializeObject(_reportGenerationRequest);
+            var functionResult = _function.FunctionHandler(proxyRequest, null);
+            //Convert Base64String into PDF document
+            byte[] bytes = Convert.FromBase64String(functionResult);
+            FileStream fileStream = new FileStream(@"TestResults/ProgramIdeas_ToExcel.xlsx", FileMode.Create);
+            BinaryWriter writer = new BinaryWriter(fileStream);
+            writer.Write(bytes, 0, bytes.Length);
+            writer.Close();
+        }
+
+        [TestMethod]
+        public void ProgramIdeas_Pagination_ToPDF()
+        {
+            // One large category (25 rows, over the half-page threshold) followed by several small
+            // ones - the small categories should share a page instead of each starting a fresh one.
+            _reportGenerationRequest.ReportType = ReportType.ProgramIdeas;
+            _reportGenerationRequest.ReportData = _programIdeasPaginationReportData;
+            _reportGenerationRequest.OutputType = OutputType.PDF;
+            var proxyRequest = new Amazon.Lambda.APIGatewayEvents.APIGatewayProxyRequest();
+            proxyRequest.Body = JsonConvert.SerializeObject(_reportGenerationRequest);
+            var functionResult = _function.FunctionHandler(proxyRequest, null);
+            //Convert Base64String into PDF document
+            byte[] bytes = Convert.FromBase64String(functionResult);
+            FileStream fileStream = new FileStream(@"TestResults/ProgramIdeas_Pagination_ToPDF.pdf", FileMode.Create);
             BinaryWriter writer = new BinaryWriter(fileStream);
             writer.Write(bytes, 0, bytes.Length);
             writer.Close();
