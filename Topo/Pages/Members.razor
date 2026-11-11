@@ -12,6 +12,8 @@
         <h2>Members @model.GroupName</h2>
     </div>
 
+    <MembersSubNav />
+
     <div class="form-group mb-3 row">
         <label for="unit" class="col-sm-2 col-form-label">
             Select Unit
@@ -27,8 +29,6 @@
         </div>
         <div class="col-sm-3">
             <button type="submit" name="button" @onclick="MemberRefreshClick" class="btn btn-primary" disabled=@disabled >Refresh Members</button>
-        </div>
-        <div class="col-sm-4">
         </div>
     </div>
 
