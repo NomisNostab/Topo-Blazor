@@ -31,35 +31,7 @@
                 <label class="col-form-label validation-message">@indexPageViewModel.GroupErrorMessage</label>
             </div>
         </div>
-        <div class="mb-3 row">
-            <p>
-                Use Members to see the members of your units, print patrol lists and patrol corner sheets.
-            </p>
-            <p>
-                Use Program to see the calendar of your units, print sign in sheets and print attendance lists.
-            </p>
-            <p>
-                Use OAS to print OAS Stage reports.
-            </p>
-            <p>
-                Use SIA to print SIA Status report.
-            </p>
-            <p>
-                Use Milestone to print Milestone Summary report.
-            </p>
-            <p>
-                Use Logbook to print Logbook Summary report.
-            </p>
-            <p>
-                Use Wallchart to print Wallchart report.
-            </p>
-            <p>
-                Use Awards to print Additional Awards report.
-            </p>
-            <p>
-                Use Approvals to print Approvals report.
-            </p>
-        </div>
+        <HomeGuide IsYouthMember="indexPageViewModel.IsYouthMember" />
     }
 </EditForm>
 

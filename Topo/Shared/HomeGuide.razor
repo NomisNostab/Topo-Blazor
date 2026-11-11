@@ -1,0 +1,60 @@
+@* What Topo is and what each part of the menu is for, grouped as the menu is. *@
+<div class="mb-3 row">
+    <p class="lead">
+        Terrain is Scouts Australia's online system for looking after your members, program and achievements.
+        Topo reads from your Terrain account and turns it into the reports and print-outs leaders ask for: patrol lists,
+        sign in sheets, badge progress, wallcharts and more.
+    </p>
+    @if (IsYouthMember)
+    {
+        <p>Use the menu on the left to see your Logbook, your Additional Awards and your Personal Progress.</p>
+    }
+    else
+    {
+        <p>Pick your group above, then use the menu on the left. It is grouped like this:</p>
+    }
+</div>
+@if (!IsYouthMember)
+{
+    <div class="mb-3">
+        <h4>Badgework</h4>
+        <p class="text-muted">Where Scouts are up to on their badges.</p>
+        <div class="row mb-1"><div class="col-sm-3"><NavLink href="oas">OAS</NavLink></div><div class="col-sm-9">Print the Outdoor Adventure Skill stage reports.</div></div>
+        <div class="row mb-1"><div class="col-sm-3"><NavLink href="sia">SIA</NavLink></div><div class="col-sm-9">Print the Special Interest Area status report: who has projects started, in review or finished.</div></div>
+        <div class="row mb-1"><div class="col-sm-3"><NavLink href="milestone">Milestone</NavLink></div><div class="col-sm-9">Print the Milestone summary report.</div></div>
+        <div class="row mb-1"><div class="col-sm-3"><NavLink href="awards">Additional Awards</NavLink></div><div class="col-sm-9">Print the Additional Awards report.</div></div>
+    </div>
+
+    <div class="mb-3">
+        <h4>Reports</h4>
+        <p class="text-muted">Lists and summaries to print or keep.</p>
+        <div class="row mb-1"><div class="col-sm-3"><NavLink href="members">Members</NavLink></div><div class="col-sm-9">See the members of your units, and print patrol lists and patrol corner sheets.</div></div>
+        <div class="row mb-1"><div class="col-sm-3"><NavLink href="program">Program</NavLink></div><div class="col-sm-9">See the calendar of your units and print attendance lists.</div></div>
+        <div class="row mb-1"><div class="col-sm-3"><NavLink href="logbook">Logbook</NavLink></div><div class="col-sm-9">Print the Logbook summary report.</div></div>
+        <div class="row mb-1"><div class="col-sm-3"><NavLink href="wallchart">Wallchart</NavLink></div><div class="col-sm-9">Print the Wallchart: every Scout's progress on one chart.</div></div>
+        <div class="row mb-1"><div class="col-sm-3"><NavLink href="approvals/approvals">Approvals</NavLink></div><div class="col-sm-9">Print the Approvals report: badges and awards waiting to be approved or presented.</div></div>
+        <div class="row mb-1"><div class="col-sm-3"><NavLink href="progress/progress">Personal Progress</NavLink></div><div class="col-sm-9">Print one Scout's progress.</div></div>
+        <div class="row mb-1"><div class="col-sm-3"><NavLink href="scoutinghistory/member">Scouting History</NavLink></div><div class="col-sm-9">A Scout's whole history across sections, or a unit's totals over a period.</div></div>
+    </div>
+
+    <div class="mb-3">
+        <h4>Tools</h4>
+        <p class="text-muted">Things to help you run the unit.</p>
+        <div class="row mb-1"><div class="col-sm-3"><NavLink href="members/patrolplanner">Patrol Planner</NavLink></div><div class="col-sm-9">Drag and drop Scouts between patrols to plan a reshuffle.</div></div>
+        <div class="row mb-1"><div class="col-sm-3"><NavLink href="signinsheet">Sign In Sheet</NavLink></div><div class="col-sm-9">Make a sign in sheet for a meeting or activity.</div></div>
+        <div class="row mb-1"><div class="col-sm-3"><NavLink href="program/ideas">Program Ideas</NavLink></div><div class="col-sm-9">Browse and print program ideas.</div></div>
+    </div>
+
+    <div class="mb-3">
+        <h4>Settings</h4>
+        <p class="text-muted">Looking after your session.</p>
+        <div class="row mb-1"><div class="col-sm-3">Logout</div><div class="col-sm-9">Sign out of Topo.</div></div>
+        <div class="row mb-1"><div class="col-sm-3"><a href="https://github.com/NomisNostab/Topo-Blazor/wiki" target="_blank">Help</a></div><div class="col-sm-9">How to use Topo, on its wiki.</div></div>
+        <div class="row mb-1"><div class="col-sm-3">Enable Logging</div><div class="col-sm-9">Record what Topo asks Terrain, to help track down a problem.</div></div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool IsYouthMember { get; set; }
+}
