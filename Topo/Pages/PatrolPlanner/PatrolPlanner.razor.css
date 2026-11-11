@@ -1,0 +1,139 @@
+.patrol-board {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.patrol-column {
+    background-color: var(--patrol-color, #e2e2e2);
+    border-radius: 8px;
+    padding: 0.5rem;
+    min-width: 220px;
+    flex: 1 1 220px;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.patrol-column-ul {
+    background-color: #f0f0f0;
+    border: 2px dashed #999;
+}
+
+.patrol-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.05rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Both wrapped as single flex children of .patrol-header so its justify-content: space-between
+   only ever sees two groups (name+count on the left, colour+remove on the right) - without this,
+   a third loose child would get pushed to the middle instead of staying grouped on one side. */
+.patrol-header-title {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.patrol-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex: 0 0 auto;
+}
+
+.patrol-remove-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    line-height: 1;
+    color: rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+    padding: 0 0.1rem;
+}
+
+.patrol-remove-btn:hover {
+    color: rgba(0, 0, 0, 0.85);
+}
+
+.patrol-color-picker-wrap {
+    position: relative;
+    display: inline-block;
+    width: 1.3rem;
+    height: 1.3rem;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    cursor: pointer;
+    background: conic-gradient(from 0deg, #ff0000, #ff8800, #ffee00, #44dd00, #00ccaa, #0066ff, #8800ff, #ff00aa, #ff0000);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+/* Invisible but fully clickable, stacked exactly over .patrol-color-picker-wrap so a click opens
+   the real native colour picker while the user only ever sees the rainbow wheel underneath. */
+.patrol-color-picker-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    border: none;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.patrol-count {
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 999px;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.85rem;
+}
+
+.patrol-count-unbalanced {
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+.patrol-gender-tally {
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 0.4rem;
+}
+
+.patrol-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-height: 40px;
+}
+
+.patrol-cards-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.export-panel {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0.75rem;
+}
+
+.export-panel-label {
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 0.5rem;
+}
+
+.export-panel-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.add-patrol-input {
+    max-width: 220px;
+}

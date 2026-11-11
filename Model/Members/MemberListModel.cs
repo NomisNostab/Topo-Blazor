@@ -22,6 +22,10 @@ namespace Topo.Model.Members
         public string patrol_duty { get; set; } = string.Empty;
         public int patrol_order { get; set; } = 0;
         public int isAdultLeader { get; set; } = 0;
+        // Unlike every other field here, this is NOT Terrain data - Terrain doesn't expose gender.
+        // It's a per-member annotation the leader sets in the Patrol Planner UI and that MembersService
+        // persists to this browser's local storage (see SetMemberGenderAsync).
+        public string gender { get; set; } = string.Empty;
         public bool selected { get; set; }
         public bool isEligibleJamboree { get; set; } = false;
     }

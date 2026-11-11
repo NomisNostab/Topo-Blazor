@@ -1,0 +1,58 @@
+@* One draggable member card used both in the Unit Leader banner and in each patrol column.
+   The background colour is the member's ORIGINAL patrol's colour (passed in by the caller),
+   not the column it currently sits in, so a moved card still visibly stands out. *@
+@using Topo.Model.PatrolPlanner
+
+<div class="member-card @(Member.IsChanged ? "changed" : "")" style="background-color:@OriginPatrolColor" draggable="@(Member.PatrolDuty != "UL" ? "true" : "false")" @ondragstart="() => OnDragStart.InvokeAsync(Member.Id)">
+    <span class="gender-badge @GenderClass(Member.Gender)" title="Click to change gender" @onclick="() => OnGenderCycle.InvokeAsync(Member)">@GenderLabel(Member.Gender)</span>
+    <span class="member-name">@Member.FirstName @Member.LastName</span>
+    <span class="duty-badge @DutyClass(Member.PatrolDuty)" title="Click to change role" @onclick="CycleDuty">@Member.PatrolDuty</span>
+    <span class="member-age">@Member.Age</span>
+</div>
+
+@code {
+    [Parameter] public PatrolPlannerMember Member { get; set; } = default!;
+    [Parameter] public string OriginPatrolColor { get; set; } = "#ffffff";
+    [Parameter] public EventCallback<string> OnDragStart { get; set; }
+    [Parameter] public EventCallback<(PatrolPlannerMember, string)> OnDutyChanged { get; set; }
+    [Parameter] public EventCallback<PatrolPlannerMember> OnGenderCycle { get; set; }
+
+    // Cycles Member -> APL -> PL -> UL -> Member. Selecting UL here is what moves a card out of
+    // its column and into the Unit Leader banner - handled by the parent page re-filtering on
+    // the next render, not by anything this component does directly.
+    private Task CycleDuty()
+    {
+        var next = Member.PatrolDuty switch
+        {
+            "" => "APL",
+            "APL" => "PL",
+            "PL" => "UL",
+            _ => ""
+        };
+        return OnDutyChanged.InvokeAsync((Member, next));
+    }
+
+    private static string GenderLabel(string gender) => gender switch
+    {
+        "M" => "M",
+        "F" => "F",
+        "NB" => "NB",
+        _ => "–"
+    };
+
+    private static string GenderClass(string gender) => gender switch
+    {
+        "M" => "gender-male",
+        "F" => "gender-female",
+        "NB" => "gender-nb",
+        _ => "gender-unknown"
+    };
+
+    private static string DutyClass(string duty) => duty switch
+    {
+        "APL" => "duty-apl",
+        "PL" => "duty-pl",
+        "UL" => "duty-ul",
+        _ => "duty-blank"
+    };
+}
