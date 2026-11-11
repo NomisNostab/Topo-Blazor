@@ -1,12 +1,52 @@
-﻿<Router AppAssembly="@typeof(App).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
-    <NotFound>
-        <PageTitle>Not found</PageTitle>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p role="alert">Sorry, there's nothing at this address.</p>
-        </LayoutView>
-    </NotFound>
-</Router>
+﻿@using Faso.Blazor.SpinKit
+@inject Topo.Services.ILoginService LoginService
+
+@* The Router (and so every page's own OnInitialized, which reads StorageService.IsAuthenticated
+   synchronously) must not render until a "Remember Me" session has had a chance to restore -
+   otherwise a protected page would see IsAuthenticated=false for one frame and redirect to login
+   before the restore below ever completes. *@
+@if (_restoring)
+{
+    <div class="spinner-container">
+        <SpinKitCircle />
+    </div>
+}
+else
+{
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Not found</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p role="alert">Sorry, there's nothing at this address.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+}
+
+@* Duplicates Shared/Spinner.razor's own .spinner-container styling (kept visually consistent with
+   it) rather than reusing that component directly: Spinner.razor is driven by SpinnerService's
+   show/hide events, but nothing fires those this early - this one is tied to _restoring instead. *@
+<style>
+    .spinner-container {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        z-index: 999;
+        top: 50%;
+        left: 50%;
+    }
+</style>
+
+@code {
+    private bool _restoring = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoginService.TryRestoreSessionAsync();
+        _restoring = false;
+    }
+}
