@@ -106,6 +106,9 @@ public class Function
                     case ReportType.ProgramIdeas:
                         workbook = GenerateProgramIdeasWorkbook(reportGenerationRequest);
                         break;
+                    case ReportType.ProposedActivities:
+                        workbook = GenerateProposedActivitiesWorkbook(reportGenerationRequest);
+                        break;
                 }
 
                 Console.WriteLine("Workbook completed");
@@ -341,6 +344,17 @@ public class Function
             var workbook = reportService.GenerateProgramIdeasWorkbook(reportData, reportGenerationRequest.GroupName, reportGenerationRequest.Section
                 , reportGenerationRequest.UnitName, reportGenerationRequest.OutputType == OutputType.PDF);
             return workbook;
+        }
+        return reportService.CreateWorkbookWithSheets(1);
+    }
+
+    private IWorkbook GenerateProposedActivitiesWorkbook(ReportGenerationRequest reportGenerationRequest)
+    {
+        var reportData = JsonConvert.DeserializeObject<ProposedActivitiesReportData>(reportGenerationRequest.ReportData);
+        if (reportData != null)
+        {
+            return reportService.GenerateProposedActivitiesWorkbook(reportData, reportGenerationRequest.GroupName, reportGenerationRequest.Section
+                , reportGenerationRequest.UnitName);
         }
         return reportService.CreateWorkbookWithSheets(1);
     }

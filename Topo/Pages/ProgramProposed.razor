@@ -1,0 +1,140 @@
+@page "/program/proposed"
+@inherits Controller.ProgramProposedController
+@using Topo.Model.Program
+
+<PageTitle>Topo / Proposed Activities</PageTitle>
+
+<div class="mt-3 mb-3 row">
+    <h2>Program @GroupName</h2>
+</div>
+
+<ProgramSubNav />
+
+<p class="text-muted">The activities the unit's youth have proposed in Terrain, waiting to be planned. This only reads them; to plan or remove one, use Terrain.
+    "Run before" counts events on the calendars selected in Terrain, from the date chosen up to today. Names count as the same activity when one has all the main words of the other, so "Origami" matches "Origami Night"; open a row to see what was counted.</p>
+
+<div class="form-group mb-3 row">
+    <label class="col-sm-2 col-form-label">Count runs from</label>
+    <div class="col-sm-3">
+        <select class="form-select" @bind="SinceRange" @bind:after="SinceChanged">
+            <option value="@ProgramIdeasRangeOption.None">All time (no limit)</option>
+            <option value="@ProgramIdeasRangeOption.Year">Last year</option>
+            <option value="@ProgramIdeasRangeOption.SixMonths">Last 6 months</option>
+            <option value="@ProgramIdeasRangeOption.UserSet">Custom date</option>
+        </select>
+    </div>
+    @if (SinceRange == ProgramIdeasRangeOption.UserSet)
+    {
+        <label class="col-sm-1 col-form-label">Since</label>
+        <div class="col-sm-3">
+            <InputDate @bind-Value="SinceDate" @bind-Value:after="SinceChanged" class="form-control" />
+        </div>
+    }
+</div>
+
+@if (NoUnit)
+{
+    <div class="mb-3">Choose a unit on the Calendar tab to see the activities its youth have proposed.</div>
+}
+else if (Loading)
+{
+    <div class="mb-3">Reading the proposed activities from Terrain...</div>
+}
+else if (FetchFailed)
+{
+    <div class="row mb-3">
+        <div class="col-sm validation-message">Could not read the proposed activities from Terrain.</div>
+        <div class="col-sm-12 mt-2"><button type="button" class="btn btn-primary" @onclick="Load">Try again</button></div>
+    </div>
+}
+else if (Proposals.Count == 0)
+{
+    <div class="mb-3">No activities have been proposed in Terrain.</div>
+}
+else
+{
+    var shown = Shown;
+    <div class="form-group mb-3 row">
+        <label class="col-sm-2 col-form-label">Challenge area</label>
+        <div class="col-sm-3">
+            <select class="form-select" @bind="AreaFilter">
+                <option value="">All (@Proposals.Count)</option>
+                @foreach (var area in Areas)
+                {
+                    <option value="@area">@area (@Proposals.Count(p => p.ChallengeArea == area))</option>
+                }
+            </select>
+        </div>
+        <div class="col-sm-3 col-form-label text-muted">Showing @shown.Count of @Proposals.Count</div>
+    </div>
+    <div class="mb-3">
+        <button type="button" class="btn btn-primary" @onclick="ReportPdfClick">Proposed Activities (pdf)</button> &nbsp;
+        <button type="button" class="btn btn-success" @onclick="ReportXlsxClick">Proposed Activities (xlsx)</button>
+    </div>
+
+    <table class="table table-sm table-striped align-middle">
+        <thead>
+            <tr>
+                <th role="button" @onclick="() => SortByColumn(ProposedActivitySortColumn.Activity)">Activity@(SortIndicator(ProposedActivitySortColumn.Activity))</th>
+                <th role="button" @onclick="() => SortByColumn(ProposedActivitySortColumn.ChallengeArea)">Challenge area@(SortIndicator(ProposedActivitySortColumn.ChallengeArea))</th>
+                <th role="button" class="text-nowrap" @onclick="() => SortByColumn(ProposedActivitySortColumn.Submitted)">Date submitted@(SortIndicator(ProposedActivitySortColumn.Submitted))</th>
+                <th role="button" @onclick="() => SortByColumn(ProposedActivitySortColumn.ProposedBy)">Proposed by@(SortIndicator(ProposedActivitySortColumn.ProposedBy))</th>
+                <th>Suggested lead</th>
+                <th role="button" class="text-center" title="How many times an activity with this name has been proposed" @onclick="() => SortByColumn(ProposedActivitySortColumn.TimesProposed)">Times proposed@(SortIndicator(ProposedActivitySortColumn.TimesProposed))</th>
+                <th role="button" class="text-center" title="How many times an activity with this name has been run before, and when it last was" @onclick="() => SortByColumn(ProposedActivitySortColumn.TimesRun)">Run before@(SortIndicator(ProposedActivitySortColumn.TimesRun))</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var proposal in shown)
+            {
+                var isOpen = Open.Contains(proposal.OpenKey);
+                <tr role="button" @onclick="() => Toggle(proposal)">
+                    <td><span class="text-muted">@(isOpen ? "▾" : "▸")</span> @proposal.Title</td>
+                    <td>@proposal.ChallengeArea</td>
+                    <td class="text-nowrap">@(proposal.Submitted?.ToString("dd/MM/yyyy"))</td>
+                    <td>@proposal.ProposedBy@(proposal.Patrol == "" ? "" : ", " + proposal.Patrol)</td>
+                    <td>@proposal.SuggestedLead</td>
+                    <td class="text-center" title="How many proposals have the same activity name, this one included">@(proposal.TimesProposed == 1 ? "Once" : proposal.TimesProposed + " times")</td>
+                    <td class="text-center">
+                        @if (proposal.TimesRun == null)
+                        {
+                            <span class="text-muted" title="The unit's events could not be read">Unknown</span>
+                        }
+                        else if (proposal.TimesRun == 0)
+                        {
+                            <span class="text-muted">Never</span>
+                        }
+                        else
+                        {
+                            <span>@(proposal.TimesRun == 1 ? "Once" : proposal.TimesRun + " times")</span>
+                            <div class="small text-muted">last @proposal.LastRun?.ToString("dd/MM/yyyy")</div>
+                        }
+                    </td>
+                </tr>
+                @if (isOpen)
+                {
+                    <tr>
+                        <td colspan="7" class="ps-4">
+                            @if (proposal.Description == "" && proposal.Justification == "" && proposal.RunTitles.Count == 0)
+                            {
+                                <span class="text-muted">No description or reasons were given.</span>
+                            }
+                            @if (proposal.RunTitles.Count > 0)
+                            {
+                                <div><strong>Counted as run before:</strong> @string.Join(", ", proposal.RunTitles)</div>
+                            }
+                            @if (proposal.Description != "")
+                            {
+                                <div><strong>What:</strong> @proposal.Description</div>
+                            }
+                            @if (proposal.Justification != "")
+                            {
+                                <div><strong>Why:</strong> @proposal.Justification</div>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}

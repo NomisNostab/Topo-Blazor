@@ -25,6 +25,7 @@ namespace Topo.Services
         public Task PutCalendarsAsync(string userId, GetCalendarsResultModel putCalendarsResultModel);
         public Task<GetEventsResultModel?> GetEventsAsync(string userId, DateTime fromDate, DateTime toDate);
         public Task<GetEventResultModel?> GetEventAsync(string eventId);
+        public Task<List<ProposedActivityModel>?> GetProposedActivitiesAsync(string unitId);
         public Task<GetOASTreeResultsModel?> GetOASTreeAsync(string stream);
         public Task<GetOASTemplateResultModel?> GetOASTemplateAsync(string stream);
         public Task<GetUnitAchievementsResultsModel> GetUnitOASAchievements(string unit, string stream, string branch, int stage);
@@ -235,6 +236,16 @@ namespace Topo.Services
             var getEventResultModel = DeserializeObject<GetEventResultModel>(result);
 
             return getEventResultModel;
+        }
+
+        // The activities the unit's youth have proposed in Terrain; null when Terrain could not be read
+        public async Task<List<ProposedActivityModel>?> GetProposedActivitiesAsync(string unitId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{eventsAddress}units/{unitId}/proposals";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            return ProposedActivities.Parse(result);
         }
 
         public async Task<GetOASTreeResultsModel?> GetOASTreeAsync(string stream)

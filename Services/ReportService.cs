@@ -35,6 +35,7 @@ namespace Topo.Services
         public IWorkbook GenerateProgressWorkbook(ProgressDetailsPageViewModel progressEntries, string groupName, string section, string unitName);
         public IWorkbook GenerateTermProgramWorkbook(List<EventListModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateProgramIdeasWorkbook(List<ProgramIdeaItemModel> programIdeas, string groupName, string section, string unitName, bool forPdfOutput);
+        public IWorkbook GenerateProposedActivitiesWorkbook(ProposedActivitiesReportData reportData, string groupName, string section, string unitName);
         public IWorkbook CreateWorkbookWithSheets(int sheetsToCreate);
     }
     public class ReportService : IReportService
@@ -2722,6 +2723,101 @@ namespace Topo.Services
             sheet.PageSetup.FitToPagesWide = 1;
             sheet.PageSetup.FitToPagesTall = 0;
 
+            return workbook;
+        }
+
+        // The activities the youth have proposed in Terrain, one sheet that is the same for the spreadsheet and the pdf: what they
+        // proposed and why, who by, and how many times the activity has been proposed and run before. The rows come in the order the
+        // page showed them.
+        public IWorkbook GenerateProposedActivitiesWorkbook(ProposedActivitiesReportData reportData, string groupName, string section, string unitName)
+        {
+            const int columns = 10;
+            var workbook = CreateWorkbookWithSheets(1);
+            var sheet = AddLogoToSheet(workbook, 0, groupName, section, 6);
+            sheet.Name = "Proposed Activities";
+
+            int rowNumber = 2;
+            var unitCell = sheet.Range[rowNumber, 2];
+            unitCell.Text = unitName;
+            unitCell.CellStyle = workbook.Styles["headingStyle"];
+            sheet.Range[rowNumber, 2, rowNumber, 6].Merge();
+            sheet.SetRowHeight(rowNumber, 25);
+
+            rowNumber++;
+            var titleCell = sheet.Range[rowNumber, 2];
+            titleCell.Text = "Proposed Activities";
+            titleCell.CellStyle = workbook.Styles["headingStyle"];
+            sheet.Range[rowNumber, 2, rowNumber, 6].Merge();
+            sheet.SetRowHeight(rowNumber, 25);
+
+            rowNumber++;
+            var proposals = reportData.Proposals ?? new List<ProposedActivityModel>();
+            sheet.Range[rowNumber, 2].Text = proposals.Any(p => p.TimesRun == null)
+                ? "Times run are not shown: the unit's events could not be read"
+                : reportData.Since == null
+                    ? "Times run: all events up to today, with the same main words in the name"
+                    : $"Times run: events from {reportData.Since.Value:dd/MM/yyyy} up to today, with the same main words in the name";
+            sheet.Range[rowNumber, 2].CellStyle.Font.Italic = true;
+
+            rowNumber += 2;
+            var headerRowNumber = rowNumber;
+            var headings = new[] { "Activity", "Challenge Area", "Date Submitted", "Proposed By", "Suggested Lead", "Times Proposed", "Times Run", "Last Run", "What", "Why" };
+            for (int column = 1; column <= columns; column++)
+            {
+                sheet.Range[rowNumber, column].Text = headings[column - 1];
+                sheet.Range[rowNumber, column].BorderAround();
+            }
+            sheet.Range[rowNumber, 1, rowNumber, columns].CellStyle.Font.Bold = true;
+            sheet.Range[rowNumber, 1, rowNumber, columns].CellStyle.ColorIndex = ExcelKnownColors.Grey_40_percent;
+
+            foreach (var proposal in proposals)
+            {
+                rowNumber++;
+                sheet.Range[rowNumber, 1].Text = proposal.Title;
+                sheet.Range[rowNumber, 2].Text = proposal.ChallengeArea;
+                sheet.Range[rowNumber, 3].Text = proposal.Submitted?.ToString("dd/MM/yyyy") ?? "";
+                sheet.Range[rowNumber, 4].Text = proposal.Patrol == "" ? proposal.ProposedBy : $"{proposal.ProposedBy}, {proposal.Patrol}";
+                sheet.Range[rowNumber, 5].Text = proposal.SuggestedLead;
+                sheet.Range[rowNumber, 6].Number = proposal.TimesProposed;
+                if (proposal.TimesRun != null)
+                    sheet.Range[rowNumber, 7].Number = proposal.TimesRun.Value;
+                sheet.Range[rowNumber, 8].Text = proposal.LastRun?.ToString("dd/MM/yyyy") ?? "";
+                sheet.Range[rowNumber, 9].Text = proposal.Description;
+                sheet.Range[rowNumber, 10].Text = proposal.Justification;
+                for (int column = 1; column <= columns; column++)
+                    sheet.Range[rowNumber, column].BorderAround();
+                sheet.Range[rowNumber, 6, rowNumber, 8].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                sheet.Range[rowNumber, 1, rowNumber, columns].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
+            }
+
+            // The text columns are a fixed width and wrap, so a long description does not make the page too wide to read
+            sheet.Range[headerRowNumber, 1, rowNumber, 8].AutofitColumns();
+            sheet.SetColumnWidth(1, Math.Min(sheet.GetColumnWidth(1), 28));
+            sheet.SetColumnWidth(5, Math.Min(sheet.GetColumnWidth(5), 28));
+            sheet.SetColumnWidth(9, 40);
+            sheet.SetColumnWidth(10, 40);
+            if (rowNumber > headerRowNumber)
+            {
+                sheet.Range[headerRowNumber + 1, 1, rowNumber, columns].WrapText = true;
+                for (int row = headerRowNumber + 1; row <= rowNumber; row++)
+                    sheet.AutofitRow(row);
+                sheet.AutoFilters.FilterRange = sheet.Range[headerRowNumber, 1, rowNumber, columns];
+            }
+
+            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+            sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
+            sheet.PageSetup.BottomMargin = 0.25;
+            sheet.PageSetup.TopMargin = 0.25;
+            sheet.PageSetup.LeftMargin = 0.25;
+            sheet.PageSetup.RightMargin = 0.25;
+            sheet.PageSetup.HeaderMargin = 0;
+            sheet.PageSetup.FooterMargin = 0;
+            sheet.PageSetup.PrintTitleRows = $"${headerRowNumber}:${headerRowNumber}";
+            // as many pages tall as the proposals need, but one wide
+            sheet.PageSetup.FitToPagesWide = 1;
+            sheet.PageSetup.FitToPagesTall = 0;
+
+            workbook.Worksheets[0].Activate();
             return workbook;
         }
 

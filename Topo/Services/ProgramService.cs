@@ -18,6 +18,7 @@ namespace Topo.Services
         public Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string[] selectedCalendars);
         public Task<List<MemberListModel>> GetInviteesForEvent(string eventId);
         public Task<List<ProgramIdeaItemModel>?> GetProgramIdeas(DateTime fromDate, DateTime? highlightFromDate, string[] selectedCalendars);
+        public Task<List<ProposedActivityModel>?> GetProposedActivities(DateTime? since = null);
     }
 
     public class ProgramService : IProgramService
@@ -295,6 +296,27 @@ namespace Topo.Services
 
             return eventListModel;
         }
+
+        // The activities the unit's youth have proposed in Terrain, or null when they could not be read, with how many times each has
+        // been proposed and run before (from the given date, or all of them). The runs come from the events on the calendars selected in Terrain (nothing is changed there),
+        // and are left unknown if those events could not be read.
+        public async Task<List<ProposedActivityModel>?> GetProposedActivities(DateTime? since = null)
+        {
+            if (string.IsNullOrEmpty(_storageService.UnitId))
+                return new List<ProposedActivityModel>();
+            var proposals = await _terrainAPIService.GetProposedActivitiesAsync(_storageService.UnitId);
+            if (proposals == null)
+                return null;
+
+            var now = DateTime.Now;
+            var from = since != null && since.Value > EarliestEventDate ? since.Value : EarliestEventDate;
+            var events = proposals.Count == 0 ? null : await _terrainAPIService.GetEventsAsync(GetUser(), from, now);
+            ProposedActivities.AddHistory(proposals, events?.results?.Where(e => !string.IsNullOrWhiteSpace(e.title)).Select(e => (e.title, e.start_datetime)), now);
+            return proposals;
+        }
+
+        // Terrain's events API does not take a minimum date, so "all of the unit's history" starts well before Terrain existed
+        private static readonly DateTime EarliestEventDate = new DateTime(2015, 1, 1);
 
         public async Task<List<ProgramIdeaItemModel>?> GetProgramIdeas(DateTime fromDate, DateTime? highlightFromDate, string[] selectedCalendars)
         {
