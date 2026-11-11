@@ -997,16 +997,32 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].Text = "Youth Total";
             sheet.Range[rowNumber, 1].BorderAround();
             var startCol = forPdfOutput ? 2 : 3;
+            // A unit with no youth (an adults-only team) has no rows to add up, so its totals are zero
+            var anyYouthRows = sumEndRow >= sumStartRow;
             for (int i = startCol; i <= columnNumber - 1; i++)
             {
-                var sumRange = sheet.Range[sumStartRow, i, sumEndRow, i].AddressLocal;
-                sheet.Range[rowNumber, i].Formula = @$"=COUNTIFS({sumRange}, ""Y"")+COUNTIFS({sumRange}, ""P"")+COUNTIFS({sumRange}, ""A"")+COUNTIFS({sumRange}, ""L"")";
+                if (anyYouthRows)
+                {
+                    var sumRange = sheet.Range[sumStartRow, i, sumEndRow, i].AddressLocal;
+                    sheet.Range[rowNumber, i].Formula = @$"=COUNTIFS({sumRange}, ""Y"")+COUNTIFS({sumRange}, ""P"")+COUNTIFS({sumRange}, ""A"")+COUNTIFS({sumRange}, ""L"")";
+                }
+                else
+                {
+                    sheet.Range[rowNumber, i].Number = 0;
+                }
                 sheet.Range[rowNumber, i].BorderAround();
                 sheet.Range[rowNumber, i].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, i].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
             }
-            sheet.Range[rowNumber, columnNumber].Formula = $"SUM({sheet.Range[sumStartRow, columnNumber, sumEndRow, columnNumber].AddressLocal})";
-            sheet.Range[rowNumber, columnNumber].Number = sheet.Range[rowNumber, columnNumber].FormulaNumberValue;
+            if (anyYouthRows)
+            {
+                sheet.Range[rowNumber, columnNumber].Formula = $"SUM({sheet.Range[sumStartRow, columnNumber, sumEndRow, columnNumber].AddressLocal})";
+                sheet.Range[rowNumber, columnNumber].Number = sheet.Range[rowNumber, columnNumber].FormulaNumberValue;
+            }
+            else
+            {
+                sheet.Range[rowNumber, columnNumber].Number = 0;
+            }
             sheet.Range[rowNumber, columnNumber].BorderAround();
             sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
             sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
@@ -1060,16 +1076,31 @@ namespace Topo.Services
             sheet.Range[rowNumber, 1].BorderAround();
             if (!forPdfOutput)
                 sheet.Range[rowNumber, 2].BorderAround();
+            var anyAdultRows = sumEndRow >= sumStartRow;
             for (int i = forPdfOutput ? 2 : 3; i <= columnNumber - 1; i++)
             {
-                var sumRange = sheet.Range[sumStartRow, i, sumEndRow, i].AddressLocal;
-                sheet.Range[rowNumber, i].Formula = @$"=COUNTIFS({sumRange}, ""Y"")";
+                if (anyAdultRows)
+                {
+                    var sumRange = sheet.Range[sumStartRow, i, sumEndRow, i].AddressLocal;
+                    sheet.Range[rowNumber, i].Formula = @$"=COUNTIFS({sumRange}, ""Y"")";
+                }
+                else
+                {
+                    sheet.Range[rowNumber, i].Number = 0;
+                }
                 sheet.Range[rowNumber, i].BorderAround();
                 sheet.Range[rowNumber, i].CellStyle.Font.Bold = true;
                 sheet.Range[rowNumber, i].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
             }
-            sheet.Range[rowNumber, columnNumber].Formula = $"SUM({sheet.Range[sumStartRow, columnNumber, sumEndRow, columnNumber].AddressLocal})";
-            sheet.Range[rowNumber, columnNumber].Number = sheet.Range[rowNumber, columnNumber].FormulaNumberValue;
+            if (anyAdultRows)
+            {
+                sheet.Range[rowNumber, columnNumber].Formula = $"SUM({sheet.Range[sumStartRow, columnNumber, sumEndRow, columnNumber].AddressLocal})";
+                sheet.Range[rowNumber, columnNumber].Number = sheet.Range[rowNumber, columnNumber].FormulaNumberValue;
+            }
+            else
+            {
+                sheet.Range[rowNumber, columnNumber].Number = 0;
+            }
             sheet.Range[rowNumber, columnNumber].BorderAround();
             sheet.Range[rowNumber, columnNumber].CellStyle.Font.Bold = true;
             sheet.Range[rowNumber, columnNumber].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
@@ -2011,7 +2042,9 @@ namespace Topo.Services
                 }
             }
 
-            sheet.Range[4, 2, rowNumber, 7].AutofitColumns();
+            // nothing to fit when there are no approvals
+            if (rowNumber >= 4)
+                sheet.Range[4, 2, rowNumber, 7].AutofitColumns();
 
             sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
             sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
