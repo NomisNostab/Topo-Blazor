@@ -21,159 +21,33 @@
 
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
     <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All" title="Home">
-                <span class="oi oi-home" aria-hidden="true"></span> <span class="nav-text">Home</span>
-            </NavLink>
-        </div>
-        @if (!_storageService.IsAuthenticated)
+        @* The groups and links, and their order, are listed in NavMenuItems.cs *@
+        @foreach (var group in NavMenuItems.Groups.Where(g => NavMenuItems.IsShownTo(g.Audience, viewer)))
         {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="login" title="Login">
-                    <span class="oi oi-lock-unlocked" aria-hidden="true"></span> <span class="nav-text">Login</span>
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <a class="nav-link" href="https://github.com/NomisNostab/Topo-Blazor/wiki" target="_blank" title="Help"><span class="oi oi-info" aria-hidden="true"></span> <span class="nav-text">Help</span></a>
-            </div>
-        }
-        else
-        {
-            if (_storageService.IsYouthMember)
+            if (group.Title != null)
             {
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="logbook" title="Logbook">
-                        <span class="oi oi-book" aria-hidden="true"></span> <span class="nav-text">Logbook</span>
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="awards" title="Additional Awards">
-                        <span class="oi oi-shield" aria-hidden="true"></span> <span class="nav-text">Additional Awards</span>
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="progress/progress" title="Personal Progress">
-                        <span class="oi oi-person" aria-hidden="true"></span> <span class="nav-text">Personal Progress</span>
-                    </NavLink>
+                var open = IsOpen(group);
+                <div class="nav-group-label px-3" title="@group.Title" @onclick="() => ToggleGroup(group)" @onclick:stopPropagation="true">
+                    <span class="nav-text">@group.Title</span>
+                    <span class="oi @(open ? "oi-chevron-top" : "oi-chevron-bottom")" aria-hidden="true"></span>
                 </div>
             }
-            else
+            if (group.Title == null || IsOpen(group))
             {
-                <div class="nav-group-label px-3" title="Badgework" @onclick="ToggleBadgework" @onclick:stopPropagation="true">
-                    <span class="nav-text">Badgework</span>
-                    <span class="oi @(badgeworkExpanded ? "oi-chevron-top" : "oi-chevron-bottom")" aria-hidden="true"></span>
-                </div>
-                @if (ShowGroup(badgeworkExpanded))
+                foreach (var item in group.Items.Where(i => NavMenuItems.IsShownTo(i.Audience, viewer)))
                 {
+                    var text = item.TitleText(_storageService);
                     <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="oas" title="OAS">
-                            <span class="oi oi-compass" aria-hidden="true"></span> <span class="nav-text">OAS</span>
-                        </NavLink>
-                    </div>
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="sia" title="SIA">
-                            <span class="oi oi-clipboard" aria-hidden="true"></span> <span class="nav-text">SIA</span>
-                        </NavLink>
-                    </div>
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="milestone" title="Milestone">
-                            <span class="oi oi-flag" aria-hidden="true"></span> <span class="nav-text">Milestone</span>
-                        </NavLink>
-                    </div>
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="awards" title="Additional Awards">
-                            <span class="oi oi-shield" aria-hidden="true"></span> <span class="nav-text">Additional Awards</span>
-                        </NavLink>
-                    </div>
-                }
-
-                <div class="nav-group-label px-3" title="Reports" @onclick="ToggleReports" @onclick:stopPropagation="true">
-                    <span class="nav-text">Reports</span>
-                    <span class="oi @(reportsExpanded ? "oi-chevron-top" : "oi-chevron-bottom")" aria-hidden="true"></span>
-                </div>
-                @if (ShowGroup(reportsExpanded))
-                {
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="members" Match="NavLinkMatch.All" title="Members">
-                            <span class="oi oi-people" aria-hidden="true"></span> <span class="nav-text">Members</span>
-                        </NavLink>
-                    </div>
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="program" Match="NavLinkMatch.All" title="Program">
-                            <span class="oi oi-calendar" aria-hidden="true"></span> <span class="nav-text">Program</span>
-                        </NavLink>
-                    </div>
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="logbook" title="Logbook">
-                            <span class="oi oi-book" aria-hidden="true"></span> <span class="nav-text">Logbook</span>
-                        </NavLink>
-                    </div>
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="wallchart" title="Wallchart">
-                            <span class="oi oi-bar-chart" aria-hidden="true"></span> <span class="nav-text">Wallchart</span>
-                        </NavLink>
-                    </div>
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="approvals/approvals" title="Approvals">
-                            <span class="oi oi-thumb-up" aria-hidden="true"></span> <span class="nav-text">Approvals</span>
-                        </NavLink>
-                    </div>
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="progress/progress" title="Personal Progress">
-                            <span class="oi oi-person" aria-hidden="true"></span> <span class="nav-text">Personal Progress</span>
-                        </NavLink>
-                    </div>
-                    <div class="nav-item px-3">
-                        <NavLink class="@("nav-link" + (OnScoutingHistory ? " active" : ""))" href="scoutinghistory/member" title="Scouting History">
-                            <span class="oi oi-clock" aria-hidden="true"></span> <span class="nav-text">Scouting History</span>
-                        </NavLink>
-                    </div>
-                }
-
-                <div class="nav-group-label px-3" title="Tools" @onclick="ToggleTools" @onclick:stopPropagation="true">
-                    <span class="nav-text">Tools</span>
-                    <span class="oi @(toolsExpanded ? "oi-chevron-top" : "oi-chevron-bottom")" aria-hidden="true"></span>
-                </div>
-                @if (ShowGroup(toolsExpanded))
-                {
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="members/patrolplanner" title="Patrol Planner">
-                            <span class="oi oi-random" aria-hidden="true"></span> <span class="nav-text">Patrol Planner</span>
-                        </NavLink>
-                    </div>
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="signinsheet" title="Sign In Sheet">
-                            <span class="oi oi-pencil" aria-hidden="true"></span> <span class="nav-text">Sign In Sheet</span>
-                        </NavLink>
-                    </div>
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="program/ideas" title="Program Ideas">
-                            <span class="oi oi-lightbulb" aria-hidden="true"></span> <span class="nav-text">Program Ideas</span>
-                        </NavLink>
-                    </div>
-                }
-            }
-
-            <div class="nav-group-label px-3" title="Settings" @onclick="ToggleSettings" @onclick:stopPropagation="true">
-                <span class="nav-text">Settings</span>
-                <span class="oi @(settingsExpanded ? "oi-chevron-top" : "oi-chevron-bottom")" aria-hidden="true"></span>
-            </div>
-            @if (ShowGroup(settingsExpanded))
-            {
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="logout" title="Logout">
-                        <span class="oi oi-lock-locked" aria-hidden="true"></span> <span class="nav-text">Logout</span>
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <a class="nav-link" href="https://github.com/NomisNostab/Topo-Blazor/wiki" target="_blank" title="Help"><span class="oi oi-info" aria-hidden="true"></span> <span class="nav-text">Help</span></a>
-                </div>
-                if (!_storageService.IsYouthMember)
-                {
-                    <div class="nav-item px-3">
-                        <NavLink class="nav-link" href="logging" title="@(_storageService.LogToQueue ? "Stop Logging" : "Enable Logging")">
-                            <span class="oi oi-document" aria-hidden="true"></span> <span class="nav-text">@(_storageService.LogToQueue ? "Stop Logging" : "Enable Logging")</span>
-                        </NavLink>
+                        @if (item.IsExternal)
+                        {
+                            <a class="nav-link" href="@item.Href" target="_blank" title="@text"><span class="oi @item.Icon" aria-hidden="true"></span> <span class="nav-text">@text</span></a>
+                        }
+                        else
+                        {
+                            <NavLink class="@LinkClass(item)" href="@item.Href" Match="item.Match" title="@text">
+                                <span class="oi @item.Icon" aria-hidden="true"></span> <span class="nav-text">@text</span>
+                            </NavLink>
+                        }
                     </div>
                 }
             }
@@ -189,18 +63,19 @@
 
 @code {
     private bool collapseNavMenu = true;
-    private bool badgeworkExpanded = true;
-    private bool reportsExpanded = true;
-    private bool toolsExpanded = true;
-    private bool settingsExpanded = false;
 
-    // Scouting History has a Member and a Unit page; the menu entry stays highlighted on either
-    private bool OnScoutingHistory => NavigationManager.ToBaseRelativePath(NavigationManager.Uri).StartsWith("scoutinghistory", StringComparison.OrdinalIgnoreCase);
+    // which collapsible groups have been opened or closed; a group not in here uses its default
+    private readonly Dictionary<string, bool> groupOpen = new();
+
+    private NavAudience viewer => NavMenuItems.AudienceFor(_storageService);
 
     private string NavMenuCssClass => "nav-scroll-area " + (collapseNavMenu ? "collapse " : "") + (_storageService.NavMenuIconOnly ? "icon-only" : "");
 
-    // a group stays collapsed (or open) when the whole menu is shrunk to icons; its header stays so it can be opened again
-    private bool ShowGroup(bool expanded) => expanded;
+    private bool IsOpen(NavGroup group) => groupOpen.TryGetValue(group.Title!, out var open) ? open : group.OpenByDefault;
+
+    // an item that names an ActivePrefix stays highlighted on any page under it (Scouting History has a Member and a Unit page)
+    private string LinkClass(NavItem item) =>
+        "nav-link" + (item.ActivePrefix != null && NavigationManager.ToBaseRelativePath(NavigationManager.Uri).StartsWith(item.ActivePrefix, StringComparison.OrdinalIgnoreCase) ? " active" : "");
 
     private void ToggleNavMenu()
     {
@@ -213,39 +88,11 @@
         await _localStorageService.SetItemAsync("NavMenuIconOnly", _storageService.NavMenuIconOnly);
     }
 
-    private async Task ToggleBadgework()
+    private async Task ToggleGroup(NavGroup group)
     {
-        badgeworkExpanded = !badgeworkExpanded;
-        await SaveGroupState("Badgework", badgeworkExpanded);
-    }
-
-    private async Task ToggleReports()
-    {
-        reportsExpanded = !reportsExpanded;
-        await SaveGroupState("Reports", reportsExpanded);
-    }
-
-    private async Task ToggleTools()
-    {
-        toolsExpanded = !toolsExpanded;
-        await SaveGroupState("Tools", toolsExpanded);
-    }
-
-    private async Task ToggleSettings()
-    {
-        settingsExpanded = !settingsExpanded;
-        await SaveGroupState("Settings", settingsExpanded);
-    }
-
-    private async Task SaveGroupState(string key, bool expanded)
-    {
-        await JS.InvokeVoidAsync("sessionStorage.setItem", $"NavGroup_{key}", expanded ? "1" : "0");
-    }
-
-    private async Task<bool> LoadGroupState(string key, bool defaultValue)
-    {
-        var value = await JS.InvokeAsync<string>("sessionStorage.getItem", $"NavGroup_{key}");
-        return value == null ? defaultValue : value == "1";
+        var open = !IsOpen(group);
+        groupOpen[group.Title!] = open;
+        await JS.InvokeVoidAsync("sessionStorage.setItem", $"NavGroup_{group.Title}", open ? "1" : "0");
     }
 
     protected override async Task OnInitializedAsync()
@@ -253,10 +100,12 @@
         _storageService.OnChange += StateHasChanged;
         NavigationManager.LocationChanged += OnLocationChanged;
         _storageService.NavMenuIconOnly = await _localStorageService.GetItemAsync<bool>("NavMenuIconOnly");
-        badgeworkExpanded = await LoadGroupState("Badgework", true);
-        reportsExpanded = await LoadGroupState("Reports", true);
-        toolsExpanded = await LoadGroupState("Tools", true);
-        settingsExpanded = await LoadGroupState("Settings", false);
+        foreach (var group in NavMenuItems.Groups.Where(g => g.Title != null))
+        {
+            var saved = await JS.InvokeAsync<string?>("sessionStorage.getItem", $"NavGroup_{group.Title}");
+            if (saved != null)
+                groupOpen[group.Title!] = saved == "1";
+        }
     }
 
     private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e) => StateHasChanged();
