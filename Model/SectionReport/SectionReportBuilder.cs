@@ -31,6 +31,9 @@ namespace Topo.Model.SectionReport
         public bool BadgesLoaded { get; set; }
         public GetIntroductionResultsModel IntroToSection { get; set; } = new GetIntroductionResultsModel();
         public GetMemberAchievementsResultModel AllAchievements { get; set; } = new GetMemberAchievementsResultModel();
+        // AllAchievements is only read for members invested in the period: it says where a new member came from, and whether
+        // someone who has moved up has records from this section
+        public bool AllAchievementsLoaded { get; set; }
     }
 
     public class NextSectionMember
@@ -72,6 +75,26 @@ namespace Topo.Model.SectionReport
             { "Group Tape", "Scarf", "Scarf Badge", "Region Badge", "Australian Scouting Badge", "World Scouting Badge" };
         private static readonly string[] AnotherGroupItems =
             { "Group Tape", "Scarf", "Scarf Badge", "Region Badge" };
+
+        // The Introduction to Section that counts for a section: the latest one that has been awarded
+        public static Topo.Model.Progress.Result? LatestIntro(GetIntroductionResultsModel intros, string section)
+        {
+            var key = Key(section);
+            return intros.results
+                .Where(r => r.status == "awarded" && Key(r.section) == key)
+                .OrderByDescending(r => r.status_updated)
+                .FirstOrDefault();
+        }
+
+        // Whether a member was invested into the section during the period, which is when the report needs to work out where they came from
+        public static bool InvestedInPeriod(GetIntroductionResultsModel intros, string section, DateTime from, DateTime to)
+        {
+            var intro = LatestIntro(intros, section);
+            if (intro == null)
+                return false;
+            var invested = ScoutingHistoryBuilder.AwardedDate(intro.date_awarded, intro.imported?.date_awarded, intro.status_updated);
+            return invested.Date >= from.Date && invested.Date <= to.Date;
+        }
 
         public static string NextSectionOf(string section)
         {
@@ -144,15 +167,12 @@ namespace Topo.Model.SectionReport
                 if (!input.Records.TryGetValue(member.id, out var records))
                     continue;
 
-                var intro = records.IntroToSection.results
-                    .Where(r => r.status == "awarded" && Key(r.section) == section)
-                    .OrderByDescending(r => r.status_updated)
-                    .FirstOrDefault();
+                var intro = LatestIntro(records.IntroToSection, section);
                 if (intro == null)
                     continue;
 
                 model.InvestedYouth++;
-                var invested = ScoutingHistoryBuilder.AwardedDate(intro.imported.date_awarded, intro.status_updated);
+                var invested = ScoutingHistoryBuilder.AwardedDate(intro.date_awarded, intro.imported?.date_awarded, intro.status_updated);
                 if (invested.Date < input.From.Date || invested.Date > input.To.Date)
                     continue;
 
@@ -229,13 +249,10 @@ namespace Topo.Model.SectionReport
                 var key = PersonKey(next.Person.MemberNumber, next.Person.Id);
                 if (currentKeys.Contains(key))
                     continue;
-                var intro = next.Records.IntroToSection.results
-                    .Where(r => r.status == "awarded" && Key(r.section) == nextSection)
-                    .OrderByDescending(r => r.status_updated)
-                    .FirstOrDefault();
+                var intro = LatestIntro(next.Records.IntroToSection, nextSection);
                 if (intro == null)
                     continue;
-                var invested = ScoutingHistoryBuilder.AwardedDate(intro.imported.date_awarded, intro.status_updated);
+                var invested = ScoutingHistoryBuilder.AwardedDate(intro.date_awarded, intro.imported?.date_awarded, intro.status_updated);
                 if (invested.Date < input.From.Date || invested.Date > input.To.Date)
                     continue;
                 if (next.Records.AllAchievements.results.Any(r => Key(r.section) == section))
@@ -337,9 +354,9 @@ namespace Topo.Model.SectionReport
         private static void AddBadges(SectionReportInput input, SectionReportModel model, List<MemberListModel> youth, string section)
         {
             bool InSection(string recordSection) => Key(recordSection) == section;
-            bool InPeriod(string imported, DateTime updated)
+            bool InPeriod(string? dateAwarded, string? imported, DateTime updated)
             {
-                var date = ScoutingHistoryBuilder.AwardedDate(imported, updated);
+                var date = ScoutingHistoryBuilder.AwardedDate(dateAwarded, imported, updated);
                 return date >= input.From.Date && date <= input.To.Date;
             }
 
@@ -351,31 +368,31 @@ namespace Topo.Model.SectionReport
             foreach (var records in input.Records.Where(r => youthIds.Contains(r.Key)).Select(r => r.Value))
             {
                 var badges = records.Badges;
-                foreach (var r in badges.Milestones.results.Where(r => r.status == "awarded" && InSection(r.section) && InPeriod(r.imported.date_awarded, r.status_updated)))
+                foreach (var r in badges.Milestones.results.Where(r => r.status == "awarded" && InSection(r.section) && InPeriod(r.date_awarded, r.imported?.date_awarded, r.status_updated)))
                     milestones[r.achievement_meta.stage] = milestones.GetValueOrDefault(r.achievement_meta.stage) + 1;
 
-                var oasAwarded = badges.Oas.results.Where(r => r.status == "awarded" && InSection(r.section) && InPeriod(r.imported.date_awarded, r.status_updated)).ToList();
+                var oasAwarded = badges.Oas.results.Where(r => r.status == "awarded" && InSection(r.section) && InPeriod(r.date_awarded, r.imported?.date_awarded, r.status_updated)).ToList();
                 oasProgressions += oasAwarded.Sum(r => r.achievement_meta.stage >= 7 ? 2 : 1);
 
                 // Only the highest level awarded to a member in a stream on one day needs a badge (they can jump several at once)
                 var oasBadges = oasAwarded
-                    .GroupBy(r => (stream: r.achievement_meta.stream, day: ScoutingHistoryBuilder.AwardedDate(r.imported.date_awarded, r.status_updated).Date))
+                    .GroupBy(r => (stream: r.achievement_meta.stream, day: ScoutingHistoryBuilder.AwardedDate(r.date_awarded, r.imported?.date_awarded, r.status_updated).Date))
                     .Select(g => (stream: ScoutingHistoryBuilder.Title(g.Key.stream), stage: g.Max(r => r.achievement_meta.stage)));
                 foreach (var badge in oasBadges)
                     oas[badge] = oas.GetValueOrDefault(badge) + 1;
 
-                foreach (var r in badges.Sia.results.Where(r => r.status == "awarded" && InSection(r.section) && InPeriod(r.imported.date_awarded, r.status_updated)))
+                foreach (var r in badges.Sia.results.Where(r => r.status == "awarded" && InSection(r.section) && InPeriod(r.date_awarded, r.imported?.date_awarded, r.status_updated)))
                 {
                     var area = ScoutingHistoryBuilder.SiaName(r.answers.special_interest_area_selection ?? "");
                     area = area == "" ? "Other" : area;
                     sia[area] = sia.GetValueOrDefault(area) + 1;
                 }
 
-                model.Badges.PeakAwards += badges.Peak.results.Count(r => r.status == "awarded" && InSection(r.section) && InPeriod("", r.status_updated));
+                model.Badges.PeakAwards += badges.Peak.results.Count(r => r.status == "awarded" && InSection(r.section) && InPeriod(r.date_awarded, null, r.status_updated));
             }
 
             var awards = new SortedDictionary<string, int>();
-            foreach (var r in input.AdditionalAwards.results.Where(r => r.status == "awarded" && youthIds.Contains(r.member_id) && InSection(r.section) && InPeriod(r.imported.date_awarded, r.status_updated)))
+            foreach (var r in input.AdditionalAwards.results.Where(r => r.status == "awarded" && youthIds.Contains(r.member_id) && InSection(r.section) && InPeriod(r.date_awarded, r.imported?.date_awarded, r.status_updated)))
             {
                 var name = input.AwardNames.TryGetValue(r.achievement_meta.additional_award_id, out var title)
                     ? title
