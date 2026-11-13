@@ -18,7 +18,20 @@ namespace TopoReportFunctionTest
         }
 
         [TestMethod]
-        public void AMilestoneAwardedInTerrainUsesWhenItsStatusLastChanged()
+        public void TerrainsOwnDateWinsOverTheImportedDate()
+        {
+            var result = new MilestoneResult
+            {
+                status_updated = new DateTime(2025, 11, 3, 14, 20, 0),
+                date_awarded = "2025-10-20",
+                imported = new Imported { date_awarded = "2023-03-18" }
+            };
+
+            Assert.AreEqual(new DateTime(2025, 10, 20), MilestoneDates.AwardedDate(result));
+        }
+
+        [TestMethod]
+        public void AMilestoneWithNoDateRecordedUsesWhenItsStatusLastChanged()
         {
             var updated = new DateTime(2025, 11, 3, 14, 20, 0);
 

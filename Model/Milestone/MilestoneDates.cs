@@ -1,16 +1,10 @@
-using System.Globalization;
-
 namespace Topo.Model.Milestone
 {
     public static class MilestoneDates
     {
-        // When a milestone was awarded. One brought across from before Terrain carries its real date in imported.date_awarded
-        // (status_updated is then only the day it was imported); otherwise it is when the status last changed.
-        public static DateTime AwardedDate(MilestoneResult result)
-        {
-            return DateTime.TryParseExact(result.imported?.date_awarded, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var imported)
-                ? imported
-                : result.status_updated;
-        }
+        // When a milestone was awarded: Terrain's own date, else the imported one, else when the status last changed.
+        // The rule is shared by every kind of award, see AwardDate.
+        public static DateTime AwardedDate(MilestoneResult result) =>
+            AwardDate.Resolve(result.date_awarded, result.imported?.date_awarded, result.status_updated);
     }
 }

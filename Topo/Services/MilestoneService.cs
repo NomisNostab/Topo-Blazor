@@ -26,12 +26,14 @@ namespace Topo.Services
         public async Task<List<MilestoneSummaryListModel>> GetMilestoneSummaries(string selectedUnitId, Action<string>? progress = null)
         {
             var unitMilestoneSummary = new List<MilestoneSummaryListModel>();
+            // Read the unit's milestones once instead of once per youth. Every record carries its member_id, so ToLookup hands the loop
+            // a member's records as before (a member with none gets an empty list). The records include earlier sections, filtered below.
+            var milestonesByMember = (await _terrainAPIService.GetUnitAchievementsOfType<GetMilestoneResultModel>(selectedUnitId, "milestone")).results.ToLookup(r => r.member_id);
             var members = (await _membersService.GetMembersAsync(selectedUnitId)).Where(m => m.isAdultLeader == 0).ToList();
             for (var i = 0; i < members.Count; i++)
             {
                 var member = members[i];
                 progress?.Invoke($"{member.first_name} {member.last_name} ({i + 1} of {members.Count})");
-                var memberMilestones = await _terrainAPIService.GetMilestoneResultsForMember(member.id);
                 MilestoneResult milestone1 = new MilestoneResult();
                 MilestoneResult milestone2 = new MilestoneResult();
                 MilestoneResult milestone3 = new MilestoneResult();
@@ -48,7 +50,7 @@ namespace Topo.Services
                 bool milestone2Skipped = true;
                 bool milestone3Skipped = false;
                 int currentLevel = 1;
-                foreach (var milestoneResult in memberMilestones.results.Where(r => r.section == _storageService.Section).OrderBy(r => r.achievement_meta.stage))
+                foreach (var milestoneResult in milestonesByMember[member.id].Where(r => r.section == _storageService.Section).OrderBy(r => r.achievement_meta.stage))
                 {
                     MoveMilestoneAssistsToLeads(milestoneResult);
                     switch (milestoneResult.achievement_meta.stage)
