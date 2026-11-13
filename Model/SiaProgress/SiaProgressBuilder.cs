@@ -138,9 +138,7 @@ namespace Topo.Model.SiaProgress
         {
             DateTime? awarded = null;
             if (IsComplete(r))
-                awarded = DateTime.TryParseExact(r.imported?.date_awarded, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var imported)
-                    ? imported
-                    : r.status_updated.Date;
+                awarded = AwardDate.Recorded(r.date_awarded, r.imported?.date_awarded) ?? r.status_updated.Date;
 
             var options = templates.Plan.Options.Concat(templates.Review.Options)
                 .GroupBy(o => o.Key).ToDictionary(g => g.Key, g => g.First().Value);

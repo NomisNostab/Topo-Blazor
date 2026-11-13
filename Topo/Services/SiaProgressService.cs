@@ -1,4 +1,5 @@
 using Topo.Model.Members;
+using Topo.Model.SIA;
 using Topo.Model.SiaProgress;
 
 namespace Topo.Services
@@ -8,6 +9,7 @@ namespace Topo.Services
         public SiaScope Scope { get; set; }
         public string UnitName { get; set; } = string.Empty;
         public string Section { get; set; } = string.Empty;
+        public string UnitId { get; set; } = string.Empty;
         // The unit's youth members
         public List<MemberListModel> Members { get; set; } = new List<MemberListModel>();
         // For one project or one person
@@ -51,21 +53,38 @@ namespace Topo.Services
                 input.AreasRequired = requirement.SIAMinAreasRequired;
             }
 
-            // the Reading line names each Scout the short way, as the reports do
+            if (request.Scope == SiaScope.WholeUnit)
+            {
+                // One read gives every Scout's projects, so the unit isn't read once per Scout. A unit with no youth has nothing to read.
+                ILookup<string, Result>? byMember = null;
+                if (members.Count > 0)
+                {
+                    progress?.Invoke("the unit's projects");
+                    byMember = (await _terrainAPIService.GetUnitAchievementsOfType<GetSIAResultsModel>(request.UnitId, "special_interest_area"))
+                        .results.ToLookup(r => r.member_id);
+                }
+                foreach (var member in members)
+                    input.Members.Add(MemberInput(member, new GetSIAResultsModel { results = byMember?[member.id].ToArray() ?? new Result[0] }));
+                return input;
+            }
+
+            // one Scout: the Reading line names them the short way, as the reports do
             var shortNames = SiaProgressBuilder.ShortNames(members);
             for (var i = 0; i < members.Count; i++)
             {
                 progress?.Invoke($"{(shortNames.TryGetValue(members[i].id, out var shortName) ? shortName : members[i].first_name)} ({i + 1} of {members.Count})");
-                input.Members.Add(new SiaMemberInput
-                {
-                    MemberId = members[i].id,
-                    MemberName = $"{members[i].first_name} {members[i].last_name}".Trim(),
-                    Results = await _terrainAPIService.GetSIAResultsForMember(members[i].id)
-                });
+                input.Members.Add(MemberInput(members[i], await _terrainAPIService.GetSIAResultsForMember(members[i].id)));
             }
 
             return input;
         }
+
+        private static SiaMemberInput MemberInput(MemberListModel member, GetSIAResultsModel results) => new SiaMemberInput
+        {
+            MemberId = member.id,
+            MemberName = $"{member.first_name} {member.last_name}".Trim(),
+            Results = results
+        };
 
         private async Task<SiaTemplates> GetTemplatesAsync(string section)
         {
