@@ -49,7 +49,6 @@ else
                             <th class="border-0 bg-transparent spacer"></th>
                             <th class="fit">Name</th>
                             <th class="sideways">Participate</th>
-                            <th class="sideways">Assist</th>
                             <th class="sideways">Lead</th>
                         }
                     </tr>
@@ -86,7 +85,6 @@ else
                                 <td class="fit">@_displayNames[member.id]</td>
                                 <td class="write-in tick"></td>
                                 <td class="write-in tick"></td>
-                                <td class="write-in tick"></td>
                             }
                         </tr>
                     }
@@ -110,7 +108,7 @@ else
         + (Options.IncludeRegisteredColumn ? 1 : 0)
         + (Options.IncludePaidColumn ? 1 : 0)
         + (Options.UseTimeInOutSignature ? 4 : 1)
-        + (Options.IncludeParticipationColumns ? 5 : 0);
+        + (Options.IncludeParticipationColumns ? 4 : 0);
 
     // Name, patrol and role take just the room their text needs when there are write-in columns to give the
     // spare width to; with a single tick box they share the page instead.
