@@ -92,4 +92,14 @@ namespace Topo.Model.History
         public int Assisted { get; set; }
         public int Participated { get; set; }
     }
+
+    // How a member's roles on logged activities read. Assists are no longer a role in Terrain, so "assisted" only
+    // appears for a member who still has some from before.
+    public static class ScoutingHistoryRoles
+    {
+        public static string Text(int led, int assisted, int participated) =>
+            assisted > 0
+                ? $"Led {led}, assisted {assisted}, participated in {participated} logged activities"
+                : $"Led {led}, participated in {participated} logged activities";
+    }
 }
