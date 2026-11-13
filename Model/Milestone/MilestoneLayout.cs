@@ -14,7 +14,7 @@ namespace Topo.Model.Milestone
         // Community, Outdoors, Creative, Personal Growth
         public List<MilestoneCell> Participate { get; set; } = new List<MilestoneCell>();
         public MilestoneCell Lead { get; set; } = new MilestoneCell();
-        // Which challenge areas the lead (and assist) roles were in, such as "Co-2 O"
+        // Which challenge areas the lead roles were in, such as "Co-2 O"
         public string LeadAreas { get; set; } = string.Empty;
     }
 
