@@ -51,7 +51,7 @@ namespace Topo.Services
         {
             var introToScoutingDate = "";
             var introToScouting = await _terrainAPIService.GetIntroductionToScoutingResultsForMember(memberId);
-            var result = introToScouting.results.Where(r => r.status == "awarded").FirstOrDefault();
+            var result = AchievementSelection.LatestAwardedIntro(introToScouting.results);
             if (result != null)
             {
                 if (!string.IsNullOrEmpty(result.imported.date_awarded))
@@ -71,7 +71,7 @@ namespace Topo.Services
         {
             var introToSectionDate = new DateTime();
             var introToSection = await _terrainAPIService.GetIntroductionToSectionResultsForMember(memberId);
-            var result = introToSection.results.Where(r => r.section == _storageService.Section && r.status == "awarded").FirstOrDefault();
+            var result = AchievementSelection.LatestAwardedIntro(introToSection.results, _storageService.Section);
             if (result != null)
             {
                 if (!string.IsNullOrEmpty(result.imported.date_awarded))
@@ -96,7 +96,7 @@ namespace Topo.Services
         {
             var milestoneSummaries = new List<MilestoneSummary>();
             var milestones = await _terrainAPIService.GetMilestoneResultsForMember(memberId);
-            foreach (var milestoneResult in milestones.results.Where(r => r.section == _storageService.Section).OrderBy(r => r.achievement_meta.stage))
+            foreach (var milestoneResult in AchievementSelection.OnePerMilestoneStage(milestones.results.Where(r => r.section == _storageService.Section)))
             {
                 var participantCount = 0;
                 var assistCount = 0;
@@ -273,7 +273,6 @@ namespace Topo.Services
         private async Task<List<OASSummary>> GetOASSummaries(string memberId)
         {
             var oasSummaries = new List<OASSummary>();
-            _oasProgressionCount = 0;
             var oasResults = await _terrainAPIService.GetOASResultsForMember(memberId);
             foreach (var oasResult in oasResults.results.OrderBy(o => o.achievement_meta.stream).ThenBy(o => o.achievement_meta.stage).ThenBy(o => o.status_updated))
             {
@@ -301,19 +300,10 @@ namespace Topo.Services
                     Section = oasResult.section.ToLower().Substring(0,1),
                     Template = oasResult.template
                 });
-                
-                // Compute new progression for stage 7, 8 and 9
-                if ((oasResult.status == "awarded" || oasResult.status == "approved") && oasResult.section.ToLower() == _storageService.Section.ToLower())
-                {
-                    _oasProgressionCount ++;
-                    if (oasResult.achievement_meta.stage >=7)
-                    {
-                        _oasProgressionCount ++;
-                    }
-                }
             }
 
-            //_oasProgressionCount = oasResults.results.Where(r => r.status == "awarded" && r.section == _storageService.Section).Count();
+            // Stages 7, 8 and 9 count as two progressions, and a stage Terrain holds twice counts once
+            _oasProgressionCount = AchievementSelection.OasProgressions(oasResults.results, _storageService.Section, includeApproved: true);
             return oasSummaries;
         }
 
@@ -356,24 +346,16 @@ namespace Topo.Services
             var peakAward = new PeakAward();
 
             var courseReflectionResultModel = await _terrainAPIService.GetCourseReflectionResultsForMember(memberid);
-            peakAward.PersonalDevelopmentCourse = courseReflectionResultModel.results
-                .Where(r => r.status == "awarded" && r.section == _storageService.Section)
-                .FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.PersonalDevelopmentCourse = AchievementSelection.LatestAwardedPeak(courseReflectionResultModel.results, _storageService.Section)?.status_updated.ToString("dd/MM/yy") ?? "";
 
             var adventurousJourneyResultModel = await _terrainAPIService.GetAdventurousJourneyResultsForMember(memberid);
-            peakAward.AdventurousJourney = adventurousJourneyResultModel.results
-                .Where(r => r.status == "awarded" && r.section == _storageService.Section)
-                .FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.AdventurousJourney = AchievementSelection.LatestAwardedPeak(adventurousJourneyResultModel.results, _storageService.Section)?.status_updated.ToString("dd/MM/yy") ?? "";
 
             var personalReflectionResultModel = await _terrainAPIService.GetPersonalReflectionResultsForMember(memberid);
-            peakAward.PersonalReflection = personalReflectionResultModel.results
-                .Where(r => r.status == "awarded" && r.section == _storageService.Section)
-                .FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.PersonalReflection = AchievementSelection.LatestAwardedPeak(personalReflectionResultModel.results, _storageService.Section)?.status_updated.ToString("dd/MM/yy") ?? "";
 
             var peakAwardResultModel = await _terrainAPIService.GetPeakAwardResultsForMember(memberid);
-            peakAward.Awarded = peakAwardResultModel.results
-                .Where(r => r.status == "awarded" && r.section == _storageService.Section)
-                .FirstOrDefault()?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.Awarded = AchievementSelection.LatestAwardedPeak(peakAwardResultModel.results, _storageService.Section)?.status_updated.ToString("dd/MM/yy") ?? "";
 
             return peakAward;
         }
