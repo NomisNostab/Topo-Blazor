@@ -147,6 +147,22 @@ namespace TopoReportFunctionTest
         }
 
         [TestMethod]
+        public void TheAwardDateIsTerrainsOwnThenTheImportedOneThenWhenItLastChanged()
+        {
+            var input = Input();
+            var project = input.Members[0].Results.results.Single(r => r.id == "p1"); // awarded, last changed 10 March 2026
+            project.date_awarded = "2026-02-20";
+            project.imported = new Imported { date_awarded = "2025-11-02" };
+            Assert.AreEqual(new DateTime(2026, 2, 20), SiaProgressBuilder.Build(input).Projects.Single(p => p.ProjectName == "Billy cart").DateAwarded);
+
+            project.date_awarded = "";
+            Assert.AreEqual(new DateTime(2025, 11, 2), SiaProgressBuilder.Build(input).Projects.Single(p => p.ProjectName == "Billy cart").DateAwarded);
+
+            project.imported = new Imported();
+            Assert.AreEqual(new DateTime(2026, 3, 10), SiaProgressBuilder.Build(input).Projects.Single(p => p.ProjectName == "Billy cart").DateAwarded);
+        }
+
+        [TestMethod]
         public void QuestionsThatOnlySometimesApplyAreLeftOutWhenBlank()
         {
             var built = SiaProgressBuilder.Build(Input()).Projects.Single(p => p.ProjectName == "Kayak");
