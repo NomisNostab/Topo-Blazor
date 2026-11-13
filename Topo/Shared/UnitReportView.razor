@@ -1,0 +1,106 @@
+@using Topo.Model.UnitReport
+
+@* The totals for one unit over a period. *@
+<div class="card mb-3">
+    <div class="card-header"><strong>Members</strong></div>
+    <div class="card-body">
+        <div class="row"><div class="col-sm-3">Current members</div><div class="col-sm-9">
+            <div>@Report.Members.CurrentYouth youth (as at @Report.AsAt.ToString("d MMM yyyy"))</div>
+            @if (Report.Members.YouthHelpers > 0)
+            {
+                <div>@Report.Members.YouthHelpers youth @(Report.Members.YouthHelpers == 1 ? "helper" : "helpers")</div>
+            }
+            <div>@Report.Members.CurrentLeaders @(Report.Members.CurrentLeaders == 1 ? "leader" : "leaders")</div>
+        </div></div>
+        <div class="row"><div class="col-sm-3">Former members</div><div class="col-sm-9">@Report.Members.FormerAttendees who attended the unit's events</div></div>
+        <div class="row"><div class="col-sm-3"><strong>Been part of the unit</strong></div><div class="col-sm-9"><strong>@Report.Members.Total</strong></div></div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header"><strong>Badges earned</strong></div>
+    <div class="card-body">
+        <div class="row mb-2"><div class="col-sm-3">Peak Award</div><div class="col-sm-9">@Report.Badges.PeakAwards</div></div>
+        <div class="row mb-2">
+            <div class="col-sm-3">Milestones</div>
+            <div class="col-sm-9">
+                Total: @Report.Badges.MilestonesTotal
+                @foreach (var item in Report.Badges.Milestones)
+                {
+                    <div class="small">@item.Name: @item.Count</div>
+                }
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-sm-3">Outdoor Adventure Skills</div>
+            <div class="col-sm-9">
+                Progressions: @Report.Badges.OasProgressions
+                @foreach (var item in Report.Badges.OasStreams)
+                {
+                    <div class="small">@item.Name: @item.Count</div>
+                }
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-sm-3">Special Interest Areas</div>
+            <div class="col-sm-9">
+                Total: @Report.Badges.SiaTotal
+                @foreach (var item in Report.Badges.SiaCategories)
+                {
+                    <div class="small">@item.Name: @item.Count</div>
+                }
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3">Additional Awards</div>
+            <div class="col-sm-9">
+                Total: @Report.Badges.AdditionalAwardsTotal
+                @foreach (var item in Report.Badges.AdditionalAwards)
+                {
+                    <div class="small">@item.Name: @item.Count</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header"><strong>Nights, hiking and hours</strong></div>
+    <div class="card-body">
+        <div class="row"><div class="col-sm-3">Nights run</div><div class="col-sm-9">@Report.NightsRun</div></div>
+        <div class="row"><div class="col-sm-3">Person nights camped</div><div class="col-sm-9">@Report.PersonNightsCamped (@Report.YouthPersonNights youth, @Report.LeaderPersonNights @(Report.LeaderPersonNights == 1 ? "leader" : "leaders"))</div></div>
+        <div class="row">
+            <div class="col-sm-3">Km hiked</div>
+            <div class="col-sm-9">
+                @Report.HikeKm.ToString("#,0.#") km
+                <label class="ms-3"><input type="radio" name="kmmode" value="hike" checked="@(!Report.KmPerPerson)" @onchange="KmModeChange" /> once per hike</label>
+                <label class="ms-2"><input type="radio" name="kmmode" value="person" checked="@Report.KmPerPerson" @onchange="KmModeChange" /> per person on each hike</label>
+                <div class="small text-muted">@Report.HikeEvents hike@(Report.HikeEvents == 1 ? "" : "s"), @Report.HikeEventsWithDistance with a distance recorded</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-3">Hours leaders volunteered</div>
+            <div class="col-sm-9">
+                @Report.LeaderHours.ToString("#,0.#")
+                <div class="small text-muted">Only the hours leaders were with the youth at events. It doesn't include planning or admin time.</div>
+            </div>
+        </div>
+        <div class="row"><div class="col-sm-3">Hours youth participated</div><div class="col-sm-9">@Report.YouthHours.ToString("#,0.#")</div></div>
+    </div>
+</div>
+
+<div class="text-muted small mb-4">
+    @Report.EventsCounted events, @Report.EventsWithoutAttendance with no attendance recorded.
+    Nights, hours and km come from the events' dates, attendance and logbook data. Badges are for current youth members, earned in this section.
+</div>
+
+@code {
+    [Parameter]
+    public UnitReportModel Report { get; set; } = new UnitReportModel();
+
+    // the page exports this same object, so the chosen way of counting km carries into the pdf and xlsx
+    private void KmModeChange(ChangeEventArgs e)
+    {
+        Report.KmPerPerson = e.Value?.ToString() == "person";
+    }
+}

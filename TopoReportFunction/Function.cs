@@ -17,6 +17,8 @@ using Topo.Model.AdditionalAwards;
 using Topo.Services;
 using Topo.Model.Approvals;
 using Topo.Model.Progress;
+using Topo.Model.History;
+using Topo.Model.UnitReport;
 using System;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
@@ -102,6 +104,12 @@ public class Function
                         break;
                     case ReportType.TermProgram:
                         workbook = GenerateTermProgramWorkbook(reportGenerationRequest);
+                        break;
+                    case ReportType.ScoutingHistory:
+                        workbook = GenerateScoutingHistoryWorkbook(reportGenerationRequest);
+                        break;
+                    case ReportType.UnitReport:
+                        workbook = GenerateUnitReportWorkbook(reportGenerationRequest);
                         break;
                 }
 
@@ -289,6 +297,26 @@ public class Function
             var workbook = reportService.GenerateAdditionalAwardsWorkbook(reportData.AwardSpecificationsList, reportData.SortedAdditionalAwardsList, reportData.DistinctAwards, reportGenerationRequest.GroupName, reportGenerationRequest.Section
                 , reportGenerationRequest.UnitName);
             return workbook;
+        }
+        return reportService.CreateWorkbookWithSheets(1);
+    }
+
+    private IWorkbook GenerateUnitReportWorkbook(ReportGenerationRequest reportGenerationRequest)
+    {
+        var reportData = JsonConvert.DeserializeObject<UnitReportModel>(reportGenerationRequest.ReportData);
+        if (reportData != null)
+        {
+            return reportService.GenerateUnitReportWorkbook(reportData, reportGenerationRequest.GroupName, reportGenerationRequest.Section, reportGenerationRequest.UnitName);
+        }
+        return reportService.CreateWorkbookWithSheets(1);
+    }
+
+    private IWorkbook GenerateScoutingHistoryWorkbook(ReportGenerationRequest reportGenerationRequest)
+    {
+        var reportData = JsonConvert.DeserializeObject<ScoutingHistoryModel>(reportGenerationRequest.ReportData);
+        if (reportData != null)
+        {
+            return reportService.GenerateScoutingHistoryWorkbook(reportData, reportGenerationRequest.GroupName, reportGenerationRequest.Section, reportGenerationRequest.UnitName);
         }
         return reportService.CreateWorkbookWithSheets(1);
     }

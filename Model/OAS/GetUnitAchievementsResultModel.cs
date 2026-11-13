@@ -16,6 +16,8 @@
         public Dictionary<string, string> answers { get; set; } = new Dictionary<string, string>();
         public string status { get; set; } = "";
         public DateTime status_updated { get; set; }
+        // Terrain's own record of the award date (yyyy-mm-dd); only on awards recorded in Terrain. See AwardDate.
+        public string date_awarded { get; set; } = string.Empty;
         public Achievement_Meta achievement_meta { get; set; } = new Achievement_Meta();
         public DateTime last_updated { get; set; }
         public Imported imported { get; set; } = new Imported();

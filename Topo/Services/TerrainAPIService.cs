@@ -10,6 +10,8 @@ using Topo.Model.SIA;
 using Topo.Model.AdditionalAwards;
 using Topo.Model.Approvals;
 using Topo.Model.Progress;
+using Topo.Model.History;
+using Newtonsoft.Json.Linq;
 
 namespace Topo.Services
 {
@@ -29,6 +31,7 @@ namespace Topo.Services
         public Task<GetOASTreeResultsModel?> GetOASTreeAsync(string stream);
         public Task<GetOASTemplateResultModel?> GetOASTemplateAsync(string stream);
         public Task<GetUnitAchievementsResultsModel> GetUnitOASAchievements(string unit, string stream, string branch, int stage);
+        public Task<T> GetUnitAchievementsOfType<T>(string unitId, string type) where T : class, new();
         public Task<GetSIAResultsModel> GetSIAResultsForMember(string memberId);
         public Task<GetSIAResultModel> GetSIAResultForMember(string memberId, string achievementId);
         public Task<GetGroupLifeResultModel> GetGroupLifeForUnit(string unitId);
@@ -49,6 +52,9 @@ namespace Topo.Services
         public Task<GetPeakAwardsResultsModel> GetCourseReflectionResultsForMember(string memberId);
         public Task<GetPeakAwardsResultsModel> GetPersonalReflectionResultsForMember(string memberId);
         public Task<GetPeakAwardsResultsModel> GetPeakAwardResultsForMember(string memberId);
+        public Task<Topo.Model.AdditionalAwards.GetUnitAchievementsResultModel> GetAdditionalAwardResultsForMember(string memberId);
+        public Task<GetMemberAchievementsResultModel> GetAllAchievementsForMember(string memberId);
+        public Task<List<GroupUnit>> GetGroupUnitsAsync(string groupId);
     }
 
     public class TerrainAPIService : ITerrainAPIService
@@ -307,6 +313,21 @@ namespace Topo.Services
             return getSIAResultModel ?? new GetSIAResultModel();
         }
 
+        // Every member's records of one kind in the unit, in a single call. T is the model that matches the kind of record
+        // (the same ones the per-member reads return), so the caller picks it: GetUnitAchievementsOfType<GetMilestoneResultModel>(unit, "milestone").
+        // The records include a member's earlier sections, so callers still pick out the section they want.
+        public async Task<T> GetUnitAchievementsOfType<T>(string unitId, string type) where T : class, new()
+        {
+            await RefreshTokenAsync();
+
+            var requestUri = $"{achievementsAddress}units/{unitId}/achievements?type={type}";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            if (type == "outdoor_adventure_skill")
+                result = RemoveFileUploaderFromContent(result);
+
+            return DeserializeObject<T>(result) ?? new T();
+        }
+
         public async Task<GetGroupLifeResultModel> GetGroupLifeForUnit(string unitId)
         {
             await RefreshTokenAsync();
@@ -492,6 +513,48 @@ namespace Topo.Services
             var getPersonalReflectionResultsModel = DeserializeObject<GetPeakAwardsResultsModel>(result);
 
             return getPersonalReflectionResultsModel ?? new GetPeakAwardsResultsModel();
+        }
+
+        public async Task<Topo.Model.AdditionalAwards.GetUnitAchievementsResultModel> GetAdditionalAwardResultsForMember(string memberId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{achievementsAddress}members/{memberId}/achievements?type=additional_award";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var additionalAwardResultsModel = DeserializeObject<Topo.Model.AdditionalAwards.GetUnitAchievementsResultModel>(result);
+
+            return additionalAwardResultsModel ?? new Topo.Model.AdditionalAwards.GetUnitAchievementsResultModel();
+        }
+
+        // Every achievement type in one list; the only place the unit a record was submitted under (latest_submission) shows
+        public async Task<GetMemberAchievementsResultModel> GetAllAchievementsForMember(string memberId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{achievementsAddress}members/{memberId}/achievements";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var achievementsResultModel = DeserializeObject<GetMemberAchievementsResultModel>(result);
+
+            return achievementsResultModel ?? new GetMemberAchievementsResultModel();
+        }
+
+        // The units of a group, named. Only works for groups the user belongs to (other groups give 403).
+        public async Task<List<GroupUnit>> GetGroupUnitsAsync(string groupId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{membersAddress}groups/{groupId}/units";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            try
+            {
+                var token = JToken.Parse(result);
+                var units = token as JArray ?? (token as JObject)?["results"] as JArray;
+                return units?.ToObject<List<GroupUnit>>() ?? new List<GroupUnit>();
+            }
+            catch (Exception)
+            {
+                return new List<GroupUnit>();
+            }
         }
 
         public async Task<GetPeakAwardsResultsModel> GetPeakAwardResultsForMember(string memberId)
