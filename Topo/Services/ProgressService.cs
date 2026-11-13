@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Topo.Model;
+using Newtonsoft.Json;
 using System.Globalization;
 using System.Reflection;
 using Topo.Model.Members;
@@ -55,14 +56,7 @@ namespace Topo.Services
             var result = AchievementSelection.LatestAwardedIntro(introToScouting.results);
             if (result != null)
             {
-                if (!string.IsNullOrEmpty(result.imported.date_awarded))
-                {
-                    introToScoutingDate = ConvertStringToDate(result.imported.date_awarded, "yyyy-MM-dd").ToString("dd/MM/yy");
-                }
-                else
-                {
-                    introToScoutingDate = result.status_updated.ToString("dd/MM/yy");
-                }
+                introToScoutingDate = AwardDate.Resolve(result.date_awarded, result.imported?.date_awarded, result.status_updated).ToString("dd/MM/yy");
             }
 
             return introToScoutingDate;
@@ -75,14 +69,7 @@ namespace Topo.Services
             var result = AchievementSelection.LatestAwardedIntro(introToSection.results, _storageService.Section);
             if (result != null)
             {
-                if (!string.IsNullOrEmpty(result.imported.date_awarded))
-                {
-                    introToSectionDate = ConvertStringToDate(result.imported.date_awarded, "yyyy-MM-dd");
-                }
-                else
-                {
-                    introToSectionDate = result.status_updated;
-                }
+                introToSectionDate = AwardDate.Resolve(result.date_awarded, result.imported?.date_awarded, result.status_updated);
             }
 
             return introToSectionDate;
@@ -277,11 +264,7 @@ namespace Topo.Services
                 var approvedDate = new DateTime();
                 if (oasResult.status == "awarded")
                 {
-                    awardedDate = oasResult.status_updated;
-                    if (!string.IsNullOrEmpty(oasResult.imported?.date_awarded))
-                    {
-                        awardedDate = ConvertStringToDate(oasResult.imported?.date_awarded, "yyyy-MM-dd");
-                    }
+                    awardedDate = AwardDate.Resolve(oasResult.date_awarded, oasResult.imported?.date_awarded, oasResult.status_updated);
                 } 
                 else if (oasResult.status == "approved")
                 {
@@ -332,7 +315,7 @@ namespace Topo.Services
                     Area = myTI.ToTitleCase(r.answers.special_interest_area_selection.Replace("sia_", "").Replace("_", " ")),
                     Project = r.answers.project_name,
                     Status = myTI.ToTitleCase(r.status.Replace("_", " ")),
-                    Awarded = r.status_updated
+                    Awarded = AwardDate.Resolve(r.date_awarded, r.imported?.date_awarded, r.status_updated)
                 });
 
             return memberSiaProjects.ToList();
