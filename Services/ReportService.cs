@@ -28,7 +28,7 @@ namespace Topo.Services
         public IWorkbook GenerateAttendanceReportWorkbook(AttendanceReportModel attendanceReportData, string groupName, string section, string unitName, DateTime fromDate, DateTime toDate, bool forPdfOutput);
         public IWorkbook GenerateOASWorksheetWorkbook(List<OASWorksheetAnswers> worksheetAnswers, string groupName, string section, string unitName, bool forPdfOutput, bool formatLikeTerrain, bool showByPatrol = false);
         public IWorkbook GenerateSIAWorkbook(List<SIAProjectListModel> siaProjects, string groupName, string section, string unitName, bool forPdfOutput);
-        public IWorkbook GenerateMilestoneWorkbook(List<MilestoneSummaryListModel> milestoneSummaries, string groupName, string section, string unitName, bool forPdfOutput);
+        public IWorkbook GenerateMilestoneWorkbook(List<MilestoneSummaryListModel> milestoneSummaries, string groupName, string section, string unitName, bool forPdfOutput, bool breakByPatrol = false);
         public IWorkbook GenerateLogbookWorkbook(List<MemberLogbookReportViewModel> logbookEntries, string groupName, string section, string unitName, bool forPdfOutput);
         public IWorkbook GenerateWallchartWorkbook(List<WallchartItemModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput, bool breakByPatrol = false);
         public IWorkbook GenerateApprovalsWorkbook(List<ApprovalsListModel> selectedApprovals, string groupName, string section, string unitName, DateTime approvalSearchFromDate, DateTime approvalSearchToDate, bool groupByMember, bool forPdfOutput);
@@ -39,13 +39,6 @@ namespace Topo.Services
     public class ReportService : IReportService
     {
         public TimeSpan CurrentUtcOffset { get; set; } = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now);
-
-        private enum participateAssistLead
-        {
-            participate,
-            assist,
-            lead
-        }
 
         private enum wallchartGroups
         {
@@ -65,49 +58,13 @@ namespace Topo.Services
             peakAward
         }
 
-        private Color[] MilestoneColours1 = new Color[]
-        {
-            Color.FromArgb(236, 82, 82),
-            Color.FromArgb(156, 242, 80)
-        };
+        private static Color[] Colours(string[] hex) => hex.Select(Colour).ToArray();
 
-        private Color[] MilestoneColours2 = new Color[]
-        {
-            Color.FromArgb(236, 82, 82),
-            Color.FromArgb(253, 238, 0),
-            Color.FromArgb(156, 242, 80)
-        };
-
-        private Color[] MilestoneColours4 = new Color[]
-        {
-            Color.FromArgb(236, 82, 82),
-            Color.FromArgb(244, 157, 43),
-            Color.FromArgb(253, 238, 0),
-            Color.FromArgb(206, 240, 38),
-            Color.FromArgb(156, 242, 80)
-        };
-
-        private Color[] MilestoneColours5 = new Color[]
-        {
-            Color.FromArgb(236, 82, 82),
-            Color.FromArgb(241, 131, 57),
-            Color.FromArgb(248, 189, 26),
-            Color.FromArgb(221, 239, 26),
-            Color.FromArgb(184, 241, 57),
-            Color.FromArgb(156, 242, 80)
-        };
-
-        private Color[] MilestoneColours6 = new Color[]
-        {
-            Color.FromArgb(236, 82, 82),
-            Color.FromArgb(241, 129, 57),
-            Color.FromArgb(248, 194, 23),
-            Color.FromArgb(253, 238, 0),
-            Color.FromArgb(218, 240, 29),
-            Color.FromArgb(183, 241, 58),
-            Color.FromArgb(156, 242, 80)
-         };
-
+        private Color[] MilestoneColours1 = Colours(MilestoneColours.Scale1);
+        private Color[] MilestoneColours2 = Colours(MilestoneColours.Scale2);
+        private Color[] MilestoneColours4 = Colours(MilestoneColours.Scale4);
+        private Color[] MilestoneColours5 = Colours(MilestoneColours.Scale5);
+        private Color[] MilestoneColours6 = Colours(MilestoneColours.Scale6);
 
         private bool RunningInUtc { get; set; }
 
@@ -1420,182 +1377,169 @@ namespace Topo.Services
             return workbook;
         }
 
-        public IWorkbook GenerateMilestoneWorkbook(List<MilestoneSummaryListModel> milestoneSummaries, string groupName, string section, string unitName, bool forPdfOutput)
+        public IWorkbook GenerateMilestoneWorkbook(List<MilestoneSummaryListModel> milestoneSummaries, string groupName, string section, string unitName, bool forPdfOutput, bool breakByPatrol = false)
         {
-            var workbook = CreateWorkbookWithLogo(groupName, section, 8);
-            IWorksheet sheet = workbook.Worksheets[0];
-            int rowNumber = 1;
-            int averageStartRow = 0;
-            int averageEndRow = 0;
+            var patrolGroups = MilestoneLayout.Build(milestoneSummaries, breakByPatrol);
+            var workbook = CreateWorkbookWithSheets(patrolGroups.Count);
+            var worksheetIndex = 0;
 
-            IStyle headingStyle = workbook.Styles["headingStyle"];
-
-            // Add Unit name
-            rowNumber++;
-            var unit = sheet.Range[rowNumber, 2];
-            unit.Text = unitName;
-            unit.CellStyle = headingStyle;
-            sheet.Range[rowNumber, 2, rowNumber, 8].Merge();
-            sheet.SetRowHeight(rowNumber, 40);
-
-            // Add Title
-            rowNumber++;
-            var title = sheet.Range[rowNumber, 2];
-            title.Text = $"Milestone Summary as at {DateTime.Now.ToShortDateString()}";
-            title.CellStyle = headingStyle;
-            sheet.Range[rowNumber, 2, rowNumber, 8].Merge();
-            sheet.SetRowHeight(rowNumber, 30);
-
-            foreach (var milestoneSummary in milestoneSummaries.GroupBy(ms => ms.currentLevel).OrderBy(ms => ms.Key))
+            foreach (var patrolGroup in patrolGroups)
             {
-                // Headings
+                IWorksheet sheet = AddLogoToSheet(workbook, worksheetIndex, groupName, section, 8);
+                sheet.Name = string.IsNullOrEmpty(patrolGroup.Patrol) ? "Unit" : patrolGroup.Patrol;
+                int rowNumber = 1;
+                int averageStartRow = 0;
+                int averageEndRow = 0;
+
+                IStyle headingStyle = workbook.Styles["headingStyle"];
+
+                // Add Unit name
                 rowNumber++;
-                sheet.Range[rowNumber, 3].Text = $"Milestone {milestoneSummary.Key}";
-                sheet.Range[rowNumber, 3].CellStyle.Font.Bold = true;
-                sheet.Range[rowNumber, 3].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
-                sheet.Range[rowNumber, 3].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                sheet.Range[rowNumber, 3, rowNumber, 8].Merge();
-                sheet.Range[rowNumber, 3, rowNumber, 8].BorderAround();
-                sheet.Range[rowNumber, 3, rowNumber, 8].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
-                sheet.SetRowHeight(rowNumber, 20);
+                var unit = sheet.Range[rowNumber, 2];
+                unit.Text = unitName;
+                unit.CellStyle = headingStyle;
+                sheet.Range[rowNumber, 2, rowNumber, 8].Merge();
+                sheet.SetRowHeight(rowNumber, 40);
 
+                // Add Title
                 rowNumber++;
-                sheet.Range[rowNumber, 3].Text = GetParticipateHeadingText(milestoneSummary.Key);
-                sheet.Range[rowNumber, 3].CellStyle.Font.Bold = true;
-                sheet.Range[rowNumber, 3].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
-                sheet.Range[rowNumber, 3].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                sheet.Range[rowNumber, 3, rowNumber, 6].Merge();
-                sheet.Range[rowNumber, 3, rowNumber, 6].BorderAround();
-                sheet.Range[rowNumber, 3, rowNumber, 6].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
-                sheet.SetRowHeight(rowNumber, 20);
+                var title = sheet.Range[rowNumber, 2];
+                title.Text = $"{(string.IsNullOrEmpty(patrolGroup.Patrol) ? "" : patrolGroup.Patrol + " ")}Milestone Summary as at {DateTime.Now.ToShortDateString()}";
+                title.CellStyle = headingStyle;
+                sheet.Range[rowNumber, 2, rowNumber, 8].Merge();
+                sheet.SetRowHeight(rowNumber, 30);
 
-                rowNumber++;
-                sheet.Range[rowNumber, 1].Text = "Name";
-                sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
-                sheet.Range[rowNumber, 1].BorderAround();
-                sheet.Range[rowNumber, 2].Text = "Percent Complete";
-                sheet.Range[rowNumber, 2].CellStyle.Font.Bold = true;
-                sheet.Range[rowNumber, 2].BorderAround();
-                sheet.Range[rowNumber, 2].CellStyle.WrapText = true;
-                sheet.Range[rowNumber, 3].Text = "Community";
-                sheet.Range[rowNumber, 3].CellStyle.Font.Bold = true;
-                sheet.Range[rowNumber, 3].BorderAround();
-                sheet.Range[rowNumber, 4].Text = "Outdoors";
-                sheet.Range[rowNumber, 4].CellStyle.Font.Bold = true;
-                sheet.Range[rowNumber, 4].BorderAround();
-                sheet.Range[rowNumber, 5].Text = "Creative";
-                sheet.Range[rowNumber, 5].CellStyle.Font.Bold = true;
-                sheet.Range[rowNumber, 5].BorderAround();
-                sheet.Range[rowNumber, 6].Text = "Personal Growth";
-                sheet.Range[rowNumber, 6].CellStyle.Font.Bold = true;
-                sheet.Range[rowNumber, 6].BorderAround();
-                sheet.Range[rowNumber, 6].CellStyle.WrapText = true;
-                sheet.Range[rowNumber, 7].Text = GetLeadHeadingText(milestoneSummary.Key);
-                sheet.Range[rowNumber, 7].CellStyle.Font.Bold = true;
-                sheet.Range[rowNumber, 7].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                sheet.Range[rowNumber - 1, 7, rowNumber, 7].Merge();
-                sheet.Range[rowNumber - 1, 7, rowNumber, 7].BorderAround();
-                sheet.Range[rowNumber - 1, 7, rowNumber, 7].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
-                sheet.Range[rowNumber, 8].Text = GetLeadHeadingText(milestoneSummary.Key) + " Areas";
-                sheet.Range[rowNumber, 8].CellStyle.Font.Bold = true;
-                sheet.Range[rowNumber, 8].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                sheet.Range[rowNumber, 8].CellStyle.WrapText = true;
-                sheet.Range[rowNumber - 1, 8, rowNumber, 8].Merge();
-                sheet.Range[rowNumber - 1, 8, rowNumber, 8].BorderAround();
-                sheet.Range[rowNumber - 1, 8, rowNumber, 8].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
-
-                sheet.Range[rowNumber, 1, rowNumber, 8].CellStyle.VerticalAlignment = ExcelVAlign.VAlignBottom;
-                sheet.Range[rowNumber, 1, rowNumber, 8].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                sheet.Range[rowNumber, 1, rowNumber, 8].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
-                sheet.SetRowHeight(rowNumber, 35);
-
-                averageStartRow = rowNumber + 1;
-                foreach (var memberSummary in milestoneSummary.OrderBy(ms => ms.memberName))
+                foreach (var milestoneSummary in patrolGroup.Sections)
                 {
+                    // Headings
                     rowNumber++;
-                    sheet.Range[rowNumber, 1].Text = memberSummary.memberName;
+                    sheet.Range[rowNumber, 3].Text = milestoneSummary.Title;
+                    sheet.Range[rowNumber, 3].CellStyle.Font.Bold = true;
+                    sheet.Range[rowNumber, 3].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+                    sheet.Range[rowNumber, 3].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                    sheet.Range[rowNumber, 3, rowNumber, 8].Merge();
+                    sheet.Range[rowNumber, 3, rowNumber, 8].BorderAround();
+                    sheet.Range[rowNumber, 3, rowNumber, 8].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                    sheet.SetRowHeight(rowNumber, 20);
+
+                    rowNumber++;
+                    sheet.Range[rowNumber, 3].Text = milestoneSummary.ParticipateHeading;
+                    sheet.Range[rowNumber, 3].CellStyle.Font.Bold = true;
+                    sheet.Range[rowNumber, 3].CellStyle.VerticalAlignment = ExcelVAlign.VAlignCenter;
+                    sheet.Range[rowNumber, 3].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                    sheet.Range[rowNumber, 3, rowNumber, 6].Merge();
+                    sheet.Range[rowNumber, 3, rowNumber, 6].BorderAround();
+                    sheet.Range[rowNumber, 3, rowNumber, 6].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                    sheet.SetRowHeight(rowNumber, 20);
+
+                    rowNumber++;
+                    sheet.Range[rowNumber, 1].Text = "Name";
+                    sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
                     sheet.Range[rowNumber, 1].BorderAround();
-                    sheet.Range[rowNumber, 2].Number = memberSummary.percentComplete / 100.00;
-                    sheet.Range[rowNumber, 2].NumberFormat = "0%";
+                    sheet.Range[rowNumber, 2].Text = "Percent Complete";
+                    sheet.Range[rowNumber, 2].CellStyle.Font.Bold = true;
                     sheet.Range[rowNumber, 2].BorderAround();
-                    sheet.Range[rowNumber, 2].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
-                    switch (milestoneSummary.Key)
-                    {
-                        case 1:
-                            SetMilestoneCell(sheet.Range[rowNumber, 3], 1, participateAssistLead.participate, memberSummary.milestone1ParticipateCommunity);
-                            SetMilestoneCell(sheet.Range[rowNumber, 4], 1, participateAssistLead.participate, memberSummary.milestone1ParticipateOutdoors);
-                            SetMilestoneCell(sheet.Range[rowNumber, 5], 1, participateAssistLead.participate, memberSummary.milestone1ParticipateCreative);
-                            SetMilestoneCell(sheet.Range[rowNumber, 6], 1, participateAssistLead.participate, memberSummary.milestone1ParticipatePersonalGrowth);
-                            SetMilestoneCell(sheet.Range[rowNumber, 7], 1, participateAssistLead.lead, memberSummary.milestone1Lead);
-                            SetMilestoneCell(sheet.Range[rowNumber, 8], 1, participateAssistLead.lead, memberSummary.milestone1Lead, memberSummary.milestone1LeadArea);
-                            break;
-                        case 2:
-                            SetMilestoneCell(sheet.Range[rowNumber, 3], 2, participateAssistLead.participate, memberSummary.milestone2ParticipateCommunity);
-                            SetMilestoneCell(sheet.Range[rowNumber, 4], 2, participateAssistLead.participate, memberSummary.milestone2ParticipateOutdoors);
-                            SetMilestoneCell(sheet.Range[rowNumber, 5], 2, participateAssistLead.participate, memberSummary.milestone2ParticipateCreative);
-                            SetMilestoneCell(sheet.Range[rowNumber, 6], 2, participateAssistLead.participate, memberSummary.milestone2ParticipatePersonalGrowth);
-                            SetMilestoneCell(sheet.Range[rowNumber, 7], 2, participateAssistLead.lead, memberSummary.milestone2Lead);
-                            SetMilestoneCell(sheet.Range[rowNumber, 8], 2, participateAssistLead.lead, memberSummary.milestone2Lead, memberSummary.milestone2LeadArea);
-                            break;
-                        case 3:
-                            SetMilestoneCell(sheet.Range[rowNumber, 3], 3, participateAssistLead.participate, memberSummary.milestone3ParticipateCommunity);
-                            SetMilestoneCell(sheet.Range[rowNumber, 4], 3, participateAssistLead.participate, memberSummary.milestone3ParticipateOutdoors);
-                            SetMilestoneCell(sheet.Range[rowNumber, 5], 3, participateAssistLead.participate, memberSummary.milestone3ParticipateCreative);
-                            SetMilestoneCell(sheet.Range[rowNumber, 6], 3, participateAssistLead.participate, memberSummary.milestone3ParticipatePersonalGrowth);
-                            SetMilestoneCell(sheet.Range[rowNumber, 7], 3, participateAssistLead.lead, memberSummary.milestone3Lead);
-                            SetMilestoneCell(sheet.Range[rowNumber, 8], 3, participateAssistLead.lead, memberSummary.milestone3Lead, memberSummary.milestone3LeadArea);
-                            break;
-                    }
+                    sheet.Range[rowNumber, 2].CellStyle.WrapText = true;
+                    sheet.Range[rowNumber, 3].Text = "Community";
+                    sheet.Range[rowNumber, 3].CellStyle.Font.Bold = true;
                     sheet.Range[rowNumber, 3].BorderAround();
+                    sheet.Range[rowNumber, 4].Text = "Outdoors";
+                    sheet.Range[rowNumber, 4].CellStyle.Font.Bold = true;
                     sheet.Range[rowNumber, 4].BorderAround();
+                    sheet.Range[rowNumber, 5].Text = "Creative";
+                    sheet.Range[rowNumber, 5].CellStyle.Font.Bold = true;
                     sheet.Range[rowNumber, 5].BorderAround();
+                    sheet.Range[rowNumber, 6].Text = "Personal Growth";
+                    sheet.Range[rowNumber, 6].CellStyle.Font.Bold = true;
                     sheet.Range[rowNumber, 6].BorderAround();
-                    sheet.Range[rowNumber, 7].BorderAround();
-                    sheet.Range[rowNumber, 8].BorderAround();
-                    sheet.Range[rowNumber, 2, rowNumber, 8].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
-                }
+                    sheet.Range[rowNumber, 6].CellStyle.WrapText = true;
+                    sheet.Range[rowNumber, 7].Text = milestoneSummary.LeadHeading;
+                    sheet.Range[rowNumber, 7].CellStyle.Font.Bold = true;
+                    sheet.Range[rowNumber, 7].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                    sheet.Range[rowNumber - 1, 7, rowNumber, 7].Merge();
+                    sheet.Range[rowNumber - 1, 7, rowNumber, 7].BorderAround();
+                    sheet.Range[rowNumber - 1, 7, rowNumber, 7].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                    sheet.Range[rowNumber, 8].Text = milestoneSummary.LeadHeading + " Areas";
+                    sheet.Range[rowNumber, 8].CellStyle.Font.Bold = true;
+                    sheet.Range[rowNumber, 8].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                    sheet.Range[rowNumber, 8].CellStyle.WrapText = true;
+                    sheet.Range[rowNumber - 1, 8, rowNumber, 8].Merge();
+                    sheet.Range[rowNumber - 1, 8, rowNumber, 8].BorderAround();
+                    sheet.Range[rowNumber - 1, 8, rowNumber, 8].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
 
-                // Add average row
-                averageEndRow = rowNumber;
-                rowNumber++;
-                sheet.Range[rowNumber, 2].Text = "Average";
-                sheet.Range[rowNumber, 2].BorderAround();
-                for (int i = 3; i <= 8; i++)
-                {
-                    if (!(i == 8)) // Don't total area text cols
+                    sheet.Range[rowNumber, 1, rowNumber, 8].CellStyle.VerticalAlignment = ExcelVAlign.VAlignBottom;
+                    sheet.Range[rowNumber, 1, rowNumber, 8].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                    sheet.Range[rowNumber, 1, rowNumber, 8].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                    sheet.SetRowHeight(rowNumber, 35);
+
+                    averageStartRow = rowNumber + 1;
+                    foreach (var row in milestoneSummary.Rows)
                     {
-                        var avgRange = sheet.Range[averageStartRow, i, averageEndRow, i].AddressLocal;
-                        sheet.Range[rowNumber, i].Formula = $"=AVERAGE({avgRange})";
-                        sheet.Range[rowNumber, i].NumberFormat = "0.0";
+                        rowNumber++;
+                        sheet.Range[rowNumber, 1].Text = row.Name;
+                        sheet.Range[rowNumber, 1].BorderAround();
+                        sheet.Range[rowNumber, 2].Number = row.PercentComplete / 100.00;
+                        sheet.Range[rowNumber, 2].NumberFormat = "0%";
+                        sheet.Range[rowNumber, 2].BorderAround();
+                        sheet.Range[rowNumber, 2].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                        for (var column = 0; column < row.Participate.Count; column++)
+                            SetMilestoneCell(sheet.Range[rowNumber, 3 + column], row.Participate[column]);
+                        SetMilestoneCell(sheet.Range[rowNumber, 7], row.Lead);
+                        sheet.Range[rowNumber, 8].Text = row.LeadAreas;
+                        sheet.Range[rowNumber, 8].CellStyle.Color = Colour(row.Lead.Colour);
+                        sheet.Range[rowNumber, 3].BorderAround();
+                        sheet.Range[rowNumber, 4].BorderAround();
+                        sheet.Range[rowNumber, 5].BorderAround();
+                        sheet.Range[rowNumber, 6].BorderAround();
+                        sheet.Range[rowNumber, 7].BorderAround();
+                        sheet.Range[rowNumber, 8].BorderAround();
+                        sheet.Range[rowNumber, 2, rowNumber, 8].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
                     }
-                    sheet.Range[rowNumber, i].BorderAround();
-                    sheet.Range[rowNumber, i].CellStyle.Font.Bold = true;
-                    sheet.Range[rowNumber, i].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+
+                    // Add average row
+                    averageEndRow = rowNumber;
+                    rowNumber++;
+                    sheet.Range[rowNumber, 2].Text = "Average";
+                    sheet.Range[rowNumber, 2].BorderAround();
+                    for (int i = 3; i <= 8; i++)
+                    {
+                        if (!(i == 8)) // Don't total area text cols
+                        {
+                            var avgRange = sheet.Range[averageStartRow, i, averageEndRow, i].AddressLocal;
+                            sheet.Range[rowNumber, i].Formula = $"=AVERAGE({avgRange})";
+                            sheet.Range[rowNumber, i].NumberFormat = "0.0";
+                        }
+                        sheet.Range[rowNumber, i].BorderAround();
+                        sheet.Range[rowNumber, i].CellStyle.Font.Bold = true;
+                        sheet.Range[rowNumber, i].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                    }
+                    sheet.Range[rowNumber, 2, rowNumber, 8].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+
+                    rowNumber++;
+                    rowNumber++;
                 }
-                sheet.Range[rowNumber, 2, rowNumber, 8].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
 
-                rowNumber++;
-                rowNumber++;
+                sheet.Range[1, 1, rowNumber, 1].AutofitColumns();
+                sheet.SetColumnWidth(2, 10);
+                sheet.SetColumnWidth(3, 10);
+                sheet.SetColumnWidth(4, 10);
+                sheet.SetColumnWidth(5, 10);
+                sheet.SetColumnWidth(6, 10);
+                sheet.SetColumnWidth(7, 10);
+                sheet.SetColumnWidth(8, 15);
+
+                sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+                sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
+                sheet.PageSetup.BottomMargin = 0.25;
+                sheet.PageSetup.TopMargin = 0.25;
+                sheet.PageSetup.LeftMargin = 0.25;
+                sheet.PageSetup.RightMargin = 0.25;
+                sheet.PageSetup.HeaderMargin = 0;
+                sheet.PageSetup.FooterMargin = 0;
+                sheet.PageSetup.IsFitToPage = true;
+
+                worksheetIndex++;
             }
-
-            sheet.Range[1, 1, rowNumber, 1].AutofitColumns();
-            sheet.SetColumnWidth(2, 10);
-            sheet.SetColumnWidth(3, 10);
-            sheet.SetColumnWidth(4, 10);
-            sheet.SetColumnWidth(5, 10);
-            sheet.SetColumnWidth(6, 10);
-            sheet.SetColumnWidth(7, 10);
-            sheet.SetColumnWidth(8, 15);
-
-            sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
-            sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
-            sheet.PageSetup.BottomMargin = 0.25;
-            sheet.PageSetup.TopMargin = 0.25;
-            sheet.PageSetup.LeftMargin = 0.25;
-            sheet.PageSetup.RightMargin = 0.25;
-            sheet.PageSetup.HeaderMargin = 0;
-            sheet.PageSetup.FooterMargin = 0;
-            sheet.PageSetup.IsFitToPage = true;
 
             return workbook;
         }
@@ -2617,96 +2561,14 @@ namespace Topo.Services
             }
         }
 
-        private string GetParticipateHeadingText(int currentLevel)
+        private void SetMilestoneCell(IRange cell, MilestoneCell value)
         {
-            switch (currentLevel)
-            {
-                case 1:
-                    return "Participate - 6";
-                case 2:
-                    return "Participate - 5";
-                case 3:
-                    return "Participate - 4";
-                default:
-                    return "Participate";
-            }
+            cell.Number = value.Count;
+            cell.CellStyle.Color = Colour(value.Colour);
         }
 
-
-        private string GetLeadHeadingText(int currentLevel)
-        {
-            switch (currentLevel)
-            {
-                case 1:
-                    return "Lead - 2";
-                case 2:
-                    return "Lead - 4";
-                case 3:
-                    return "Lead - 6";
-                default:
-                    return "Lead";
-            }
-        }
-
-        private void SetMilestoneCell(IRange cell, int currentLevel, participateAssistLead pal, int count)
-        {
-            cell.Number = count;
-            cell.CellStyle.Color = GetMilestoneProgressColour(currentLevel, pal, count);
-        }
-
-        private void SetMilestoneCell(IRange cell, int currentLevel, participateAssistLead pal, int count, string areas)
-        {
-            cell.Text = areas;
-            cell.CellStyle.Color = GetMilestoneProgressColour(currentLevel, pal, count);
-        }
-
-        private Color GetMilestoneProgressColour(int currentLevel, participateAssistLead pal, int count)
-        {
-            // Skipped milestones have a count of -1
-            if (count < 0)
-                return Color.White;
-
-            if (currentLevel == 1)
-            {
-                switch (pal)
-                {
-                    case participateAssistLead.participate:
-                        return MilestoneColours6[Math.Min(count, 6)];
-                    case participateAssistLead.lead:
-                        return MilestoneColours2[Math.Min(count, 2)];
-                    default:
-                        return Color.White;
-                }
-            }
-
-            if (currentLevel == 2)
-            {
-                switch (pal)
-                {
-                    case participateAssistLead.participate:
-                        return MilestoneColours5[Math.Min(count, 5)];
-                    case participateAssistLead.lead:
-                        return MilestoneColours4[Math.Min(count, 4)];
-                    default:
-                        return Color.White;
-                }
-            }
-
-            if (currentLevel == 3)
-            {
-                switch (pal)
-                {
-                    case participateAssistLead.participate:
-                        return MilestoneColours4[Math.Min(count, 4)];
-                    case participateAssistLead.lead:
-                        return MilestoneColours6[Math.Min(count, 6)];
-                    default:
-                        return Color.White;
-                }
-            }
-
-            return Color.White;
-        }
+        private static Color Colour(string hex) =>
+            Color.FromArgb(Convert.ToInt32(hex.Substring(1, 2), 16), Convert.ToInt32(hex.Substring(3, 2), 16), Convert.ToInt32(hex.Substring(5, 2), 16));
 
         private void SetWallchartCell(IRange cell, int currentLevel, wallchartGroups wallchartGroups, int count)
         {
