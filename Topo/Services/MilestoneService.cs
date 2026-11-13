@@ -26,10 +26,12 @@ namespace Topo.Services
         public async Task<List<MilestoneSummaryListModel>> GetMilestoneSummaries(string selectedUnitId, Action<string>? progress = null)
         {
             var unitMilestoneSummary = new List<MilestoneSummaryListModel>();
-            // Read the unit's milestones once instead of once per youth. Every record carries its member_id, so ToLookup hands the loop
+            // Read the unit's milestones once, not once per youth. Every record carries its member_id, so ToLookup hands the loop
             // a member's records as before (a member with none gets an empty list). The records include earlier sections, filtered below.
-            var milestonesByMember = (await _terrainAPIService.GetUnitAchievementsOfType<GetMilestoneResultModel>(selectedUnitId, "milestone")).results.ToLookup(r => r.member_id);
             var members = (await _membersService.GetMembersAsync(selectedUnitId)).Where(m => m.isAdultLeader == 0).ToList();
+            if (members.Count == 0)
+                return unitMilestoneSummary; // a unit with no youth (an adults-only team) has nothing to read
+            var milestonesByMember = (await _terrainAPIService.GetUnitAchievementsOfType<GetMilestoneResultModel>(selectedUnitId, "milestone")).results.ToLookup(r => r.member_id);
             for (var i = 0; i < members.Count; i++)
             {
                 var member = members[i];
