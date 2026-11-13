@@ -7,6 +7,8 @@ using Topo.Model.ReportGeneration;
 using Topo.Model.UnitReport;
 using TopoReportFunction;
 using AdditionalAwardResult = Topo.Model.AdditionalAwards.Result;
+using IntroResult = Topo.Model.Progress.Result;
+using IntroResults = Topo.Model.Progress.GetIntroductionResultsModel;
 using MilestoneResult = Topo.Model.Milestone.MilestoneResult;
 using SiaResult = Topo.Model.SIA.Result;
 
@@ -637,6 +639,36 @@ namespace TopoReportFunctionTest
 
             scouts.Leaders[0].MemberNumber = "different";
             Assert.AreEqual(3, set.TotalLeaders);
+        }
+
+        // The report only reads a new member's other records (to say where they came from) for people invested in the period
+        [TestMethod]
+        public void AMemberIsNewWhenTheirIntroToSectionWasOnTerrainsOwnDateInThePeriod()
+        {
+            var intros = new IntroResults
+            {
+                results = new[]
+                {
+                    // last changed after the period, but Terrain's own date is inside it
+                    new IntroResult { status = "awarded", section = "scout", status_updated = new DateTime(2026, 1, 20, 9, 0, 0), date_awarded = "2025-11-20" }
+                }
+            };
+
+            Assert.IsTrue(SectionReportBuilder.InvestedInPeriod(intros, "scout", new DateTime(2025, 11, 1), new DateTime(2025, 12, 31)));
+            Assert.IsFalse(SectionReportBuilder.InvestedInPeriod(intros, "scout", new DateTime(2026, 1, 1), new DateTime(2026, 3, 31)));
+        }
+
+        [TestMethod]
+        public void AnIntroToAnotherSectionOrOneNotYetAwardedDoesNotMakeAMemberNew()
+        {
+            var period = (from: new DateTime(2025, 11, 1), to: new DateTime(2025, 12, 31));
+            var cubIntro = new IntroResults { results = new[] { new IntroResult { status = "awarded", section = "cub", status_updated = new DateTime(2025, 11, 20) } } };
+            var pending = new IntroResults { results = new[] { new IntroResult { status = "draft_review", section = "scout", status_updated = new DateTime(2025, 11, 20) } } };
+
+            Assert.IsFalse(SectionReportBuilder.InvestedInPeriod(cubIntro, "scout", period.from, period.to));
+            Assert.IsFalse(SectionReportBuilder.InvestedInPeriod(pending, "scout", period.from, period.to));
+            Assert.IsFalse(SectionReportBuilder.InvestedInPeriod(new IntroResults(), "scout", period.from, period.to));
+            Assert.IsTrue(SectionReportBuilder.InvestedInPeriod(cubIntro, "cub", period.from, period.to));
         }
     }
 }
