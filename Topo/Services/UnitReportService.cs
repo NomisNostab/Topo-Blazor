@@ -1,3 +1,5 @@
+using Topo.Model.Milestone;
+using Topo.Model.Progress;
 using Topo.Model.UnitReport;
 
 namespace Topo.Services
@@ -43,17 +45,23 @@ namespace Topo.Services
             progress?.Invoke("events");
             input.Events = await GetEvents(from, to, calendarIds);
 
-            // Badges come from each current youth member's records
+            // Badges come from each current youth member's records. Read each kind once for the whole unit instead of once per youth:
+            // every record carries its member_id, so ToLookup hands back one member's records (none gives an empty list).
+            // The records include earlier sections, which the builder filters out.
             var youth = input.CurrentMembers.Where(m => !UnitReportBuilder.IsLeader(m)).ToList();
-            for (var i = 0; i < youth.Count; i++)
+            progress?.Invoke("badges");
+            var milestonesByMember = (await _terrainAPIService.GetUnitAchievementsOfType<GetMilestoneResultModel>(unitId, "milestone")).results.ToLookup(r => r.member_id);
+            var oasByMember = (await _terrainAPIService.GetUnitAchievementsOfType<Topo.Model.OAS.GetUnitAchievementsResultsModel>(unitId, "outdoor_adventure_skill")).results.ToLookup(r => r.member_id);
+            var siaByMember = (await _terrainAPIService.GetUnitAchievementsOfType<Topo.Model.SIA.GetSIAResultsModel>(unitId, "special_interest_area")).results.ToLookup(r => r.member_id);
+            var peakByMember = (await _terrainAPIService.GetUnitAchievementsOfType<GetPeakAwardsResultsModel>(unitId, "peak_award")).results.ToLookup(r => r.member_id);
+            foreach (var member in youth)
             {
-                progress?.Invoke($"badges {i + 1} of {youth.Count}");
-                input.BadgesByMember[youth[i].id] = new UnitMemberBadges
+                input.BadgesByMember[member.id] = new UnitMemberBadges
                 {
-                    Milestones = await _terrainAPIService.GetMilestoneResultsForMember(youth[i].id),
-                    Oas = await _terrainAPIService.GetOASResultsForMember(youth[i].id),
-                    Sia = await _terrainAPIService.GetSIAResultsForMember(youth[i].id),
-                    Peak = await _terrainAPIService.GetPeakAwardResultsForMember(youth[i].id)
+                    Milestones = new GetMilestoneResultModel { results = milestonesByMember[member.id].ToArray() },
+                    Oas = new Topo.Model.OAS.GetUnitAchievementsResultsModel { results = oasByMember[member.id].ToArray() },
+                    Sia = new Topo.Model.SIA.GetSIAResultsModel { results = siaByMember[member.id].ToArray() },
+                    Peak = new GetPeakAwardsResultsModel { results = peakByMember[member.id].ToArray() }
                 };
             }
 

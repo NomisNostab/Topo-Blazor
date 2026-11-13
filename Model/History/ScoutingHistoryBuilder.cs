@@ -83,7 +83,7 @@ namespace Topo.Model.History
             {
                 var intro = input.IntroToSection.results
                     .Where(r => Key(r.section) == key && r.status == "awarded")
-                    .Select(r => (DateTime?)AwardedDate(r.imported.date_awarded, r.status_updated))
+                    .Select(r => (DateTime?)AwardedDate(r.date_awarded, r.imported?.date_awarded, r.status_updated))
                     .OrderBy(d => d).FirstOrDefault();
                 starts[key] = intro ?? EarliestRecordDate(input, key);
             }
@@ -118,7 +118,7 @@ namespace Topo.Model.History
 
             model.Sections = sections;
             model.ScoutingStart = input.IntroToScouting.results.Where(r => r.status == "awarded")
-                .Select(r => (DateTime?)AwardedDate(r.imported.date_awarded, r.status_updated))
+                .Select(r => (DateTime?)AwardedDate(r.date_awarded, r.imported?.date_awarded, r.status_updated))
                 .OrderBy(d => d).FirstOrDefault()
                 ?? sections.Select(s => s.From).Where(d => d != null).OrderBy(d => d).FirstOrDefault();
             model.TimeInScouting = Duration(model.ScoutingStart, input.AsOf);
@@ -150,7 +150,7 @@ namespace Topo.Model.History
                 {
                     Stage = r.achievement_meta.stage,
                     Status = StatusText(r.status),
-                    Date = r.status == "awarded" ? AwardedDate(r.imported.date_awarded, r.status_updated) : null
+                    Date = r.status == "awarded" ? AwardedDate(r.date_awarded, r.imported?.date_awarded, r.status_updated) : null
                 })
                 .ToList();
             var finalMilestone = section.Milestones.Where(m => m.Status == "Awarded").Select(m => m.Stage).DefaultIfEmpty(0).Max();
@@ -178,24 +178,24 @@ namespace Topo.Model.History
 
             var sia = input.Sia.results.Where(r => Key(r.section) == key).ToList();
             section.Sia = sia.Where(r => r.status == "awarded")
-                .OrderBy(r => AwardedDate(r.imported.date_awarded, r.status_updated))
+                .OrderBy(r => AwardedDate(r.date_awarded, r.imported?.date_awarded, r.status_updated))
                 .Select(r => new SiaEntry
                 {
                     Area = SiaName(r.answers.special_interest_area_selection ?? ""),
                     Project = r.answers.project_name ?? "",
-                    Date = AwardedDate(r.imported.date_awarded, r.status_updated)
+                    Date = AwardedDate(r.date_awarded, r.imported?.date_awarded, r.status_updated)
                 }).ToList();
             section.SiaInProgress = sia.Count(r => r.status != "awarded");
 
             section.AdditionalAwards = input.AdditionalAwards.results
                 .Where(r => Key(r.section) == key && r.status == "awarded")
-                .OrderBy(r => AwardedDate(r.imported.date_awarded, r.status_updated))
+                .OrderBy(r => AwardedDate(r.date_awarded, r.imported?.date_awarded, r.status_updated))
                 .Select(r => new AwardEntry
                 {
                     Name = input.AwardNames.TryGetValue(r.achievement_meta.additional_award_id, out var name)
                         ? name
                         : Title(r.achievement_meta.additional_award_id),
-                    Date = AwardedDate(r.imported.date_awarded, r.status_updated)
+                    Date = AwardedDate(r.date_awarded, r.imported?.date_awarded, r.status_updated)
                 }).ToList();
         }
 
@@ -263,20 +263,16 @@ namespace Topo.Model.History
         private static DateTime? EarliestRecordDate(ScoutingHistoryInput input, string key)
         {
             var dates = new List<DateTime>();
-            dates.AddRange(input.Milestones.results.Where(r => Key(r.section) == key).Select(r => AwardedDate(r.imported.date_awarded, r.status_updated)));
-            dates.AddRange(input.Oas.results.Where(r => Key(r.section) == key).Select(r => AwardedDate(r.imported.date_awarded, r.status_updated)));
-            dates.AddRange(input.Sia.results.Where(r => Key(r.section) == key).Select(r => AwardedDate(r.imported.date_awarded, r.status_updated)));
-            dates.AddRange(input.AdditionalAwards.results.Where(r => Key(r.section) == key).Select(r => AwardedDate(r.imported.date_awarded, r.status_updated)));
+            dates.AddRange(input.Milestones.results.Where(r => Key(r.section) == key).Select(r => AwardedDate(r.date_awarded, r.imported?.date_awarded, r.status_updated)));
+            dates.AddRange(input.Oas.results.Where(r => Key(r.section) == key).Select(r => AwardedDate(r.date_awarded, r.imported?.date_awarded, r.status_updated)));
+            dates.AddRange(input.Sia.results.Where(r => Key(r.section) == key).Select(r => AwardedDate(r.date_awarded, r.imported?.date_awarded, r.status_updated)));
+            dates.AddRange(input.AdditionalAwards.results.Where(r => Key(r.section) == key).Select(r => AwardedDate(r.date_awarded, r.imported?.date_awarded, r.status_updated)));
             return dates.Count == 0 ? null : dates.Min();
         }
 
-        // Imported records carry the date they were awarded; otherwise it is when the status last changed
-        public static DateTime AwardedDate(string importedDate, DateTime statusUpdated)
-        {
-            return DateTime.TryParseExact(importedDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
-                ? date
-                : statusUpdated.Date;
-        }
+        // The day an award was made: Terrain's own date, else the imported one, else when the status last changed (see AwardDate)
+        public static DateTime AwardedDate(string? dateAwarded, string? importedDate, DateTime statusUpdated) =>
+            AwardDate.Resolve(dateAwarded, importedDate, statusUpdated).Date;
 
         public static string Duration(DateTime? from, DateTime? to)
         {

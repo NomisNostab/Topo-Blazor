@@ -146,9 +146,9 @@ namespace Topo.Model.UnitReport
         {
             var section = (input.Section ?? "").Trim().ToLowerInvariant();
             bool InUnit(string recordSection) => (recordSection ?? "").Trim().ToLowerInvariant() == section;
-            bool InRange(string imported, DateTime updated)
+            bool InRange(string? dateAwarded, string? imported, DateTime updated)
             {
-                var date = ScoutingHistoryBuilder.AwardedDate(imported, updated);
+                var date = ScoutingHistoryBuilder.AwardedDate(dateAwarded, imported, updated);
                 return date >= input.From.Date && date <= input.To.Date;
             }
 
@@ -158,27 +158,27 @@ namespace Topo.Model.UnitReport
             var sia = new SortedDictionary<string, int>();
             foreach (var badges in input.BadgesByMember.Where(b => youthIds.Contains(b.Key)).Select(b => b.Value))
             {
-                foreach (var r in badges.Milestones.results.Where(r => r.status == "awarded" && InUnit(r.section) && InRange(r.imported.date_awarded, r.status_updated)))
+                foreach (var r in badges.Milestones.results.Where(r => r.status == "awarded" && InUnit(r.section) && InRange(r.date_awarded, r.imported?.date_awarded, r.status_updated)))
                     milestones[r.achievement_meta.stage] = milestones.GetValueOrDefault(r.achievement_meta.stage) + 1;
 
-                foreach (var r in badges.Oas.results.Where(r => (r.status == "awarded" || r.status == "approved") && InUnit(r.section) && InRange(r.imported.date_awarded, r.status_updated)))
+                foreach (var r in badges.Oas.results.Where(r => (r.status == "awarded" || r.status == "approved") && InUnit(r.section) && InRange(r.date_awarded, r.imported?.date_awarded, r.status_updated)))
                 {
                     var stream = ScoutingHistoryBuilder.Title(r.achievement_meta.stream);
                     oas[stream] = oas.GetValueOrDefault(stream) + (r.achievement_meta.stage >= 7 ? 2 : 1);
                 }
 
-                foreach (var r in badges.Sia.results.Where(r => r.status == "awarded" && InUnit(r.section) && InRange(r.imported.date_awarded, r.status_updated)))
+                foreach (var r in badges.Sia.results.Where(r => r.status == "awarded" && InUnit(r.section) && InRange(r.date_awarded, r.imported?.date_awarded, r.status_updated)))
                 {
                     var area = ScoutingHistoryBuilder.SiaName(r.answers.special_interest_area_selection ?? "");
                     area = area == "" ? "Other" : area;
                     sia[area] = sia.GetValueOrDefault(area) + 1;
                 }
 
-                model.Badges.PeakAwards += badges.Peak.results.Count(r => r.status == "awarded" && InUnit(r.section) && InRange("", r.status_updated));
+                model.Badges.PeakAwards += badges.Peak.results.Count(r => r.status == "awarded" && InUnit(r.section) && InRange(r.date_awarded, null, r.status_updated));
             }
 
             var awards = new SortedDictionary<string, int>();
-            foreach (var r in input.AdditionalAwards.results.Where(r => r.status == "awarded" && youthIds.Contains(r.member_id) && InUnit(r.section) && InRange(r.imported.date_awarded, r.status_updated)))
+            foreach (var r in input.AdditionalAwards.results.Where(r => r.status == "awarded" && youthIds.Contains(r.member_id) && InUnit(r.section) && InRange(r.date_awarded, r.imported?.date_awarded, r.status_updated)))
             {
                 var name = input.AwardNames.TryGetValue(r.achievement_meta.additional_award_id, out var title)
                     ? title
