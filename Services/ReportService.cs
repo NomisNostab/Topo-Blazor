@@ -2480,7 +2480,7 @@ namespace Topo.Services
                     $"{Plural(s.Nights, "night")} camped over {Plural(s.Camps, "camp")}",
                     $"{Plural(s.Hikes, "hike")} ({s.HikeKm.ToString("0.#", culture)} km)"
                 });
-                var roles = new List<string> { $"Led {s.Led}, assisted {s.Assisted}, participated in {s.Participated} logged activities" };
+                var roles = new List<string> { ScoutingHistoryRoles.Text(s.Led, s.Assisted, s.Participated) };
                 if (!string.IsNullOrEmpty(s.CurrentRole))
                     roles.Add($"Current role: {s.CurrentRole}");
                 Row("Roles", roles);
@@ -2501,7 +2501,7 @@ namespace Topo.Services
                 $"{Plural(t.Nights, "night")} camped over {Plural(t.Camps, "camp")}",
                 $"{Plural(t.Hikes, "hike")} ({t.HikeKm.ToString("0.#", culture)} km)"
             });
-            Row("Roles", new[] { $"Led {t.Led}, assisted {t.Assisted}, participated in {t.Participated} logged activities" });
+            Row("Roles", new[] { ScoutingHistoryRoles.Text(t.Led, t.Assisted, t.Participated) });
 
             sheet.SetColumnWidth(1, labelWidth);
             sheet.SetColumnWidth(2, detailWidth);

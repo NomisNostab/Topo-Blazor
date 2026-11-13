@@ -30,6 +30,7 @@ namespace Topo.Services
         public Task<GetOASTreeResultsModel?> GetOASTreeAsync(string stream);
         public Task<GetOASTemplateResultModel?> GetOASTemplateAsync(string stream);
         public Task<GetUnitAchievementsResultsModel> GetUnitOASAchievements(string unit, string stream, string branch, int stage);
+        public Task<T> GetUnitAchievementsOfType<T>(string unitId, string type) where T : class, new();
         public Task<GetSIAResultsModel> GetSIAResultsForMember(string memberId);
         public Task<GetSIAResultModel> GetSIAResultForMember(string memberId, string achievementId);
         public Task<GetGroupLifeResultModel> GetGroupLifeForUnit(string unitId);
@@ -309,6 +310,21 @@ namespace Topo.Services
             var getSIAResultModel = DeserializeObject<GetSIAResultModel>(result);
 
             return getSIAResultModel ?? new GetSIAResultModel();
+        }
+
+        // Every member's records of one kind in the unit, in a single call. T is the model that matches the kind of record
+        // (the same ones the per-member reads return), so the caller picks it: GetUnitAchievementsOfType<GetMilestoneResultModel>(unit, "milestone").
+        // The records include a member's earlier sections, so callers still pick out the section they want.
+        public async Task<T> GetUnitAchievementsOfType<T>(string unitId, string type) where T : class, new()
+        {
+            await RefreshTokenAsync();
+
+            var requestUri = $"{achievementsAddress}units/{unitId}/achievements?type={type}";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            if (type == "outdoor_adventure_skill")
+                result = RemoveFileUploaderFromContent(result);
+
+            return DeserializeObject<T>(result) ?? new T();
         }
 
         public async Task<GetGroupLifeResultModel> GetGroupLifeForUnit(string unitId)

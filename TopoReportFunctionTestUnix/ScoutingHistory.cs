@@ -211,6 +211,23 @@ namespace TopoReportFunctionTest
         }
 
         [TestMethod]
+        public void TheDayAnAwardWasMadeIsTerrainsOwnDateThenTheImportedOneThenWhenItLastChanged()
+        {
+            var updated = new DateTime(2026, 3, 20, 14, 5, 0);
+
+            Assert.AreEqual(new DateTime(2025, 6, 1), ScoutingHistoryBuilder.AwardedDate("2025-06-01", "2024-01-15", updated));
+            Assert.AreEqual(new DateTime(2024, 1, 15), ScoutingHistoryBuilder.AwardedDate("", "2024-01-15", updated));
+            Assert.AreEqual(new DateTime(2026, 3, 20), ScoutingHistoryBuilder.AwardedDate("", "", updated)); // just the day, not the time
+        }
+
+        [TestMethod]
+        public void RolesOnlyMentionAssistsWhenThereAreSome()
+        {
+            Assert.AreEqual("Led 2, participated in 7 logged activities", ScoutingHistoryRoles.Text(2, 0, 7));
+            Assert.AreEqual("Led 2, assisted 1, participated in 7 logged activities", ScoutingHistoryRoles.Text(2, 1, 7));
+        }
+
+        [TestMethod]
         public void DurationIsWholeYearsAndMonths()
         {
             Assert.AreEqual("less than a month", ScoutingHistoryBuilder.Duration(new DateTime(2024, 1, 10), new DateTime(2024, 2, 9)));

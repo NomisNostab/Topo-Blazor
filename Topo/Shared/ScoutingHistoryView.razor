@@ -105,7 +105,7 @@
             <div class="row">
                 <div class="col-sm-2"><strong>Roles</strong></div>
                 <div class="col-sm-10">
-                    Led @block.Led, assisted @block.Assisted, participated in @block.Participated logged activities
+                    @ScoutingHistoryRoles.Text(block.Led, block.Assisted, block.Participated)
                     @if (!string.IsNullOrEmpty(block.CurrentRole))
                     {
                         <div class="small">Current role: @block.CurrentRole</div>
@@ -142,7 +142,7 @@
         <div class="row">
             <div class="col-sm-2"><strong>Roles</strong></div>
             <div class="col-sm-10">
-                Led @History.Totals.Led, assisted @History.Totals.Assisted, participated in @History.Totals.Participated logged activities
+                @ScoutingHistoryRoles.Text(History.Totals.Led, History.Totals.Assisted, History.Totals.Participated)
             </div>
         </div>
     </div>
