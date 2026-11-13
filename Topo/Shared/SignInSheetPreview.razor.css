@@ -1,0 +1,46 @@
+.sign-in-preview {
+    font-size: 0.85rem;
+    width: 100%;
+}
+
+/* shrink to the text */
+.sign-in-preview .fit {
+    width: 1%;
+    white-space: nowrap;
+}
+
+/* with a single tick box the text columns (no fixed width) simply share the spare width */
+
+.sign-in-preview th.sideways {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    white-space: nowrap;
+    text-align: left;
+    width: 2rem;
+}
+
+.sign-in-preview .spacer {
+    width: 1rem;
+    padding: 0;
+}
+
+.sign-in-preview td.write-in {
+    height: 1.9rem;
+}
+
+/* the leftover width goes to the write-in columns, signatures getting the most */
+.sign-in-preview .time {
+    width: 11%;
+}
+
+.sign-in-preview .signature {
+    width: 26%;
+}
+
+.sign-in-preview .attended {
+    width: 12%;
+}
+
+.sign-in-preview .tick {
+    width: 2rem;
+}
