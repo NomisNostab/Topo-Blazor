@@ -112,6 +112,7 @@ namespace Topo.Controller
                     Scope = model.Scope,
                     UnitName = _storageService.UnitName ?? "",
                     Section = _storageService.Section,
+                    UnitId = model.UnitId,
                     Members = model.Members,
                     MemberId = model.MemberId
                 }, step => { Progress = step; InvokeAsync(StateHasChanged); });
