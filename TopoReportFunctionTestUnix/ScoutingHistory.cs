@@ -211,6 +211,13 @@ namespace TopoReportFunctionTest
         }
 
         [TestMethod]
+        public void RolesOnlyMentionAssistsWhenThereAreSome()
+        {
+            Assert.AreEqual("Led 2, participated in 7 logged activities", ScoutingHistoryRoles.Text(2, 0, 7));
+            Assert.AreEqual("Led 2, assisted 1, participated in 7 logged activities", ScoutingHistoryRoles.Text(2, 1, 7));
+        }
+
+        [TestMethod]
         public void DurationIsWholeYearsAndMonths()
         {
             Assert.AreEqual("less than a month", ScoutingHistoryBuilder.Duration(new DateTime(2024, 1, 10), new DateTime(2024, 2, 9)));
