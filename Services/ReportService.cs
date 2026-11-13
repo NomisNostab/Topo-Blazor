@@ -8,6 +8,8 @@ using Topo.Model.Logbook;
 using Topo.Model.Members;
 using Topo.Model.Milestone;
 using Topo.Model.OAS;
+using System.Globalization;
+using Topo.Model.ReadyToSubmit;
 using Topo.Model.SIA;
 using Topo.Model.Wallchart;
 using Topo.Model.Progress;
@@ -34,6 +36,7 @@ namespace Topo.Services
         public IWorkbook GenerateApprovalsWorkbook(List<ApprovalsListModel> selectedApprovals, string groupName, string section, string unitName, DateTime approvalSearchFromDate, DateTime approvalSearchToDate, bool groupByMember, bool forPdfOutput);
         public IWorkbook GenerateProgressWorkbook(ProgressDetailsPageViewModel progressEntries, string groupName, string section, string unitName);
         public IWorkbook GenerateTermProgramWorkbook(List<EventListModel> wallchartEntries, string groupName, string section, string unitName, bool forPdfOutput);
+        public IWorkbook GenerateReadyToSubmitWorkbook(ReadyToSubmitReport report, string groupName, string section);
         public IWorkbook CreateWorkbookWithSheets(int sheetsToCreate);
     }
     public class ReportService : IReportService
@@ -114,6 +117,246 @@ namespace Topo.Services
         public ReportService()
         {
             RunningInUtc = TimeZoneInfo.Local.GetUtcOffset(DateTime.Now) == TimeSpan.Zero;
+        }
+
+        // The badges that have everything done but have not been sent in, listed Scout by Scout. The stages waiting only on the
+        // Scout's logbook tick, and those a few ticks short, are each on a page of their own.
+        public IWorkbook GenerateReadyToSubmitWorkbook(ReadyToSubmitReport report, string groupName, string section)
+        {
+            const string dateFormat = "d MMM yyyy";
+            var culture = CultureInfo.InvariantCulture;
+            var logbookOnly = report.LogbookOnly;
+            var nearlyThere = report.NearlyThere;
+            var pages = 1 + (logbookOnly.Count > 0 ? 1 : 0) + (nearlyThere.Count > 0 ? 1 : 0);
+            var workbook = CreateWorkbookWithSheets(pages);
+            IStyle headingStyle = workbook.Styles["headingStyle"];
+            var nextSheet = 0;
+
+            string Kind(ReadyCategory category) => category switch
+            {
+                ReadyCategory.Milestone => "Milestones",
+                ReadyCategory.OutdoorAdventureSkill => "Outdoor Adventure Skills",
+                ReadyCategory.SpecialInterestArea => "Special Interest Areas",
+                _ => "Peak Award parts"
+            };
+
+            // A sheet with the logo, the title and unit, and the lines under them; returns the row to carry on from
+            (IWorksheet sheet, int row) StartSheet(string name, string title, int lastColumn, params (string text, bool bold)[] lines)
+            {
+                var sheet = AddLogoToSheet(workbook, nextSheet++, groupName, section, lastColumn);
+                sheet.Name = name;
+                var row = 1;
+                row++;
+                sheet.Range[row, 2].Text = title;
+                sheet.Range[row, 2, row, lastColumn].Merge();
+                sheet.Range[row, 2].CellStyle = headingStyle;
+                sheet.SetRowHeight(row, 40);
+                row++;
+                sheet.Range[row, 2].Text = report.UnitName;
+                sheet.Range[row, 2, row, lastColumn].Merge();
+                sheet.Range[row, 2].CellStyle = headingStyle;
+                sheet.SetRowHeight(row, 30);
+
+                // the logo hangs down from the top left corner, so leave room for it before the lines beside it begin
+                var logoPoints = sheet.Pictures.Count > 0 ? sheet.Pictures[0].Height * 0.75 : 0.0;
+                if (logoPoints + 6 > 100)
+                {
+                    row++;
+                    sheet.SetRowHeight(row, logoPoints + 6 - 100);
+                }
+
+                foreach (var (text, bold) in lines)
+                {
+                    row++;
+                    sheet.Range[row, 1, row, lastColumn].Merge();
+                    sheet.Range[row, 1].Text = text;
+                    sheet.Range[row, 1].CellStyle.WrapText = true;
+                    sheet.Range[row, 1].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
+                    sheet.Range[row, 1].CellStyle.Font.Bold = bold;
+                    sheet.SetRowHeight(row, Math.Max(18, Math.Ceiling(text.Length / 105.0) * 15));
+                }
+                return (sheet, row);
+            }
+
+            // The table's heading row; returns its row number
+            int Headings(IWorksheet sheet, int row, params string[] headings)
+            {
+                row += 2;
+                for (var c = 0; c < headings.Length; c++)
+                {
+                    var cell = sheet.Range[row, c + 1];
+                    cell.Text = headings[c];
+                    cell.CellStyle.Font.Bold = true;
+                    cell.CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                }
+                sheet.SetRowHeight(row, 20);
+                return row;
+            }
+
+            void Finish(IWorksheet sheet, int headingRow, bool landscape, params double[] widths)
+            {
+                for (var c = 0; c < widths.Length; c++)
+                    sheet.SetColumnWidth(c + 1, widths[c]);
+                sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
+                sheet.PageSetup.Orientation = landscape ? ExcelPageOrientation.Landscape : ExcelPageOrientation.Portrait;
+                sheet.PageSetup.BottomMargin = 0.25;
+                sheet.PageSetup.TopMargin = 0.25;
+                sheet.PageSetup.LeftMargin = 0.25;
+                sheet.PageSetup.RightMargin = 0.25;
+                sheet.PageSetup.HeaderMargin = 0;
+                sheet.PageSetup.FooterMargin = 0;
+                sheet.PageSetup.FitToPagesWide = 1;
+                sheet.PageSetup.FitToPagesTall = 0;
+                // a second page starts with the headings again
+                if (headingRow > 0)
+                    sheet.PageSetup.PrintTitleRows = $"${headingRow}:${headingRow}";
+            }
+
+            // 1. Everything done
+            {
+                var ready = report.Ready;
+                var scouts = ready.Select(i => i.MemberId).Distinct().Count();
+                var summary = ready.Count == 0
+                    ? $"Nothing is ready to be sent, from the {report.MembersChecked} Scouts checked."
+                    : $"{ready.Count} {(ready.Count == 1 ? "badge" : "badges")} ready, for {scouts} of {report.MembersChecked} Scouts.";
+                var (sheet, row) = StartSheet("Ready", "Ready to Submit", 4,
+                    ($"Generated {report.GeneratedAt.ToString(dateFormat, culture)}. Looking at: {string.Join(", ", report.Categories.Select(Kind))}", false),
+                    (summary, true));
+                var headingRow = Headings(sheet, row, "Scout", "Badge", "Waiting", "Last updated");
+                row = headingRow;
+                foreach (var scout in ready.GroupBy(i => i.MemberId))
+                {
+                    var first = true;
+                    foreach (var item in scout)
+                    {
+                        row++;
+                        sheet.Range[row, 1].Text = first ? item.MemberName : "";
+                        sheet.Range[row, 1].CellStyle.Font.Bold = true;
+                        sheet.Range[row, 2].Text = item.Badge;
+                        sheet.Range[row, 3].Text = item.Waiting;
+                        sheet.Range[row, 4].Text = item.LastUpdated.ToString(dateFormat, culture);
+                        sheet.Range[row, 2, row, 4].CellStyle.WrapText = true;
+                        sheet.Range[row, 1, row, 4].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
+                        // a line between one Scout and the next
+                        if (first && row > headingRow + 1)
+                            sheet.Range[row, 1, row, 4].CellStyle.Borders[ExcelBordersIndex.EdgeTop].LineStyle = ExcelLineStyle.Thin;
+                        sheet.SetRowHeight(row, Math.Max(16, Math.Ceiling(item.Badge.Length / 34.0) * 15));
+                        first = false;
+                    }
+                }
+                row += 2;
+                sheet.Range[row, 1, row, 4].Merge();
+                sheet.Range[row, 1].Text = "A badge is listed when everything it asks for is done but it has not been sent: a Milestone when Terrain shows its requirements complete, an Outdoor Adventure Skill stage when every requirement is ticked off, and a Special Interest Area, Adventurous Journey, Personal Development Course or Personal Reflection when every question that has to be answered is.";
+                sheet.Range[row, 1].CellStyle.WrapText = true;
+                sheet.Range[row, 1].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
+                sheet.SetRowHeight(row, 62);
+                Finish(sheet, headingRow, false, 26, 34, 40, 14);
+            }
+
+            // 2. Only the Scout's logbook tick left
+            if (logbookOnly.Count > 0)
+            {
+                var (sheet, row) = StartSheet("Logbook tick only", "Only the Logbook Tick Left", 4,
+                    ($"{logbookOnly.Count} Outdoor Adventure Skill {(logbookOnly.Count == 1 ? "stage has" : "stages have")} everything ticked off except \"My logbook is up to date at the end of this stage\", which only the Scout can tick.", false));
+                var headingRow = Headings(sheet, row, "Scout", "Badge", "", "Last updated");
+                row = headingRow;
+                foreach (var item in logbookOnly)
+                {
+                    row++;
+                    sheet.Range[row, 1].Text = item.MemberName;
+                    sheet.Range[row, 1].CellStyle.Font.Bold = true;
+                    sheet.Range[row, 2].Text = item.Badge;
+                    sheet.Range[row, 4].Text = item.LastUpdated.ToString(dateFormat, culture);
+                    sheet.SetRowHeight(row, 16);
+                }
+                Finish(sheet, headingRow, false, 26, 34, 40, 14);
+            }
+
+            // 3. A few ticks short: a grid for each badge, a Scout's open boxes being what is still to tick off and the rest blocked out
+            if (nearlyThere.Count > 0)
+            {
+                var badges = report.NearlyThereByBadge();
+                var widest = badges.Max(b => b.Scouts.Count);
+                // wide enough across for the group's name above the grids, whoever few Scouts there are
+                var lastColumn = Math.Max(10, 2 + widest);
+                var (sheet, row) = StartSheet("Nearly there", "Nearly There", lastColumn,
+                    ($"{nearlyThere.Count} Outdoor Adventure Skill {(nearlyThere.Count == 1 ? "stage is" : "stages are")} up to {report.MaxTicksShort} {(report.MaxTicksShort == 1 ? "tick" : "ticks")} short, a grid for each badge in the wall chart's order, lowest level first. Each Scout's open boxes are what is still to tick off; the grey ones are done.", false));
+                var grey = Color.FromArgb(208, 208, 208);
+
+                // keep each badge's grid on one page: when it wouldn't fit under the last, it starts a new page
+                const double pageHeight = 520;
+                double Requirement(MissingRequirement requirement) => Math.Max(18, Math.Ceiling(requirement.Label.Length / 62.0) * 15);
+                double used = 0;
+                for (var r = 1; r <= row; r++)
+                    used += sheet.GetRowHeight(r);
+
+                // tall enough for the longest of the Scouts' names written up the page
+                double NameHeight(NearBadge badge) => Math.Clamp(badge.Scouts.Max(s => s.MemberName.Length) * 6 + 14, 45, 95);
+
+                foreach (var badge in badges)
+                {
+                    var needed = 15 + 20 + NameHeight(badge) + badge.Requirements.Sum(Requirement);
+                    var newPage = used > 0 && used + needed > pageHeight;
+                    row += 2;
+                    if (newPage)
+                    {
+                        sheet.HPageBreaks.Add(sheet.Range[row, 1]);
+                        used = needed - 15;
+                    }
+                    else
+                    {
+                        used += needed;
+                    }
+                    sheet.Range[row, 1, row, lastColumn].Merge();
+                    sheet.Range[row, 1].Text = $"{badge.Badge} - {badge.Scouts.Count} {(badge.Scouts.Count == 1 ? "Scout" : "Scouts")}";
+                    sheet.Range[row, 1, row, lastColumn].CellStyle.Font.Bold = true;
+                    sheet.Range[row, 1, row, lastColumn].CellStyle.Font.Size = 12;
+                    sheet.Range[row, 1, row, lastColumn].CellStyle.ColorIndex = ExcelKnownColors.Grey_25_percent;
+                    sheet.SetRowHeight(row, 20);
+
+                    // the Scouts' names run up the page above their boxes
+                    row++;
+                    sheet.Range[row, 1].Text = "Still to tick off";
+                    sheet.Range[row, 2].Text = "Scouts";
+                    for (var s = 0; s < badge.Scouts.Count; s++)
+                    {
+                        var name = sheet.Range[row, 3 + s];
+                        name.Text = badge.Scouts[s].MemberName;
+                        name.CellStyle.Rotation = 90;
+                    }
+                    var headerCells = sheet.Range[row, 1, row, 2 + badge.Scouts.Count];
+                    headerCells.CellStyle.Font.Bold = true;
+                    headerCells.CellStyle.VerticalAlignment = ExcelVAlign.VAlignBottom;
+                    foreach (var cell in headerCells.Cells)
+                        cell.BorderAround();
+                    sheet.Range[row, 2].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                    sheet.SetRowHeight(row, NameHeight(badge));
+                    var nameRow = row;
+
+                    foreach (var requirement in badge.Requirements)
+                    {
+                        row++;
+                        sheet.Range[row, 1].Text = requirement.Label;
+                        sheet.Range[row, 1].CellStyle.WrapText = true;
+                        sheet.Range[row, 2].Text = requirement.Scouts.ToString();
+                        sheet.Range[row, 2].CellStyle.HorizontalAlignment = ExcelHAlign.HAlignCenter;
+                        for (var s = 0; s < badge.Scouts.Count; s++)
+                        {
+                            var cell = sheet.Range[row, 3 + s];
+                            if (!badge.IsMissing(badge.Scouts[s], requirement))
+                                cell.CellStyle.Color = grey;
+                        }
+                        sheet.Range[row, 1, row, 2 + badge.Scouts.Count].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
+                        foreach (var cell in sheet.Range[row, 1, row, 2 + badge.Scouts.Count].Cells)
+                            cell.BorderAround();
+                        sheet.SetRowHeight(row, Requirement(requirement));
+                    }
+                }
+
+                Finish(sheet, 0, true, Enumerable.Repeat(6.0, lastColumn).Select((w, i) => i == 0 ? 62.0 : i == 1 ? 8.0 : w).ToArray());
+            }
+
+            return workbook;
         }
 
         public IWorkbook CreateWorkbookWithSheets(int sheetsToCreate)

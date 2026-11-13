@@ -17,6 +17,7 @@ using Topo.Model.AdditionalAwards;
 using Topo.Services;
 using Topo.Model.Approvals;
 using Topo.Model.Progress;
+using Topo.Model.ReadyToSubmit;
 using System;
 
 // Assembly attribute to enable the Lambda function's JSON input to be converted into a .NET class.
@@ -102,6 +103,9 @@ public class Function
                         break;
                     case ReportType.TermProgram:
                         workbook = GenerateTermProgramWorkbook(reportGenerationRequest);
+                        break;
+                    case ReportType.ReadyToSubmit:
+                        workbook = GenerateReadyToSubmitWorkbook(reportGenerationRequest);
                         break;
                 }
 
@@ -313,6 +317,16 @@ public class Function
                 , reportGenerationRequest.UnitName, reportGenerationRequest.FromDate, reportGenerationRequest.ToDate, reportGenerationRequest.GroupByMember
                 , reportGenerationRequest.OutputType == OutputType.PDF);
             return workbook;
+        }
+        return reportService.CreateWorkbookWithSheets(1);
+    }
+
+    private IWorkbook GenerateReadyToSubmitWorkbook(ReportGenerationRequest reportGenerationRequest)
+    {
+        var reportData = JsonConvert.DeserializeObject<ReadyToSubmitReport>(reportGenerationRequest.ReportData);
+        if (reportData != null)
+        {
+            return reportService.GenerateReadyToSubmitWorkbook(reportData, reportGenerationRequest.GroupName, reportGenerationRequest.Section);
         }
         return reportService.CreateWorkbookWithSheets(1);
     }
