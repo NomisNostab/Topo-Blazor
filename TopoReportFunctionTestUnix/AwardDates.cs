@@ -36,11 +36,63 @@ namespace TopoReportFunctionTest
             Assert.AreEqual(StatusUpdated, AwardDate.Resolve("13/02/2025", "", StatusUpdated));
         }
 
+        // Terrain dates an award by its UTC day. status_updated is read as a moment in time and shown in the timezone of the
+        // device the app runs on (the same way TimeZoneInfo.Local is used for the rest of the app), so these tests work out
+        // what the user's own day is from whatever timezone this machine is set to, so they hold in any of them (run them
+        // with the TZ environment variable set to Australia/Perth, Australia/Adelaide and so on to try each one).
+        private static DateTime AsTheAppReadsIt(string jsonTimestamp) =>
+            JsonConvert.DeserializeObject<Topo.Model.Milestone.GetMilestoneResultModel>("{\"results\":[{\"status_updated\":\"" + jsonTimestamp + "\"}]}")!.results[0].status_updated;
+
         [TestMethod]
-        public void RecordedIsNullWhenOnlyStatusUpdatedExists()
+        public void TerrainsTimestampsAreReadAsALocalTimeOfTheDeviceTheAppRunsOn()
         {
-            Assert.IsNull(AwardDate.Recorded("", ""));
-            Assert.AreEqual(new DateTime(2025, 6, 1), AwardDate.Recorded("2025-06-01", ""));
+            var read = AsTheAppReadsIt("2026-08-26T22:25:47.846666+00:00");
+            Assert.AreEqual(DateTimeKind.Local, read.Kind);
+            Assert.AreEqual(new DateTime(2026, 8, 26, 22, 25, 47, DateTimeKind.Utc).ToLocalTime().Date, read.Date);
+        }
+
+        [TestMethod]
+        public void AnAwardMadeEarlyInTheMorningGetsTheUsersOwnDayNotTerrainsUtcDay()
+        {
+            // 22:25 UTC on 26 Aug: that is 8:25am on 27 Aug in Sydney, 6:25am in Perth and 7:55am in Darwin, but still 26 Aug in UTC
+            var updated = AsTheAppReadsIt("2026-08-26T22:25:47.846666+00:00");
+            var date = AwardDate.Resolve("2026-08-26", "", updated);
+            Assert.AreEqual(new DateTime(2026, 8, 26, 22, 25, 47, DateTimeKind.Utc).ToLocalTime().Date, date);
+        }
+
+        [TestMethod]
+        public void ADateTerrainWroteOnPurposeThatIsNotTheUtcDayOfTheUpdateIsKeptAsItIs()
+        {
+            // dated the day before it was last touched, in every timezone (24 Jul 05:38 UTC, dated 23 Jul)
+            var updated = AsTheAppReadsIt("2025-07-24T05:38:30.873187+00:00");
+            Assert.AreEqual(new DateTime(2025, 7, 23), AwardDate.Resolve("2025-07-23", "", updated));
+        }
+
+        [TestMethod]
+        public void AnImportedDateIsNotMovedToTheUsersDay()
+        {
+            // imported dates were typed in, not worked out in UTC, so they are never adjusted
+            var updated = AsTheAppReadsIt("2026-08-26T22:25:47.846666+00:00");
+            Assert.AreEqual(new DateTime(2026, 8, 26), AwardDate.Resolve("", "2026-08-26", updated));
+        }
+
+        [TestMethod]
+        public void TheResultHasNoTimezoneSoTheReportFunctionRunningInUtcDoesNotMoveItADay()
+        {
+            var updated = AsTheAppReadsIt("2026-08-26T22:25:47.846666+00:00");
+            foreach (var date in new[]
+            {
+                AwardDate.Resolve("2026-08-26", "", updated),     // the user's day for the award
+                AwardDate.Resolve("2025-01-02", "", updated),     // Terrain's date
+                AwardDate.Resolve("", "2024-01-15", updated),     // imported
+                AwardDate.Resolve("", "", updated)                // when it last changed
+            })
+            {
+                Assert.AreEqual(DateTimeKind.Unspecified, date.Kind);
+                var sent = JsonConvert.SerializeObject(date);
+                StringAssert.DoesNotMatch(sent, new System.Text.RegularExpressions.Regex(@"[+-]\d\d:\d\d""$|Z""$"));
+                Assert.AreEqual(date, JsonConvert.DeserializeObject<DateTime>(sent));
+            }
         }
 
         // The reason this exists: the record models used to have date_awarded only inside "imported", so the top-level
