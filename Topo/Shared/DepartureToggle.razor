@@ -1,0 +1,27 @@
+@using Topo.Model.SectionReport
+
+@* Why someone left the unit. One pill that cycles through the options on each click: not chosen, moved up, moved
+   group, left Scouting, and back to not chosen. *@
+<span class="pill @Current.cssClass" title="Click to change" @onclick="Next">@Current.label</span>
+
+@code {
+    [Parameter] public DepartedMember Member { get; set; } = default!;
+    [Parameter] public EventCallback<DepartedMember> Changed { get; set; }
+
+    private static readonly (DepartureStatus status, string label, string cssClass)[] Options =
+    {
+        (DepartureStatus.Unset, "Choose...", "unset"),
+        (DepartureStatus.MovedUp, "Moved up", "moved-up"),
+        (DepartureStatus.MovedGroup, "Moved group", "moved-group"),
+        (DepartureStatus.LeftScouting, "Left Scouting", "left-scouting")
+    };
+
+    private (DepartureStatus status, string label, string cssClass) Current => Options.First(o => o.status == Member.Status);
+
+    private Task Next()
+    {
+        var index = Array.FindIndex(Options, o => o.status == Member.Status);
+        Member.Status = Options[(index + 1) % Options.Length].status;
+        return Changed.InvokeAsync(Member);
+    }
+}

@@ -16,7 +16,10 @@
         AdditionalAwards,
         Approvals,
         PersonalProgress,
-        TermProgram
+        TermProgram,
+        ScoutingHistory,
+        UnitReport,
+        SectionReport
     }
 
     public enum OutputType

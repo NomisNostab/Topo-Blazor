@@ -1,0 +1,39 @@
+/* A small pill like the Patrol Planner's role badges: dashed until a reason is chosen, then filled */
+.pill {
+    display: inline-block;
+    cursor: pointer;
+    user-select: none;
+    font-weight: bold;
+    font-size: 0.7rem;
+    line-height: 1.3rem;
+    height: 1.4rem;
+    min-width: 6.5rem;
+    text-align: center;
+    padding: 0 0.6rem;
+    border-radius: 999px;
+    border: 1px dashed #c6c6c6;
+    color: #6c757d;
+    white-space: nowrap;
+}
+
+.pill.moved-up,
+.pill.moved-group,
+.pill.left-scouting {
+    border-style: solid;
+    color: #fff;
+}
+
+.pill.moved-up {
+    background-color: #10b981;
+    border-color: #10b981;
+}
+
+.pill.moved-group {
+    background-color: #f59e0b;
+    border-color: #f59e0b;
+}
+
+.pill.left-scouting {
+    background-color: #9ca3af;
+    border-color: #9ca3af;
+}
