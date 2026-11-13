@@ -95,6 +95,21 @@ namespace TopoReportFunctionTest
         }
 
         [TestMethod]
+        public void ARecordOfTheWholeUnitCanBeToldApartByWhoseItIs()
+        {
+            var json = @"{""results"":[
+                {""id"":""r1"",""member_id"":""m1"",""type"":""milestone"",""section"":""cub"",""status"":""in_progress"",""status_updated"":""2026-10-03T01:02:03.000Z""},
+                {""id"":""r2"",""member_id"":""m2"",""type"":""milestone"",""section"":""cub"",""status"":""in_progress"",""status_updated"":""2026-10-03T01:02:03.000Z""},
+                {""id"":""r3"",""member_id"":""m1"",""type"":""milestone"",""section"":""cub"",""status"":""awarded"",""status_updated"":""2026-10-03T01:02:03.000Z""}]}";
+
+            var byMember = ReadyParsers.ParseAchievements(json).ToLookup(r => r.MemberId);
+
+            CollectionAssert.AreEqual(new[] { "r1", "r3" }, byMember["m1"].Select(r => r.Id).ToList());
+            CollectionAssert.AreEqual(new[] { "r2" }, byMember["m2"].Select(r => r.Id).ToList());
+            Assert.AreEqual(0, byMember["someone not in the unit"].Count());
+        }
+
+        [TestMethod]
         public void AMilestoneWithItsRequirementsCompleteButNotSentIsReady()
         {
             var report = Build(Member("Ann",

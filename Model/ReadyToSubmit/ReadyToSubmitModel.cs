@@ -13,6 +13,8 @@ namespace Topo.Model.ReadyToSubmit
     public class AchievementRecord
     {
         public string Id { get; set; } = string.Empty;
+        // Whose record it is; a read of the whole unit returns every member's records together
+        public string MemberId { get; set; } = string.Empty;
         // Terrain's type: milestone, outdoor_adventure_skill, special_interest_area, adventurous_journey, course_reflection, personal_reflection
         public string Type { get; set; } = string.Empty;
         public string Section { get; set; } = string.Empty;

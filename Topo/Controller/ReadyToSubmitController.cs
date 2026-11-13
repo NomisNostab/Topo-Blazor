@@ -65,7 +65,7 @@ namespace Topo.Controller
             {
                 var members = await _membersService.GetMembersAsync(unitId);
                 var youth = members.Where(m => m.isAdultLeader == 0).ToList();
-                _data = await _readyToSubmitService.LoadAsync(youth, _storageService.Section, step => { Progress = step; InvokeAsync(StateHasChanged); });
+                _data = await _readyToSubmitService.LoadAsync(unitId, youth, _storageService.Section, step => { Progress = step; InvokeAsync(StateHasChanged); });
                 Recalculate();
             }
             catch (Exception)

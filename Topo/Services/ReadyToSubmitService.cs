@@ -12,7 +12,7 @@ namespace Topo.Services
 
     public interface IReadyToSubmitService
     {
-        public Task<ReadyToSubmitData> LoadAsync(List<MemberListModel> youth, string section, Action<string>? progress = null);
+        public Task<ReadyToSubmitData> LoadAsync(string unitId, List<MemberListModel> youth, string section, Action<string>? progress = null);
     }
 
     public class ReadyToSubmitService : IReadyToSubmitService
@@ -33,18 +33,22 @@ namespace Topo.Services
             _terrainAPIService = terrainAPIService;
         }
 
-        public async Task<ReadyToSubmitData> LoadAsync(List<MemberListModel> youth, string section, Action<string>? progress = null)
+        public async Task<ReadyToSubmitData> LoadAsync(string unitId, List<MemberListModel> youth, string section, Action<string>? progress = null)
         {
             var data = new ReadyToSubmitData();
             var ordered = ReadyToSubmitBuilder.InPatrolOrder(youth);
-            // the Reading line names each Scout the short way, as the report does
-            var named = ordered.Select(m => new ReadyMemberInput { MemberId = m.id, MemberName = $"{m.first_name} {m.last_name}".Trim(), FirstName = m.first_name, LastName = m.last_name }).ToList();
-            var shortNames = ReadyToSubmitBuilder.DisplayNames(named, false);
-            for (var i = 0; i < ordered.Count; i++)
+
+            // One read of each type gives every member's records, so the unit isn't read once per Scout. A unit with no
+            // youth has nothing to read.
+            var byMember = Enumerable.Empty<AchievementRecord>().ToLookup(r => r.MemberId);
+            if (ordered.Count > 0)
             {
-                var member = ordered[i];
-                progress?.Invoke($"{shortNames[named[i]]} ({i + 1} of {ordered.Count})");
-                var responses = await Task.WhenAll(Types.Select(type => _terrainAPIService.GetAchievementsJsonAsync(member.id, type)));
+                progress?.Invoke("the unit's records");
+                var responses = await Task.WhenAll(Types.Select(type => _terrainAPIService.GetUnitAchievementsJsonAsync(unitId, type)));
+                byMember = responses.SelectMany(ReadyParsers.ParseAchievements).ToLookup(r => r.MemberId);
+            }
+            foreach (var member in ordered)
+            {
                 data.Members.Add(new ReadyMemberInput
                 {
                     MemberId = member.id,
@@ -52,7 +56,7 @@ namespace Topo.Services
                     FirstName = member.first_name ?? "",
                     LastName = member.last_name ?? "",
                     Patrol = member.patrol_name ?? "",
-                    Records = responses.SelectMany(ReadyParsers.ParseAchievements).ToList()
+                    Records = byMember[member.id].ToList()
                 });
             }
 

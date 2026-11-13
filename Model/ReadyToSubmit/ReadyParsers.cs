@@ -6,7 +6,7 @@ namespace Topo.Model.ReadyToSubmit
     // Reads Terrain's responses into the simple shapes the report works from
     public static class ReadyParsers
     {
-        // A member's achievements of one type, as Terrain returns them
+        // Achievements of one type, as Terrain returns them for a member or for the whole unit
         public static List<AchievementRecord> ParseAchievements(string json)
         {
             var records = new List<AchievementRecord>();
@@ -20,6 +20,7 @@ namespace Topo.Model.ReadyToSubmit
                     var record = new AchievementRecord
                     {
                         Id = Text(item, "id"),
+                        MemberId = Text(item, "member_id"),
                         Type = Text(item, "type"),
                         Section = Text(item, "section").Trim().ToLowerInvariant(),
                         Template = Text(item, "template"),
