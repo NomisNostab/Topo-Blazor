@@ -14,6 +14,8 @@
         public Answers answers { get; set; } = new Answers();
         public string status { get; set; } = string.Empty;
         public DateTime status_updated { get; set; }
+        // Terrain's own record of the award date (yyyy-mm-dd); only on awards recorded in Terrain. See AwardDate.
+        public string date_awarded { get; set; } = string.Empty;
         public Imported imported { get; set; } = new Imported();
         public string template { get; set; } = string.Empty;
         public int version { get; set; }
@@ -46,6 +48,16 @@
         public string how_develop { get; set; } = string.Empty;
         public string strengths_improvements { get; set; } = string.Empty;
         public string[] which_goals { get; set; } = new string[0];
+        // Joey and Cub projects ask different questions
+        public string want_to_achieve { get; set; } = string.Empty;
+        public string who_is_helping { get; set; } = string.Empty;
+        public string step_1 { get; set; } = string.Empty;
+        public string step_2 { get; set; } = string.Empty;
+        public string step_3 { get; set; } = string.Empty;
+        public string share_with_unit { get; set; } = string.Empty;
+        public string hardest_part { get; set; } = string.Empty;
+        public string important_learned { get; set; } = string.Empty;
+        public string what_did_you_enjoy_about_your_project { get; set; } = string.Empty;
     }
 
     public class Imported

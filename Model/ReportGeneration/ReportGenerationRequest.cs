@@ -16,7 +16,8 @@
         AdditionalAwards,
         Approvals,
         PersonalProgress,
-        TermProgram
+        TermProgram,
+        SiaProgress
     }
 
     public enum OutputType
