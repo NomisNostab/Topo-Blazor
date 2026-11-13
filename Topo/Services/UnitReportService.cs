@@ -49,20 +49,24 @@ namespace Topo.Services
             // every record carries its member_id, so ToLookup hands back one member's records (none gives an empty list).
             // The records include earlier sections, which the builder filters out.
             var youth = input.CurrentMembers.Where(m => !UnitReportBuilder.IsLeader(m)).ToList();
-            progress?.Invoke("badges");
-            var milestonesByMember = (await _terrainAPIService.GetUnitAchievementsOfType<GetMilestoneResultModel>(unitId, "milestone")).results.ToLookup(r => r.member_id);
-            var oasByMember = (await _terrainAPIService.GetUnitAchievementsOfType<Topo.Model.OAS.GetUnitAchievementsResultsModel>(unitId, "outdoor_adventure_skill")).results.ToLookup(r => r.member_id);
-            var siaByMember = (await _terrainAPIService.GetUnitAchievementsOfType<Topo.Model.SIA.GetSIAResultsModel>(unitId, "special_interest_area")).results.ToLookup(r => r.member_id);
-            var peakByMember = (await _terrainAPIService.GetUnitAchievementsOfType<GetPeakAwardsResultsModel>(unitId, "peak_award")).results.ToLookup(r => r.member_id);
-            foreach (var member in youth)
+            // A unit with no youth (an adults-only team) has no badge records to read
+            if (youth.Count > 0)
             {
-                input.BadgesByMember[member.id] = new UnitMemberBadges
+                progress?.Invoke("badges");
+                var milestonesByMember = (await _terrainAPIService.GetUnitAchievementsOfType<GetMilestoneResultModel>(unitId, "milestone")).results.ToLookup(r => r.member_id);
+                var oasByMember = (await _terrainAPIService.GetUnitAchievementsOfType<Topo.Model.OAS.GetUnitAchievementsResultsModel>(unitId, "outdoor_adventure_skill")).results.ToLookup(r => r.member_id);
+                var siaByMember = (await _terrainAPIService.GetUnitAchievementsOfType<Topo.Model.SIA.GetSIAResultsModel>(unitId, "special_interest_area")).results.ToLookup(r => r.member_id);
+                var peakByMember = (await _terrainAPIService.GetUnitAchievementsOfType<GetPeakAwardsResultsModel>(unitId, "peak_award")).results.ToLookup(r => r.member_id);
+                foreach (var member in youth)
                 {
-                    Milestones = new GetMilestoneResultModel { results = milestonesByMember[member.id].ToArray() },
-                    Oas = new Topo.Model.OAS.GetUnitAchievementsResultsModel { results = oasByMember[member.id].ToArray() },
-                    Sia = new Topo.Model.SIA.GetSIAResultsModel { results = siaByMember[member.id].ToArray() },
-                    Peak = new GetPeakAwardsResultsModel { results = peakByMember[member.id].ToArray() }
-                };
+                    input.BadgesByMember[member.id] = new UnitMemberBadges
+                    {
+                        Milestones = new GetMilestoneResultModel { results = milestonesByMember[member.id].ToArray() },
+                        Oas = new Topo.Model.OAS.GetUnitAchievementsResultsModel { results = oasByMember[member.id].ToArray() },
+                        Sia = new Topo.Model.SIA.GetSIAResultsModel { results = siaByMember[member.id].ToArray() },
+                        Peak = new GetPeakAwardsResultsModel { results = peakByMember[member.id].ToArray() }
+                    };
+                }
             }
 
             progress?.Invoke("additional awards");
