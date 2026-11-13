@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Topo.Model;
+﻿using Topo.Model;
 using Topo.Model.Approvals;
 using Topo.Model.Milestone;
 using Topo.Model.Progress;
@@ -47,11 +46,20 @@ namespace Topo.Services
             approvals = await _approvalService.ReadApprovalListFromLocalStorage(selectedUnitId);
             await _terrainAPIService.RevokeAssumedProfiles();
 
+            var youth = members.Where(m => m.isAdultLeader == 0).OrderBy(m => m.last_name).ThenBy(m => m.first_name).ToList();
+            if (youth.Count == 0)
+            {
+                // a unit with no youth (an adults-only team) has nothing to show, and nothing to read
+                var none = new List<WallchartItemModel>();
+                _storageService.CachedWallchartItems.Add(new KeyValuePair<string, List<WallchartItemModel>>(selectedUnitId, none));
+                return none;
+            }
+
             // Terrain works out each member's Peak Award Progress itself; read it rather than estimating it here
             var terrainPeakProgress = (await _terrainAPIService.GetUnitMetrics(selectedUnitId))
                 .GroupBy(m => m.member_id)
                 .ToDictionary(g => g.Key, g => g.First().achievement_metrics.peak_award_progress);
-            // Read each kind of record once for the whole unit instead of once per member (about a dozen calls per youth before).
+            // Read each kind of record once for the whole unit instead of once per member.
             // Every record carries its member_id, so ToLookup lets the loop below ask for "this member's records" as it did before;
             // a member with none gets an empty list.
             var milestonesByMember = (await _terrainAPIService.GetUnitAchievementsOfType<GetMilestoneResultModel>(selectedUnitId, "milestone")).results.ToLookup(r => r.member_id);
@@ -65,7 +73,6 @@ namespace Topo.Services
             var peakAwardByMember = (await _terrainAPIService.GetUnitAchievementsOfType<GetPeakAwardsResultsModel>(selectedUnitId, "peak_award")).results.ToLookup(r => r.member_id);
 
             var wallchartItems = new List<WallchartItemModel>();
-            var youth = members.Where(m => m.isAdultLeader == 0).OrderBy(m => m.last_name).ThenBy(m => m.first_name).ToList();
             foreach (var member in youth)
             {
                 progress?.Invoke($"{member.first_name} {member.last_name} ({youth.IndexOf(member) + 1} of {youth.Count})");
