@@ -630,7 +630,7 @@ namespace Topo.Services
 
             // Optional second block beside the main table (after a narrow spacer column): the person's
             // name again plus tick columns for how they took part in the activity.
-            var participationHeadings = new[] { "Participate", "Assist", "Lead" };
+            var participationHeadings = new[] { "Participate", "Lead" };
             var participationNameColumn = lastColumn + 2;
             var participationLastColumn = participationNameColumn + participationHeadings.Length;
 
