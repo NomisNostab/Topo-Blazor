@@ -6,6 +6,8 @@
 
 main {
     flex: 1;
+    /* May be narrower than its widest content, so that content scrolls or overflows rather than squeezing the sidebar */
+    min-width: 0;
 }
 
 .sidebar {
@@ -57,9 +59,15 @@ main {
 
     .sidebar {
         width: 250px;
+        flex-shrink: 0;
         height: 100vh;
         position: sticky;
         top: 0;
+        transition: width 0.15s ease-in-out;
+    }
+
+    .sidebar.icon-only {
+        width: 4rem;
     }
 
     .top-row {

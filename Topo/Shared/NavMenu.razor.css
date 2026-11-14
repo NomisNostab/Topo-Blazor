@@ -2,9 +2,79 @@
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+.icon-toggler {
+    display: none;
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translate(50%, -50%);
+    width: 1.75rem;
+    height: 1.75rem;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    border-radius: 50%;
+    background-color: #fff;
+    border: 1px solid rgba(0,0,0,0.1);
+    color: #3a0647;
+    padding: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.45);
+    z-index: 10;
+}
+
+.icon-toggler:hover {
+    color: #050527;
+    background-color: #f0f0f0;
+}
+
+.icon-toggler .oi {
+    width: auto;
+    height: auto;
+    font-size: 0.8rem;
+    line-height: 1;
+    vertical-align: middle;
+    top: 0;
+}
+
+.nav-group-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255,255,255,0.5);
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+}
+
+.nav-group-label:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: white;
+}
+
+.nav-group-label .oi {
+    width: auto;
+    font-size: 0.6rem;
+    vertical-align: middle;
+    top: 0;
+}
+
+.nav-group-label + .version-item {
+    margin-top: 0.75rem;
+}
+
 .top-row {
     height: 3.5rem;
     background-color: rgba(0,0,0,0.4);
+    position: relative;
 }
 
 .navbar-brand {
@@ -55,8 +125,63 @@
         display: none;
     }
 
+    .icon-toggler {
+        display: flex;
+    }
+
+    .nav-scroll-area {
+        max-height: calc(100vh - 3.5rem);
+        overflow-y: auto;
+        overflow-x: hidden;
+        /* Keep room for the scrollbar on both sides, so the items stay centred whether or not it is showing */
+        scrollbar-width: thin;
+        scrollbar-gutter: stable both-edges;
+        scrollbar-color: rgba(255,255,255,0.35) transparent;
+    }
+
     .collapse {
         /* Never collapse the sidebar for wide screens */
         display: block;
     }
+}
+
+.icon-only .nav-text {
+    display: none;
+}
+
+/* In icon mode a group is just its chevron, centred, so a collapsed group can still be opened */
+.icon-only .nav-group-label {
+    justify-content: center;
+    margin-top: 0.4rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+}
+
+.icon-only .container-fluid {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.icon-only .navbar-brand {
+    margin-right: 0;
+}
+
+.icon-only .version-item {
+    display: none;
+}
+
+.icon-only .nav-item ::deep a {
+    justify-content: center;
+}
+
+/* The bar is only 4rem wide and the scrollbar's gutters take 20px of it, so the usual 1rem each side would leave the icon
+   less room than its own width and push it off centre */
+.icon-only .nav-item.px-3 {
+    padding-left: 0.25rem !important;
+    padding-right: 0.25rem !important;
+}
+
+.icon-only .oi {
+    width: auto;
 }
