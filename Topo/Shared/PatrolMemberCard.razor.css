@@ -1,0 +1,87 @@
+.member-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.4rem;
+    min-width: 0;
+    background-color: #fff;
+    border-radius: 6px;
+    padding: 0.3rem 0.5rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    cursor: grab;
+}
+
+.member-card.changed {
+    outline: 2px solid #0d6efd;
+}
+
+/* Gender and duty badges are styled as one consistent set - same pill shape, same sizing,
+   same letter-label convention (M/F/NB/-- for gender, Member/APL/PL/UL for duty) - so they
+   read as "the same kind of control" rather than two different UI patterns. */
+.gender-badge,
+.duty-badge {
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.65rem;
+    height: 1.3rem;
+    line-height: 1.3rem;
+    min-width: 1.6rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    flex: 0 0 auto;
+    text-align: center;
+    user-select: none;
+    color: #fff;
+}
+
+.gender-male {
+    background-color: #3a86ff;
+}
+
+.gender-female {
+    background-color: #e0529c;
+}
+
+.gender-nb {
+    background-color: #a855f7;
+}
+
+.gender-unknown {
+    background-color: #9ca3af;
+}
+
+.member-name {
+    flex: 1 1 auto;
+    min-width: 4rem;
+    overflow-wrap: break-word;
+}
+
+.member-age {
+    flex: 0 0 auto;
+    font-size: 0.8rem;
+    color: #666;
+    white-space: nowrap;
+    margin-left: auto;
+}
+
+.duty-badge {
+    min-width: 2rem;
+}
+
+.duty-blank {
+    background-color: transparent;
+    border: 1px dashed #c6c6c6;
+    color: transparent;
+}
+
+.duty-apl {
+    background-color: #f59e0b;
+}
+
+.duty-pl {
+    background-color: #10b981;
+}
+
+.duty-ul {
+    background-color: #6366f1;
+}

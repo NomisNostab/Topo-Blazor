@@ -10,6 +10,7 @@ using Topo.Model.SIA;
 using Topo.Model.AdditionalAwards;
 using Topo.Model.Approvals;
 using Topo.Model.Progress;
+using Topo.Model.Wallchart;
 
 namespace Topo.Services
 {
@@ -17,6 +18,7 @@ namespace Topo.Services
     public interface ITerrainAPIService
     {
         public Task<AuthenticationResultModel?> LoginAsync(string? branch, string? username, string? password);
+        public Task RefreshTokenAsync();
         public Task<GetUserResultModel?> GetUserAsync();
         public Task<GetProfilesResultModel> GetProfilesAsync();
         public Task<GetMembersResultModel?> GetMembersAsync(string selectedUnitId);
@@ -32,6 +34,7 @@ namespace Topo.Services
         public Task<GetSIAResultsModel> GetSIAResultsForMember(string memberId);
         public Task<GetSIAResultModel> GetSIAResultForMember(string memberId, string achievementId);
         public Task<GetGroupLifeResultModel> GetGroupLifeForUnit(string unitId);
+        public Task<List<UnitMemberMetricsModel>> GetUnitMetrics(string unitId);
         public Task RevokeAssumedProfiles();
         public Task AssumeProfile(string memberId);
         public Task<GetMemberLogbookMetricsResultModel> GetMemberLogbookMetrics(string memberId);
@@ -331,6 +334,18 @@ namespace Topo.Services
             var getGroupLifeResultModel = DeserializeObject<GetGroupLifeResultModel>(result);
 
             return getGroupLifeResultModel ?? new GetGroupLifeResultModel();
+        }
+
+        // The figures behind Terrain's Group Life table, one row per member in the unit
+        public async Task<List<UnitMemberMetricsModel>> GetUnitMetrics(string unitId)
+        {
+            await RefreshTokenAsync();
+
+            var requestUri = $"{membersAddress}units/{unitId}/metrics";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            var unitMetrics = DeserializeObject<List<UnitMemberMetricsModel>>(result);
+
+            return unitMetrics ?? new List<UnitMemberMetricsModel>();
         }
 
         public async Task RevokeAssumedProfiles()

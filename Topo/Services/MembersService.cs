@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using Blazored.LocalStorage;
+using System.Globalization;
 using Topo.Model.Login;
 using Topo.Model.Members;
 
@@ -11,17 +12,44 @@ namespace Topo.Services
         public void ClearMemberCache(string unitId);
         public Task<MemberListModel> GetMember(string unitId, string memberId);
         public Task<string> GetMemberLastName(string unitId, string memberId);
+        public Task SetMemberGenderAsync(string unitId, string memberId, string gender);
     }
 
     public class MembersService : IMembersService
     {
         private readonly StorageService _storageService;
         private readonly ITerrainAPIService _terrainAPIService;
+        private readonly ILocalStorageService _localStorageService;
 
-        public MembersService(StorageService storageService, ITerrainAPIService terrainAPIService)
+        public MembersService(StorageService storageService, ITerrainAPIService terrainAPIService, ILocalStorageService localStorageService)
         {
             _storageService = storageService;
             _terrainAPIService = terrainAPIService;
+            _localStorageService = localStorageService;
+        }
+
+        // Terrain has no gender field, so it's stored entirely in this browser's local storage,
+        // keyed by unit. GetMembersAsync merges it back in whenever it fetches a fresh member list.
+        private async Task<Dictionary<string, string>> GetMemberGendersAsync(string unitId)
+        {
+            var genders = await _localStorageService.GetItemAsync<Dictionary<string, string>>($"{unitId}_MemberGenders");
+            return genders ?? new Dictionary<string, string>();
+        }
+
+        public async Task SetMemberGenderAsync(string unitId, string memberId, string gender)
+        {
+            var genders = await GetMemberGendersAsync(unitId);
+            genders[memberId] = gender;
+            await _localStorageService.SetItemAsync($"{unitId}_MemberGenders", genders);
+
+            // Also patch the in-memory cache directly so the change shows immediately without
+            // forcing a full re-fetch from Terrain just to pick up a value Terrain never had anyway.
+            var cachedMembersList = _storageService.CachedMembers.Where(cm => cm.Key == unitId).FirstOrDefault().Value;
+            var cachedMember = cachedMembersList?.Where(m => m.id == memberId).FirstOrDefault();
+            if (cachedMember != null)
+            {
+                cachedMember.gender = gender;
+            }
         }
 
         public void ClearMemberCache(string unitId)
@@ -61,6 +89,7 @@ namespace Topo.Services
             {
                 if (getMembersResultModel != null && getMembersResultModel.results != null)
                 {
+                    var genders = await GetMemberGendersAsync(unitId);
                     memberList = getMembersResultModel.results
                         .Select(m => new MemberListModel
                         {
@@ -75,7 +104,8 @@ namespace Topo.Services
                             patrol_order = GetPatrolOrder(m.unit.duty, m.patrol?.duty ?? ""),
                             isAdultLeader = m.unit.duty == "adult_leader" ? 1 : 0,
                             status = m.status,
-                            isEligibleJamboree = GetJamboreeEligibilityFromBirthdate(m.date_of_birth)
+                            isEligibleJamboree = GetJamboreeEligibilityFromBirthdate(m.date_of_birth),
+                            gender = genders.TryGetValue(m.id, out var storedGender) ? storedGender : ""
                         })
                         .ToList();
                     _storageService.CachedMembers.Add(new KeyValuePair<string, List<MemberListModel>>(unitId, memberList));
