@@ -7,6 +7,9 @@
         public string MemberPatrol { get; set; } = string.Empty;
         public DateTime? IntroToScouting { get; set; }
         public DateTime? IntroToSection { get; set; }
+        // Whole years completed in this section since IntroToSection - years of service is tracked
+        // per section, not overall Scouting membership, so this is NOT derived from IntroToScouting.
+        public int? YearsOfService { get; set; }
         public int Milestone1Community { get; set; }
         public int Milestone1Outdoors { get; set; }
         public int Milestone1Creative { get; set; }
@@ -53,7 +56,11 @@
         public DateTime? LeadershipCourse { get; set; }
         public DateTime? AdventurousJourney { get; set; }
         public DateTime? PersonalReflection { get; set; }
+        // Fraction (0.0-1.0) complete towards this member's section's own top award: the whole-number
+        // percentage Terrain shows for them (Terrain works it out). Only meaningful until the award
+        // itself is granted, at which point PeakAwardAwarded takes over instead.
         public double PeakAward { get; set; }
+        public DateTime? PeakAwardAwarded { get; set; }
 
     }
 }
