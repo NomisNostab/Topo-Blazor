@@ -1,6 +1,7 @@
 [
     {
         "memberName": "Adit Garg",
+        "memberPatrol": "Red",
         "currentLevel": 1,
         "percentComplete": 66,
         "milestone1ParticipateCommunity": 4,
@@ -30,6 +31,7 @@
     },
     {
         "memberName": "Adrian Gaebel",
+        "memberPatrol": "Blue",
         "currentLevel": 3,
         "percentComplete": 70,
         "milestone1ParticipateCommunity": 6,
@@ -59,6 +61,7 @@
     },
     {
         "memberName": "Aiden Zhu",
+        "memberPatrol": "Green",
         "currentLevel": 1,
         "percentComplete": 3,
         "milestone1ParticipateCommunity": 0,
@@ -88,6 +91,7 @@
     },
     {
         "memberName": "Anna Chen",
+        "memberPatrol": "Red",
         "currentLevel": 1,
         "percentComplete": 3,
         "milestone1ParticipateCommunity": 0,
@@ -117,6 +121,7 @@
     },
     {
         "memberName": "Anne Rigney",
+        "memberPatrol": "Blue",
         "currentLevel": 1,
         "percentComplete": 77,
         "milestone1ParticipateCommunity": 5,
@@ -146,6 +151,7 @@
     },
     {
         "memberName": "Benji Gaebel",
+        "memberPatrol": "Green",
         "currentLevel": 1,
         "percentComplete": 3,
         "milestone1ParticipateCommunity": 0,
@@ -175,6 +181,7 @@
     },
     {
         "memberName": "Caelan Newton",
+        "memberPatrol": "Red",
         "currentLevel": 1,
         "percentComplete": 92,
         "milestone1ParticipateCommunity": 6,
@@ -204,6 +211,7 @@
     },
     {
         "memberName": "Chloe Zhou",
+        "memberPatrol": "Blue",
         "currentLevel": 1,
         "percentComplete": 96,
         "milestone1ParticipateCommunity": 6,
@@ -233,6 +241,7 @@
     },
     {
         "memberName": "Cooper Elsworth",
+        "memberPatrol": "Green",
         "currentLevel": 1,
         "percentComplete": 96,
         "milestone1ParticipateCommunity": 6,
@@ -262,6 +271,7 @@
     },
     {
         "memberName": "Damian Au",
+        "memberPatrol": "Red",
         "currentLevel": 1,
         "percentComplete": 88,
         "milestone1ParticipateCommunity": 6,
@@ -291,6 +301,7 @@
     },
     {
         "memberName": "Edward Bremner",
+        "memberPatrol": "Blue",
         "currentLevel": 1,
         "percentComplete": 92,
         "milestone1ParticipateCommunity": 6,
@@ -320,6 +331,7 @@
     },
     {
         "memberName": "Elsie Peake",
+        "memberPatrol": "Green",
         "currentLevel": 1,
         "percentComplete": 22,
         "milestone1ParticipateCommunity": 1,
@@ -349,6 +361,7 @@
     },
     {
         "memberName": "Hannah (Hai Yun) Wang",
+        "memberPatrol": "Red",
         "currentLevel": 1,
         "percentComplete": 96,
         "milestone1ParticipateCommunity": 6,
@@ -378,6 +391,7 @@
     },
     {
         "memberName": "Harvey Mckibbin",
+        "memberPatrol": "Blue",
         "currentLevel": 1,
         "percentComplete": 85,
         "milestone1ParticipateCommunity": 6,
@@ -407,6 +421,7 @@
     },
     {
         "memberName": "Hayley Au",
+        "memberPatrol": "Green",
         "currentLevel": 3,
         "percentComplete": 79,
         "milestone1ParticipateCommunity": 6,
@@ -436,6 +451,7 @@
     },
     {
         "memberName": "Helen Yao",
+        "memberPatrol": "Red",
         "currentLevel": 2,
         "percentComplete": 88,
         "milestone1ParticipateCommunity": 6,
@@ -465,6 +481,7 @@
     },
     {
         "memberName": "Jacob Hong",
+        "memberPatrol": "Blue",
         "currentLevel": 2,
         "percentComplete": 88,
         "milestone1ParticipateCommunity": 6,
@@ -494,6 +511,7 @@
     },
     {
         "memberName": "James Luong",
+        "memberPatrol": "Green",
         "currentLevel": 2,
         "percentComplete": 92,
         "milestone1ParticipateCommunity": 6,
@@ -523,6 +541,7 @@
     },
     {
         "memberName": "Jeremie Jin",
+        "memberPatrol": "Red",
         "currentLevel": 1,
         "percentComplete": 55,
         "milestone1ParticipateCommunity": 3,
@@ -552,8 +571,10 @@
     },
     {
         "memberName": "Jinbo Li",
+        "memberPatrol": "Blue",
         "currentLevel": 3,
-        "percentComplete": 54,
+        "percentComplete": 100,
+        "milestone3Awarded": true,
         "milestone1ParticipateCommunity": 6,
         "milestone1ParticipateOutdoors": 6,
         "milestone1ParticipateCreative": 6,
@@ -570,17 +591,18 @@
         "milestone2AssistArea": "",
         "milestone2Lead": 2,
         "milestone2LeadArea": "Co-2 O Cr-2",
-        "milestone3ParticipateCommunity": 1,
+        "milestone3ParticipateCommunity": 4,
         "milestone3ParticipateOutdoors": 4,
         "milestone3ParticipateCreative": 4,
         "milestone3ParticipatePersonalGrowth": 4,
-        "milestone3Assist": 0,
+        "milestone3Assist": 4,
         "milestone3AssistArea": "",
-        "milestone3Lead": 0,
+        "milestone3Lead": 6,
         "milestone3LeadArea": ""
     },
     {
         "memberName": "Joshua Gibson",
+        "memberPatrol": "Green",
         "currentLevel": 1,
         "percentComplete": 3,
         "milestone1ParticipateCommunity": 0,
@@ -610,6 +632,7 @@
     },
     {
         "memberName": "Laura Dunstan",
+        "memberPatrol": "Red",
         "currentLevel": 1,
         "percentComplete": 25,
         "milestone1ParticipateCommunity": 0,
@@ -639,6 +662,7 @@
     },
     {
         "memberName": "Lily Wong",
+        "memberPatrol": "Blue",
         "currentLevel": 1,
         "percentComplete": 7,
         "milestone1ParticipateCommunity": 1,
@@ -668,6 +692,7 @@
     },
     {
         "memberName": "Luca Vaux",
+        "memberPatrol": "Green",
         "currentLevel": 1,
         "percentComplete": 0,
         "milestone1ParticipateCommunity": 0,
@@ -697,6 +722,7 @@
     },
     {
         "memberName": "Mark Moseichuk",
+        "memberPatrol": "Red",
         "currentLevel": 1,
         "percentComplete": 81,
         "milestone1ParticipateCommunity": 6,
@@ -726,6 +752,7 @@
     },
     {
         "memberName": "Matt Sun",
+        "memberPatrol": "Blue",
         "currentLevel": 1,
         "percentComplete": 3,
         "milestone1ParticipateCommunity": 0,
@@ -755,6 +782,7 @@
     },
     {
         "memberName": "Michelle Son",
+        "memberPatrol": "Green",
         "currentLevel": 1,
         "percentComplete": 14,
         "milestone1ParticipateCommunity": 1,
@@ -784,6 +812,7 @@
     },
     {
         "memberName": "Nate Chettiyadan",
+        "memberPatrol": "Red",
         "currentLevel": 1,
         "percentComplete": 96,
         "milestone1ParticipateCommunity": 6,
@@ -813,6 +842,7 @@
     },
     {
         "memberName": "Neil Yuan",
+        "memberPatrol": "Blue",
         "currentLevel": 1,
         "percentComplete": 3,
         "milestone1ParticipateCommunity": 0,
@@ -842,6 +872,7 @@
     },
     {
         "memberName": "Nicholas Chen",
+        "memberPatrol": "Green",
         "currentLevel": 1,
         "percentComplete": 92,
         "milestone1ParticipateCommunity": 6,
@@ -871,6 +902,7 @@
     },
     {
         "memberName": "Oliver Son",
+        "memberPatrol": "Red",
         "currentLevel": 1,
         "percentComplete": 22,
         "milestone1ParticipateCommunity": 2,
@@ -900,6 +932,7 @@
     },
     {
         "memberName": "Rosie Eisenhauer",
+        "memberPatrol": "Blue",
         "currentLevel": 1,
         "percentComplete": 29,
         "milestone1ParticipateCommunity": 1,
@@ -929,6 +962,7 @@
     },
     {
         "memberName": "Tae Trimble",
+        "memberPatrol": "Green",
         "currentLevel": 1,
         "percentComplete": 3,
         "milestone1ParticipateCommunity": 0,
@@ -958,6 +992,7 @@
     },
     {
         "memberName": "Zach Mckibbin",
+        "memberPatrol": "Red",
         "currentLevel": 1,
         "percentComplete": 92,
         "milestone1ParticipateCommunity": 6,
@@ -987,6 +1022,7 @@
     },
     {
         "memberName": "Zimo Gu",
+        "memberPatrol": "Blue",
         "currentLevel": 2,
         "percentComplete": 92,
         "milestone1ParticipateCommunity": 6,
