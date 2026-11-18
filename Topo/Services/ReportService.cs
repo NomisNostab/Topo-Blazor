@@ -15,7 +15,7 @@ namespace Topo.Services
         public Task<byte[]> GetAttendanceReport(string groupName, string section, string unitName, OutputType outputType, string serialisedAttendanceReportData, DateTime fromDate, DateTime toDate);
         public Task<byte[]> GetOASWorksheetReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberAnswers, bool breakByPatrol, bool formatLikeTerrain);
         public Task<byte[]> GetSIAReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
-        public Task<byte[]> GetMilestoneReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData, bool breakByPatrol);
+        public Task<byte[]> GetMilestoneReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
         public Task<byte[]> GetLogbookReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
         public Task<byte[]> GetWallchartReport(string groupName, string section, string unitName, OutputType outputType, string serialisedWallchartItems, bool breakByPatrol);
         public Task<byte[]> GetAdditionalAwardsReport(string groupName, string section, string unitName, OutputType outputType, string serialisedReportData);
@@ -170,7 +170,7 @@ namespace Topo.Services
             return report;
         }
 
-        public async Task<byte[]> GetMilestoneReport(string groupName, string section, string unitName, OutputType outputType, string serialisedMilestoneSummaries, bool breakByPatrol = false)
+        public async Task<byte[]> GetMilestoneReport(string groupName, string section, string unitName, OutputType outputType, string serialisedMilestoneSummaries)
         {
             var reportGenerationRequest = new ReportGenerationRequest()
             {
@@ -179,8 +179,7 @@ namespace Topo.Services
                 Section = section,
                 UnitName = unitName,
                 OutputType = outputType,
-                ReportData = serialisedMilestoneSummaries,
-                BreakByPatrol = breakByPatrol
+                ReportData = serialisedMilestoneSummaries
             };
 
             var report = await CallReportGeneratorFunction(reportGenerationRequest);
