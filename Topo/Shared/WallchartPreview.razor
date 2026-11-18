@@ -1,0 +1,70 @@
+@using System.Globalization
+@using Topo.Model.Wallchart
+
+@* What the downloaded wallchart will show: a row for each Scout across the milestones, Outdoor Adventure Skills, Special Interest
+   Areas and the top award, shaded as on the printed page. The names stay in view while the columns scroll. *@
+@if (Sheets.Count == 0 || Sheets.All(s => s.Rows.Count == 0))
+{
+    <div class="text-muted">No Scouts to show.</div>
+}
+
+@foreach (var sheet in Sheets)
+{
+    <h4 class="mt-3">@(sheet.Patrol == "" ? "" : sheet.Patrol + " ")Group Life Wallchart as at @DateTime.Now.ToString("d MMM yyyy", CultureInfo.InvariantCulture)</h4>
+    <div class="scroller">
+        <table class="wallchart">
+            <thead>
+                <tr class="groups">
+                    <th class="name"></th>
+                    @foreach (var group in WallchartLayout.Groups)
+                    {
+                        <th colspan="@group.Span" class="text-center">@group.Heading</th>
+                    }
+                </tr>
+                <tr class="groups">
+                    <th class="name"></th>
+                    <th colspan="18"></th>
+                    @foreach (var group in WallchartLayout.OutdoorGroups)
+                    {
+                        <th colspan="@group.Span" class="text-center">@group.Heading</th>
+                    }
+                    <th colspan="13"></th>
+                </tr>
+                <tr>
+                    <th class="name">Name</th>
+                    @foreach (var column in WallchartLayout.Columns)
+                    {
+                        <th class="turned"><span>@column</span></th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in sheet.Rows)
+                {
+                    <tr>
+                        <td class="name">@row.Name</td>
+                        @foreach (var cell in row.Cells)
+                        {
+                            <td colspan="@cell.Span" class="text-center" style="@(cell.Colour == null ? null : "background-color: " + cell.Colour)">@Text(cell)</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public List<WallchartSheet> Sheets { get; set; } = new List<WallchartSheet>();
+
+    private static string Text(WallchartCell cell) => cell.Kind switch
+    {
+        WallchartCellKind.Count => cell.Count > 0 ? cell.Count.ToString() : "",
+        WallchartCellKind.Number => cell.Count.ToString(),
+        WallchartCellKind.Date or WallchartCellKind.PresentedDate => cell.Date!.Value.ToString("dd/MM/yy", CultureInfo.InvariantCulture),
+        WallchartCellKind.AwardedDate => cell.Date!.Value.ToString("dd/MM/yy", CultureInfo.InvariantCulture) + "*",
+        WallchartCellKind.Percent => cell.Fraction.ToString("0%", CultureInfo.InvariantCulture),
+        _ => ""
+    };
+}

@@ -13,6 +13,8 @@
         public string type { get; set; } = string.Empty;
         public string status { get; set; } = string.Empty;
         public DateTime status_updated { get; set; }
+        // Terrain's own record of the award date (yyyy-mm-dd); only on awards recorded in Terrain. See AwardDate.
+        public string date_awarded { get; set; } = string.Empty;
         public string milestone_requirement_status { get; set; } = string.Empty;
         public Event_Log[] event_log { get; set; } = new Event_Log[0];
         public Event_Count event_count { get; set; } = new Event_Count();
