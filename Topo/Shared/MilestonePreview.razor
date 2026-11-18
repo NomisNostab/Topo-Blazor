@@ -1,0 +1,73 @@
+@using System.Globalization
+@using Topo.Model.Milestone
+
+@* What the downloaded report will show: a table for each milestone with the counts shaded from red to green as they are on the
+   printed page, and a sheet for each patrol when the report is broken up by patrol. *@
+@if (Groups.Count == 0)
+{
+    <div class="text-muted">No Scouts to show.</div>
+}
+
+@foreach (var group in Groups)
+{
+    <h4 class="mt-3">@(group.Patrol == "" ? "" : group.Patrol + " ")Milestone Summary as at @DateTime.Now.ToString("d MMM yyyy", CultureInfo.InvariantCulture)</h4>
+    @foreach (var level in group.Sections)
+    {
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered milestone">
+                <thead>
+                    <tr class="table-secondary">
+                        <th colspan="8" class="text-center">@level.Title</th>
+                    </tr>
+                    <tr class="table-secondary">
+                        <th rowspan="2">Name</th>
+                        <th rowspan="2" class="text-center">Percent Complete</th>
+                        <th colspan="4" class="text-center">@level.ParticipateHeading</th>
+                        <th rowspan="2" class="text-center">@level.LeadHeading</th>
+                        <th rowspan="2" class="text-center">@level.LeadHeading Areas</th>
+                    </tr>
+                    <tr class="table-secondary">
+                        <th class="text-center">Community</th>
+                        <th class="text-center">Outdoors</th>
+                        <th class="text-center">Creative</th>
+                        <th class="text-center">Personal Growth</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in level.Rows)
+                    {
+                        <tr>
+                            <td>@row.Name</td>
+                            <td class="text-center percent">@(row.PercentComplete)%</td>
+                            @foreach (var cell in row.Participate)
+                            {
+                                <td class="text-center" style="background-color: @cell.Colour">@cell.Count</td>
+                            }
+                            <td class="text-center" style="background-color: @row.Lead.Colour">@row.Lead.Count</td>
+                            <td class="text-center" style="background-color: @row.Lead.Colour">@row.LeadAreas</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr class="table-secondary fw-bold">
+                        <td></td>
+                        <td class="text-center">Average</td>
+                        @foreach (var average in level.Averages())
+                        {
+                            <td class="text-center">@average.ToString("0.0", CultureInfo.InvariantCulture)</td>
+                        }
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    }
+}
+
+@code {
+    [Parameter]
+    public List<MilestonePatrolGroup> Groups { get; set; } = new List<MilestonePatrolGroup>();
+
+    [Parameter]
+    public string UnitName { get; set; } = string.Empty;
+}
