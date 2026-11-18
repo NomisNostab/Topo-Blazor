@@ -21,6 +21,8 @@ namespace Topo.Model.Progress
         public string type { get; set; } = string.Empty;
         public string status { get; set; } = string.Empty;
         public DateTime status_updated { get; set; }
+        // Terrain's own record of the award date (yyyy-mm-dd); only on awards recorded in Terrain. See AwardDate.
+        public string date_awarded { get; set; } = string.Empty;
         public DateTime last_updated { get; set; }
     }
 
