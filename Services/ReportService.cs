@@ -2496,9 +2496,6 @@ namespace Topo.Services
         private static Color Colour(string hex) =>
             Color.FromArgb(Convert.ToInt32(hex.Substring(1, 2), 16), Convert.ToInt32(hex.Substring(3, 2), 16), Convert.ToInt32(hex.Substring(5, 2), 16));
 
-        private static Color Colour(string hex) =>
-            Color.FromArgb(Convert.ToInt32(hex.Substring(1, 2), 16), Convert.ToInt32(hex.Substring(3, 2), 16), Convert.ToInt32(hex.Substring(5, 2), 16));
-
         private void SetWallchartCell(IRange range, WallchartCell cell)
         {
             switch (cell.Kind)
