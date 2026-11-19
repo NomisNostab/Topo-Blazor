@@ -1,0 +1,134 @@
+@page "/program/ideas"
+@inherits Controller.ProgramIdeasController
+@using Topo.Model.Program
+
+<PageTitle>Topo / Program Ideas</PageTitle>
+
+<div class="mt-3 mb-3 row">
+    <h2>Program @model.GroupName</h2>
+</div>
+
+<ProgramSubNav />
+
+<EditForm Model="@model">
+    <div class="form-group mb-3 row">
+        <label for="calendars" class="col-sm-2 col-form-label">
+            Select Calendars
+        </label>
+        <div class="col-sm-8">
+            <select @ref="_select2Reference" id="calendars" class="form-select select2" multiple @bind="model.SelectedCalendars" title="Select one or more calendars to search">
+                @foreach (var calendar in model.Calendars)
+                {
+                    <option value="@calendar.Key">@calendar.Value</option>
+                }
+            </select>
+            <label class="col-form-label validation-message">@model.CalendarErrorMessage</label>
+        </div>
+        <div class="col-sm-2">
+        </div>
+    </div>
+
+    <div class="form-group mb-3 row">
+        <label class="col-sm-2 col-form-label">How far back to look</label>
+        <div class="col-sm-3">
+            <select class="form-select" @bind="model.HistoryRange">
+                <option value="@ProgramIdeasRangeOption.None">All time (no limit)</option>
+                <option value="@ProgramIdeasRangeOption.Year">Last year</option>
+                <option value="@ProgramIdeasRangeOption.SixMonths">Last 6 months</option>
+                <option value="@ProgramIdeasRangeOption.UserSet">Custom date</option>
+            </select>
+        </div>
+        @if (model.HistoryRange == ProgramIdeasRangeOption.UserSet)
+        {
+            <label class="col-sm-2 col-form-label">Since</label>
+            <div class="col-sm-3">
+                <InputDate @bind-Value="model.HistoryFromDate" class="form-control" />
+            </div>
+        }
+    </div>
+
+    <div class="form-group mb-3 row">
+        <label class="col-sm-2 col-form-label">Highlight activities run within</label>
+        <div class="col-sm-3">
+            <select class="form-select" @bind="model.HighlightRange">
+                <option value="@ProgramIdeasRangeOption.Year">Last year</option>
+                <option value="@ProgramIdeasRangeOption.SixMonths">Last 6 months</option>
+                <option value="@ProgramIdeasRangeOption.UserSet">Custom date</option>
+                <option value="@ProgramIdeasRangeOption.None">Don't highlight</option>
+            </select>
+        </div>
+        @if (model.HighlightRange == ProgramIdeasRangeOption.UserSet)
+        {
+            <label class="col-sm-2 col-form-label">Since</label>
+            <div class="col-sm-3">
+                <InputDate @bind-Value="model.HighlightFromDate" class="form-control" />
+            </div>
+        }
+    </div>
+
+    <div class="mt-3 mb-3 row">
+        <div class="col-sm-2">
+        </div>
+        <div class="col-sm-3">
+            <button type="submit" name="button" class="btn btn-primary" @onclick="ShowProgramIdeasClick">Show Program Ideas</button>
+        </div>
+        <div class="col-sm-7">
+        </div>
+    </div>
+
+    @if (model.Ideas != null)
+    {
+        @if (model.FetchFailed)
+        {
+            <div class="row">
+                <div class="col-sm validation-message">
+                    Could not load program history from Terrain for that range &mdash; try a narrower "How far back to look" option (e.g. Last year) rather than All time.
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="mt-3 mb-3 row">
+                <div class="col-sm">
+                    <button type="submit" name="button" @onclick="ProgramIdeasReportPdfClick" class="btn btn-primary">Program Ideas (pdf)</button> &nbsp;
+                    <button type="submit" name="button" @onclick="ProgramIdeasReportXlsxClick" class="btn btn-success">Program Ideas (xlsx)</button>
+                </div>
+            </div>
+
+            @if (!model.Ideas.Any())
+            {
+                <div class="row">
+                    <div class="col-sm">No activities found for the selected range.</div>
+                </div>
+            }
+
+            @foreach (var areaGroup in model.Ideas.GroupBy(i => i.ChallengeArea))
+            {
+                <div class="row mt-3">
+                    <div class="col-sm">
+                        <h4>@areaGroup.Key</h4>
+                    </div>
+                </div>
+                <div class="row header">
+                    <div class="col-sm-6" style="cursor:pointer;" @onclick="() => SortByColumn(ProgramIdeaSortColumn.ActivityName)">
+                        <strong>Activity@(SortIndicator(ProgramIdeaSortColumn.ActivityName))</strong>
+                    </div>
+                    <div class="col-sm-3" style="cursor:pointer;" @onclick="() => SortByColumn(ProgramIdeaSortColumn.LastRunDate)">
+                        <strong>Last Run@(SortIndicator(ProgramIdeaSortColumn.LastRunDate))</strong>
+                    </div>
+                    <div class="col-sm-3" style="cursor:pointer;" @onclick="() => SortByColumn(ProgramIdeaSortColumn.TimesRun)">
+                        <strong>Times Run@(SortIndicator(ProgramIdeaSortColumn.TimesRun))</strong>
+                    </div>
+                </div>
+                @foreach (var idea in areaGroup)
+                {
+                    <div class="row striped" style="@(idea.Highlight ? "background-color: #fff3b0;" : "")">
+                        <div class="col-sm-6">@idea.ActivityName</div>
+                        <div class="col-sm-3">@idea.LastRunDate.ToString("dd/MM/yyyy")</div>
+                        <div class="col-sm-3">@idea.TimesRun</div>
+                    </div>
+                }
+            }
+        }
+    }
+</EditForm>
