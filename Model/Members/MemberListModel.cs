@@ -28,5 +28,12 @@ namespace Topo.Model.Members
         public string gender { get; set; } = string.Empty;
         public bool selected { get; set; }
         public bool isEligibleJamboree { get; set; } = false;
+
+        // The unit's section, filled in when members are gathered from several units (a sign in sheet
+        // for the whole group) so they can be grouped by section. Blank for every other use.
+        public string section { get; set; } = string.Empty;
+
+        // A copy, for adding to it without changing the member list that is cached for the unit
+        public MemberListModel Clone() => (MemberListModel)MemberwiseClone();
     }
 }

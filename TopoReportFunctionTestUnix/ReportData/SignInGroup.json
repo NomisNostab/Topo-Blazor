@@ -1,0 +1,132 @@
+[
+ {
+  "id": "1",
+  "member_number": "10001",
+  "first_name": "Oliver",
+  "last_name": "Smith",
+  "patrol_name": "",
+  "patrol_duty": "",
+  "isAdultLeader": 0,
+  "section": "joey"
+ },
+ {
+  "id": "2",
+  "member_number": "10002",
+  "first_name": "Mia",
+  "last_name": "Chen",
+  "patrol_name": "",
+  "patrol_duty": "",
+  "isAdultLeader": 0,
+  "section": "joey"
+ },
+ {
+  "id": "3",
+  "member_number": "10003",
+  "first_name": "Oliver",
+  "last_name": "Stone",
+  "patrol_name": "",
+  "patrol_duty": "",
+  "isAdultLeader": 0,
+  "section": "joey"
+ },
+ {
+  "id": "4",
+  "member_number": "10004",
+  "first_name": "Jack",
+  "last_name": "Brown",
+  "patrol_name": "Blue Six",
+  "patrol_duty": "Sixer",
+  "isAdultLeader": 0,
+  "section": "cub"
+ },
+ {
+  "id": "5",
+  "member_number": "10005",
+  "first_name": "Jack",
+  "last_name": "Brooks",
+  "patrol_name": "Red Six",
+  "patrol_duty": "",
+  "isAdultLeader": 0,
+  "section": "cub"
+ },
+ {
+  "id": "6",
+  "member_number": "10006",
+  "first_name": "Ava",
+  "last_name": "Lee",
+  "patrol_name": "Blue Six",
+  "patrol_duty": "",
+  "isAdultLeader": 0,
+  "section": "cub"
+ },
+ {
+  "id": "7",
+  "member_number": "10007",
+  "first_name": "Noah",
+  "last_name": "Patel",
+  "patrol_name": "Eagles",
+  "patrol_duty": "PL",
+  "isAdultLeader": 0,
+  "section": "scout"
+ },
+ {
+  "id": "8",
+  "member_number": "10008",
+  "first_name": "Jack",
+  "last_name": "Brownlow",
+  "patrol_name": "Hawks",
+  "patrol_duty": "",
+  "isAdultLeader": 0,
+  "section": "scout"
+ },
+ {
+  "id": "9",
+  "member_number": "10009",
+  "first_name": "Zoe",
+  "last_name": "Nguyen",
+  "patrol_name": "Eagles",
+  "patrol_duty": "APL",
+  "isAdultLeader": 0,
+  "section": "scout"
+ },
+ {
+  "id": "10",
+  "member_number": "100010",
+  "first_name": "Ethan",
+  "last_name": "Wu",
+  "patrol_name": "",
+  "patrol_duty": "",
+  "isAdultLeader": 0,
+  "section": "venturer"
+ },
+ {
+  "id": "11",
+  "member_number": "100011",
+  "first_name": "Ethan",
+  "last_name": "Wu",
+  "patrol_name": "",
+  "patrol_duty": "",
+  "isAdultLeader": 0,
+  "section": "venturer"
+ },
+ {
+  "id": "12",
+  "member_number": "100012",
+  "first_name": "Sam",
+  "last_name": "Taylor",
+  "patrol_name": "",
+  "patrol_duty": "UL",
+  "isAdultLeader": 1,
+  "section": "scout"
+ },
+ {
+  "id": "13",
+  "member_number": "100013",
+  "first_name": "Priya",
+  "last_name": "Singh",
+  "patrol_name": "",
+  "patrol_duty": "AL",
+  "isAdultLeader": 1,
+  "section": "cub"
+ }
+]

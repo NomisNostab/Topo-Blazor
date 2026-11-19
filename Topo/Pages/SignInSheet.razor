@@ -1,0 +1,157 @@
+@page "/signinsheet"
+@inherits Controller.SignInSheetController
+@using Topo.Model.Program
+@using Topo.Model.ReportGeneration
+
+<PageTitle>Topo / Sign In Sheet</PageTitle>
+
+@* the date inputs need an EditForm around them *@
+<EditForm Model="@model">
+    <div class="mt-3 mb-3 row">
+        <h2>Sign In Sheet @model.GroupName</h2>
+    </div>
+
+    <div class="form-group mb-3 row">
+        <label for="unit" class="col-sm-2 col-form-label">
+            Select Unit
+        </label>
+        <div class="col-sm-3">
+            <select id="unit" class="form-select" value="@model.UnitId" @onchange="UnitChange">
+                <option value="">Select unit</option>
+                @foreach (var unit in model.Units)
+                {
+                    <option value="@unit.Key">@unit.Value</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="form-group mb-3 row">
+        <label class="col-sm-2 col-form-label">
+            Select Calendars
+        </label>
+        <div class="col-sm-8">
+            <select @ref="_select2Reference" id="calendars" class="form-select select2" multiple title="Select one or more calendars to view">
+                @foreach (var calendar in model.Calendars)
+                {
+                    <option value="@calendar.Key" selected="@model.SelectedCalendars.Contains(calendar.Key)">@calendar.Value</option>
+                }
+            </select>
+            <label class="col-form-label validation-message">@model.CalendarErrorMessage</label>
+        </div>
+    </div>
+
+    <div class="mt-3 mb-3 row">
+        <label class="col-sm-2 col-form-label"> Search From Date</label>
+        <div class="col-sm-3">
+            <InputDate @bind-Value="@model.CalendarSearchFromDate" @bind-Value:after="LoadEventsAsync" class="form-control" />
+        </div>
+        <label class="col-sm-2 col-form-label"> Search To Date</label>
+        <div class="col-sm-3">
+            <InputDate @bind-Value="@model.CalendarSearchToDate" @bind-Value:after="LoadEventsAsync" class="form-control" />
+        </div>
+        <label class="col-sm col-form-label validation-message">@model.DateErrorMessage</label>
+    </div>
+
+    <div class="mt-3 mb-3 row">
+        <label class="col-sm-2 col-form-label">Event</label>
+        <div class="col-sm-6">
+            <select class="form-select" value="@EventId" @onchange="EventChange"
+                    disabled="@(model.Events == null || !model.Events.Any())">
+                <option value="">@(model.Events != null && model.Events.Any() ? "No event (leave the title blank)" : "No events found for these calendars")</option>
+                @if (model.Events != null)
+                {
+                    @foreach (var item in model.Events)
+                    {
+                        <option value="@item.Id">@item.EventDisplay</option>
+                    }
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="mt-3 mb-3 row">
+        <label class="col-sm-2 col-form-label">Options</label>
+        <div class="col-sm-10">
+            @if (HasMultipleUnits)
+            {
+                <div class="mb-2">
+                    <label class="me-2">Include</label>
+                    <select class="form-select d-inline-block w-auto" value="@model.Options.SectionsScope"
+                            @onchange="SectionsScopeChange">
+                        <option value="@SignInSectionsScope.Primary">Selected unit only</option>
+                        <option value="@SignInSectionsScope.WholeGroup">Whole group</option>
+                        <option value="@SignInSectionsScope.ChooseSections">Choose sections...</option>
+                    </select>
+                    @if (model.Options.SectionsScope == SignInSectionsScope.ChooseSections)
+                    {
+                        @foreach (var sectionName in model.AvailableSections)
+                        {
+                            <label class="ms-3">
+                                <input type="checkbox" checked="@model.Options.SelectedSections.Contains(sectionName)"
+                                       @onchange="@(e => ToggleSection(sectionName, (bool)(e.Value ?? false)))" />
+                                @(char.ToUpper(sectionName[0]) + sectionName.Substring(1))
+                            </label>
+                        }
+                    }
+                </div>
+            }
+            <div class="mb-2">
+                <label>
+                    <input type="checkbox" checked="@model.Options.UseFullNames"
+                           @onchange="FullNamesChange" /> Use full names (otherwise first name plus enough of the surname to tell people apart)
+                </label>
+            </div>
+            <div class="mb-2">
+                <label class="me-3">
+                    <input type="checkbox" checked="@model.Options.IncludeRegisteredColumn"
+                           @onchange="RegisteredColumnChange" /> Registered column
+                </label>
+                <label>
+                    <input type="checkbox" checked="@model.Options.IncludePaidColumn"
+                           @onchange="PaidColumnChange" /> Paid column
+                </label>
+            </div>
+            <div class="mb-2">
+                <label>
+                    <input type="checkbox" checked="@model.Options.IncludeParticipationColumns"
+                           @onchange="ParticipationColumnsChange" /> Include Participate / Lead columns
+                </label>
+            </div>
+            <div>
+                <label class="me-2">Attendance</label>
+                <select class="form-select d-inline-block w-auto" value="@(model.Options.UseTimeInOutSignature ? "timeinout" : "tickbox")"
+                        @onchange="AttendanceModeChange">
+                    <option value="timeinout">Time in / signature / time out / signature</option>
+                    <option value="tickbox">Tick box</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    @if (PreviewMembers != null)
+    {
+        <div class="mt-3 mb-3 row">
+            <div class="col-sm-2">
+            </div>
+            <div class="col-sm-10">
+                <button type="button" class="btn btn-primary" @onclick="@(() => DownloadClick(OutputType.PDF))">Sign In Sheet (pdf)</button>
+                <button type="button" class="btn btn-success" @onclick="@(() => DownloadClick(OutputType.Excel))">Sign In Sheet (xlsx)</button>
+            </div>
+        </div>
+        <div class="mt-3 mb-3 row">
+            <label class="col-sm-2 col-form-label">Preview</label>
+            <div class="col-sm-10">
+                <SignInSheetPreview Members="PreviewMembers" Options="model.Options" />
+            </div>
+        </div>
+    }
+    else if (PreviewFailed)
+    {
+        <div class="mt-3 mb-3 row">
+            <div class="col-sm-2">
+            </div>
+            <div class="col-sm-10 text-danger">Couldn't load the invitees for that event.</div>
+        </div>
+    }
+</EditForm>

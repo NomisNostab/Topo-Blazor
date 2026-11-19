@@ -56,6 +56,21 @@ namespace Topo.Services
                     .ToDictionary(u => u?.id?.ToString() ?? "", u => u?.name ?? "");
             }
         }
+
+        // Unit id -> section (joey/cub/scout/venturer/rover), for grouping a group-wide member
+        // list (e.g. a group event's sign in sheet) by section the way Terrain itself groups units.
+        public Dictionary<string, string> UnitSections
+        {
+            get
+            {
+                return GetProfilesResult?.profiles?
+                    .Where(p => p.unit != null)
+                    .Where(p => p.group.name == (GroupName ?? ""))
+                    .Where(p => p.member.name == (MemberName ?? ""))
+                    .Select(p => p.unit)
+                    .ToDictionary(u => u?.id?.ToString() ?? "", u => u?.section ?? "");
+            }
+        }
         public string UnitId
         {
             get
