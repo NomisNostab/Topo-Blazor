@@ -1,0 +1,8 @@
+{
+  "ReportType": "MemberList",
+  "GroupName": "Example Group",
+  "Section": "Scout",
+  "UnitName": "Example Unit",
+  "OutputType": "PDF",
+  "ReportData": "[{\"id\": \"1\", \"member_number\": \"1000001\", \"first_name\": \"Alex\", \"last_name\": \"Example\", \"status\": \"Active\", \"age\": \"11 years\", \"unit_council\": true, \"patrol_name\": \"Kookaburra\", \"patrol_duty\": \"PL\", \"patrol_order\": 1, \"isAdultLeader\": 0}, {\"id\": \"2\", \"member_number\": \"1000002\", \"first_name\": \"Sam\", \"last_name\": \"Sample\", \"status\": \"Active\", \"age\": \"10 years\", \"unit_council\": false, \"patrol_name\": \"Kookaburra\", \"patrol_duty\": \"APL\", \"patrol_order\": 1, \"isAdultLeader\": 0}, {\"id\": \"3\", \"member_number\": \"1000003\", \"first_name\": \"Jo\", \"last_name\": \"Placeholder\", \"status\": \"Active\", \"age\": \"10 years\", \"unit_council\": false, \"patrol_name\": \"Wombat\", \"patrol_duty\": \"\", \"patrol_order\": 2, \"isAdultLeader\": 0}, {\"id\": \"4\", \"member_number\": \"1000004\", \"first_name\": \"Pat\", \"last_name\": \"Testleader\", \"status\": \"Active\", \"age\": \"40 years\", \"unit_council\": false, \"patrol_name\": \"\", \"patrol_duty\": \"\", \"patrol_order\": 99, \"isAdultLeader\": 1}]"
+}
