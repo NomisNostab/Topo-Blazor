@@ -26,6 +26,8 @@ builder.Services.AddScoped<IWallchartService, WallchartService>();
 builder.Services.AddScoped<IAdditionalAwardService, AdditionalAwardService>();
 builder.Services.AddScoped<IApprovalsService, ApprovalsService>();
 builder.Services.AddScoped<IProgressService, ProgressService>();
+builder.Services.AddScoped<IHistoryService, HistoryService>();
+builder.Services.AddScoped<IUnitReportService, UnitReportService>();
 
 builder.Services.AddScoped<SpinnerService>();
 builder.Services.AddScoped<DisplaySpinnerAutomaticallyHttpMessageHandler>();
