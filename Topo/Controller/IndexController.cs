@@ -10,10 +10,18 @@ namespace Topo.Controller
         [Inject]
         public StorageService _storageService { get; set; }
 
+        [Inject]
+        public NavigationManager NavigationManager { get; set; }
+
         public IndexPageViewModel indexPageViewModel = new IndexPageViewModel();
 
         protected override void OnInitialized()
         {
+            if (!_storageService.IsAuthenticated)
+            {
+                NavigationManager.NavigateTo("login");
+                return;
+            }
             indexPageViewModel.IsAuthenticated = _storageService.IsAuthenticated;
             indexPageViewModel.FullName = _storageService.MemberName ?? "";
             indexPageViewModel.Groups = _storageService.Groups;
