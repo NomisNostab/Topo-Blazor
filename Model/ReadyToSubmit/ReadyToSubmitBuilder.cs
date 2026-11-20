@@ -83,7 +83,7 @@ namespace Topo.Model.ReadyToSubmit
                 LogbookTickOptional = input.LogbookTickOptional
             };
 
-            var names = DisplayNames(input.Members, input.UseFullNames);
+            var names = MemberNames.GetDisplayNames(input.Members, FirstNameShown, m => m.LastName, input.UseFullNames);
             var ready = new List<ReadyItem>();
             var logbook = new List<ReadyItem>();
             var nearly = new List<(ReadyItem item, int order)>();
@@ -231,41 +231,9 @@ namespace Topo.Model.ReadyToSubmit
             return (stream < 0 ? OasOrder.Length : stream) * 100 + stage;
         }
 
-        // First name only unless that is shared; where several Scouts share a first name the first letters of their surname are
-        // added (one more letter at a time) until each is different. Anyone still identical gets a number. The same as the sign in sheet.
-        public static Dictionary<ReadyMemberInput, string> DisplayNames(IEnumerable<ReadyMemberInput> members, bool useFullNames)
-        {
-            var names = new Dictionary<ReadyMemberInput, string>();
-            string First(ReadyMemberInput m) => (m.FirstName == "" && m.LastName == "" ? m.MemberName : m.FirstName).Trim();
-            string Left(string text, int letters) => text.Length <= letters ? text : text.Substring(0, letters);
-
-            void Name(IEnumerable<ReadyMemberInput> people, Func<ReadyMemberInput, string> name)
-            {
-                foreach (var same in people.GroupBy(name, StringComparer.OrdinalIgnoreCase))
-                {
-                    var duplicates = same.ToList();
-                    for (var i = 0; i < duplicates.Count; i++)
-                        names[duplicates[i]] = duplicates.Count > 1 ? $"{same.Key} ({i + 1})" : same.Key;
-                }
-            }
-
-            if (useFullNames)
-            {
-                Name(members, m => $"{First(m)} {m.LastName}".Trim());
-                return names;
-            }
-            foreach (var sameFirstName in members.GroupBy(First, StringComparer.OrdinalIgnoreCase))
-            {
-                var people = sameFirstName.ToList();
-                var letters = 1;
-                var longest = people.Max(p => p.LastName.Length);
-                while (people.Count > 1 && letters < longest
-                    && people.GroupBy(p => Left(p.LastName, letters), StringComparer.OrdinalIgnoreCase).Any(g => g.Count() > 1))
-                    letters++;
-                Name(people, p => people.Count == 1 ? First(p) : $"{First(p)} {Left(p.LastName, letters)}".Trim());
-            }
-            return names;
-        }
+        // A Scout given as one piece (no first name or surname) is named by that.
+        private static string FirstNameShown(ReadyMemberInput member) =>
+            member.FirstName == "" && member.LastName == "" ? member.MemberName : member.FirstName;
 
         private static string BadgeName(AchievementRecord record)
         {

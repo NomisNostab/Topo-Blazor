@@ -271,12 +271,12 @@ namespace TopoReportFunctionTest
             ReadyMemberInput Person(string first, string last) => new ReadyMemberInput { MemberId = first + last, FirstName = first, LastName = last, MemberName = first + " " + last };
             var members = new[] { Person("Sam", "Smith"), Person("Sam", "Stone"), Person("Sam", "Brown"), Person("Ava", "Lee"), Person("Zoe", "Hall"), Person("Zoe", "Hall") };
 
-            var short_ = ReadyToSubmitBuilder.DisplayNames(members, false);
+            var short_ = MemberNames.GetDisplayNames(members, m => m.FirstName, m => m.LastName, false);
             CollectionAssert.AreEqual(
                 new[] { "Sam Sm", "Sam St", "Sam Br", "Ava", "Zoe Hall (1)", "Zoe Hall (2)" },
                 members.Select(m => short_[m]).ToList());
 
-            var full = ReadyToSubmitBuilder.DisplayNames(members, true);
+            var full = MemberNames.GetDisplayNames(members, m => m.FirstName, m => m.LastName, true);
             CollectionAssert.AreEqual(
                 new[] { "Sam Smith", "Sam Stone", "Sam Brown", "Ava Lee", "Zoe Hall (1)", "Zoe Hall (2)" },
                 members.Select(m => full[m]).ToList());

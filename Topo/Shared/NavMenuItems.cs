@@ -69,6 +69,7 @@ namespace Topo.Shared
                 new("SIA", "sia", "oi-clipboard"),
                 new("Milestone", "milestone", "oi-flag"),
                 new("Additional Awards", "awards", "oi-shield"),
+                new("Ready to Submit", "readytosubmit", "oi-share"),
             }),
             new("Reports", NavAudience.Leader, new NavItem[]
             {
@@ -79,7 +80,6 @@ namespace Topo.Shared
                 new("Approvals", "approvals/approvals", "oi-thumb-up"),
                 new("Personal Progress", "progress/progress", "oi-person"),
                 new("Scouting History", "scoutinghistory/member", "oi-clock", ActivePrefix: "scoutinghistory"),
-                new("Ready to Submit", "readytosubmit", "oi-share"),
             }),
             new("Tools", NavAudience.Leader, new NavItem[]
             {
