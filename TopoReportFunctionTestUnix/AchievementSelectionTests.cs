@@ -54,6 +54,24 @@ namespace TopoReportFunctionTest
         }
 
         [TestMethod]
+        public void PeakAwardDateIsTerrainsOwnDateOfTheLatestAwardedRecordAndNullWhenThereIsNone()
+        {
+            PeakAwardResult Peak(string status, DateTime entered, string dateAwarded) => new PeakAwardResult { section = "scout", status = status, status_updated = entered, date_awarded = dateAwarded };
+            var results = new[]
+            {
+                Peak("awarded", new DateTime(2023, 1, 1, 9, 0, 0), "2022-06-01"),
+                // re-saved later; Terrain's own date is still the one to show
+                Peak("awarded", new DateTime(2024, 5, 10, 9, 0, 0), "2024-03-02"),
+                Peak("in_progress", new DateTime(2025, 1, 1), "")
+            };
+
+            Assert.AreEqual(new DateTime(2024, 3, 2), AchievementSelection.LatestAwardedPeakDate(results, "scout"));
+            // no date of Terrain's own: when the record last changed
+            Assert.AreEqual(new DateTime(2023, 1, 1, 9, 0, 0), AchievementSelection.LatestAwardedPeakDate(new[] { Peak("awarded", new DateTime(2023, 1, 1, 9, 0, 0), "") }, "scout"));
+            Assert.IsNull(AchievementSelection.LatestAwardedPeakDate(new[] { Peak("in_progress", new DateTime(2025, 1, 1), "") }, "scout"));
+        }
+
+        [TestMethod]
         public void AnAwardedMilestoneBeatsALaterInProgressDuplicateInEitherOrder()
         {
             var awarded = Milestone(1, "awarded", new DateTime(2023, 1, 1));

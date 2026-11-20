@@ -326,16 +326,16 @@ namespace Topo.Services
             var peakAward = new PeakAward();
 
             var courseReflectionResultModel = await _terrainAPIService.GetCourseReflectionResultsForMember(memberid);
-            peakAward.PersonalDevelopmentCourse = AchievementSelection.LatestAwardedPeak(courseReflectionResultModel.results, _storageService.Section)?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.PersonalDevelopmentCourse = AchievementSelection.LatestAwardedPeakDate(courseReflectionResultModel.results, _storageService.Section)?.ToString("dd/MM/yy") ?? "";
 
             var adventurousJourneyResultModel = await _terrainAPIService.GetAdventurousJourneyResultsForMember(memberid);
-            peakAward.AdventurousJourney = AchievementSelection.LatestAwardedPeak(adventurousJourneyResultModel.results, _storageService.Section)?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.AdventurousJourney = AchievementSelection.LatestAwardedPeakDate(adventurousJourneyResultModel.results, _storageService.Section)?.ToString("dd/MM/yy") ?? "";
 
             var personalReflectionResultModel = await _terrainAPIService.GetPersonalReflectionResultsForMember(memberid);
-            peakAward.PersonalReflection = AchievementSelection.LatestAwardedPeak(personalReflectionResultModel.results, _storageService.Section)?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.PersonalReflection = AchievementSelection.LatestAwardedPeakDate(personalReflectionResultModel.results, _storageService.Section)?.ToString("dd/MM/yy") ?? "";
 
             var peakAwardResultModel = await _terrainAPIService.GetPeakAwardResultsForMember(memberid);
-            peakAward.Awarded = AchievementSelection.LatestAwardedPeak(peakAwardResultModel.results, _storageService.Section)?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.Awarded = AchievementSelection.LatestAwardedPeakDate(peakAwardResultModel.results, _storageService.Section)?.ToString("dd/MM/yy") ?? "";
 
             return peakAward;
         }
