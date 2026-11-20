@@ -1,14 +1,14 @@
-@page "/program/proposed"
+@page "/programideas/proposed"
 @inherits Controller.ProgramProposedController
 @using Topo.Model.Program
 
 <PageTitle>Topo / Proposed Activities</PageTitle>
 
 <div class="mt-3 mb-3 row">
-    <h2>Program @GroupName</h2>
+    <h2>Proposed Activities @GroupName</h2>
 </div>
 
-<ProgramSubNav />
+<ProgramIdeasSubNav />
 
 <p class="text-muted">The activities the unit's youth have proposed in Terrain, waiting to be planned. This only reads them; to plan or remove one, use Terrain.
     "Run before" counts events on the calendars selected in Terrain, from the date chosen up to today. Names count as the same activity when one has all the main words of the other, so "Origami" matches "Origami Night"; open a row to see what was counted.</p>
@@ -34,7 +34,7 @@
 
 @if (NoUnit)
 {
-    <div class="mb-3">Choose a unit on the Calendar tab to see the activities its youth have proposed.</div>
+    <div class="mb-3">Choose a unit on the Program page to see the activities its youth have proposed.</div>
 }
 else if (Loading)
 {

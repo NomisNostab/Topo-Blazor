@@ -1,0 +1,10 @@
+@* Tab bar shared by Program Ideas and Proposed Activities. Match="NavLinkMatch.All" on "programideas" stops it
+   staying highlighted on the Proposed Activities page too (its URL starts with "programideas/..."). *@
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+        <NavLink class="nav-link" href="programideas" Match="NavLinkMatch.All">Program Ideas</NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink class="nav-link" href="programideas/proposed">Proposed Activities</NavLink>
+    </li>
+</ul>
