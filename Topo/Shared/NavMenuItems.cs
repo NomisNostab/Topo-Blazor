@@ -72,8 +72,8 @@ namespace Topo.Shared
             }),
             new("Reports", NavAudience.Leader, new NavItem[]
             {
-                new("Members", "members", "oi-people", Match: NavLinkMatch.All),
-                new("Program", "program", "oi-calendar", Match: NavLinkMatch.All),
+                new("Members", "members", "oi-people"),
+                new("Program", "program", "oi-calendar"),
                 new("Logbook", "logbook", "oi-book"),
                 new("Wallchart", "wallchart", "oi-bar-chart"),
                 new("Approvals", "approvals/approvals", "oi-thumb-up"),
@@ -82,9 +82,9 @@ namespace Topo.Shared
             }),
             new("Tools", NavAudience.Leader, new NavItem[]
             {
-                new("Patrol Planner", "members/patrolplanner", "oi-random"),
+                new("Patrol Planner", "patrolplanner", "oi-random"),
                 new("Sign In Sheet", "signinsheet", "oi-pencil"),
-                new("Program Ideas", "program/ideas", "oi-lightbulb"),
+                new("Program Ideas", "programideas", "oi-lightbulb"),
             }),
             new("Settings", NavAudience.SignedIn, new NavItem[]
             {
