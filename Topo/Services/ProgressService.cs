@@ -36,12 +36,12 @@ namespace Topo.Services
 
             progressDetailsPageViewModel.IntroToScoutingDate = await GetIntroToScouting(memberId);
             var introToSectionDate = await GetIntroToSection(memberId);
-            progressDetailsPageViewModel.IntroToSectionDate = introToSectionDate.ToString("dd/MM/yyyy");
+            progressDetailsPageViewModel.IntroToSectionDate = introToSectionDate?.ToString("dd/MM/yyyy") ?? "";
             progressDetailsPageViewModel.Milestones = await GetMilestoneSummaries(memberId);
             progressDetailsPageViewModel.OASSummaries = await GetOASSummaries(memberId);
             await _terrainAPIService.RevokeAssumedProfiles();
             await _terrainAPIService.AssumeProfile(memberId);
-            progressDetailsPageViewModel.Stats = await GetStats(memberId, introToSectionDate);
+            progressDetailsPageViewModel.Stats = await GetStats(memberId, introToSectionDate ?? new DateTime());
             await _terrainAPIService.RevokeAssumedProfiles();
             progressDetailsPageViewModel.SIASummaries = await GetSIASummaries(memberId);
             progressDetailsPageViewModel.PeakAward = await GetPeakAwardSummary(memberId);
@@ -62,9 +62,10 @@ namespace Topo.Services
             return introToScoutingDate;
         }
 
-        private async Task<DateTime> GetIntroToSection(string memberId)
+        // Null when the Scout has no awarded Introduction to Section in this section, so the page shows nothing rather than 01/01/0001
+        private async Task<DateTime?> GetIntroToSection(string memberId)
         {
-            var introToSectionDate = new DateTime();
+            DateTime? introToSectionDate = null;
             var introToSection = await _terrainAPIService.GetIntroductionToSectionResultsForMember(memberId);
             var result = AchievementSelection.LatestAwardedIntro(introToSection.results, _storageService.Section);
             if (result != null)
