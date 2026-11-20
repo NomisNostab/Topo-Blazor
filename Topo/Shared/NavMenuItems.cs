@@ -69,6 +69,7 @@ namespace Topo.Shared
                 new("SIA", "sia", "oi-clipboard"),
                 new("Milestone", "milestone", "oi-flag"),
                 new("Additional Awards", "awards", "oi-shield"),
+                new("Ready to Submit", "readytosubmit", "oi-share"),
             }),
             new("Reports", NavAudience.Leader, new NavItem[]
             {

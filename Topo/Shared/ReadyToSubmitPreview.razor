@@ -1,0 +1,112 @@
+@using Topo.Model.ReadyToSubmit
+
+@* What the downloaded report will list: the badges that are ready Scout by Scout, then (when asked for) the stages waiting only on
+   the Scout's logbook tick and the stages a few ticks short, each as it is printed, on a page of its own. *@
+@if (Report.Items.Count == 0)
+{
+    <div class="text-muted">
+        @(Report.Categories.Count == 0 ? "Tick at least one kind of badge." : $"Nothing is waiting to be sent, from the {Report.MembersChecked} Scouts checked.")
+    </div>
+}
+
+@if (Report.Ready.Count > 0)
+{
+    <div class="mb-2">
+        <strong>@Report.Ready.Count @(Report.Ready.Count == 1 ? "badge" : "badges")</strong> ready to send, for
+        @Report.Ready.Select(i => i.MemberId).Distinct().Count() of @Report.MembersChecked Scouts
+    </div>
+    <table class="table table-sm table-striped">
+        <thead>
+            <tr><th>Scout</th><th>Badge</th><th>Waiting</th><th>Last updated</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var scout in Report.Ready.GroupBy(i => i.MemberId))
+            {
+                var first = true;
+                foreach (var item in scout)
+                {
+                    <tr>
+                        <td>@(first ? item.MemberName : "")</td>
+                        <td>@item.Badge</td>
+                        <td>@item.Waiting</td>
+                        <td>@item.LastUpdated.ToString("d MMM yyyy")</td>
+                    </tr>
+                    first = false;
+                }
+            }
+        </tbody>
+    </table>
+}
+
+@if (Report.LogbookTickOptional)
+{
+    <div class="mt-4 mb-2"><strong>Only the Scout's logbook tick left</strong> (@Report.LogbookOnly.Count)</div>
+    @if (Report.LogbookOnly.Count == 0)
+    {
+        <div class="text-muted">None.</div>
+    }
+    else
+    {
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr><th>Scout</th><th>Badge</th><th>Last updated</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Report.LogbookOnly)
+                {
+                    <tr><td>@item.MemberName</td><td>@item.Badge</td><td>@item.LastUpdated.ToString("d MMM yyyy")</td></tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+@if (Report.MaxTicksShort > 0)
+{
+    var badges = Report.NearlyThereByBadge();
+    <div class="mt-4 mb-2">
+        <strong>Nearly there: up to @Report.MaxTicksShort @(Report.MaxTicksShort == 1 ? "tick" : "ticks") short</strong> (@Report.NearlyThere.Count)
+        <span class="text-muted">&ndash; a grid for each badge, in the wall chart's order and lowest level first: a Scout's open boxes are what is still to tick off, the grey ones are done.</span>
+    </div>
+    @if (badges.Count == 0)
+    {
+        <div class="text-muted">None.</div>
+    }
+    @foreach (var badge in badges)
+    {
+        <div class="mt-3 mb-1"><strong>@badge.Badge</strong> <span class="text-muted">&ndash; @badge.Scouts.Count @(badge.Scouts.Count == 1 ? "Scout" : "Scouts")</span></div>
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered align-middle w-auto">
+                <thead>
+                    <tr>
+                        <th class="align-bottom">Still to tick off</th>
+                        <th class="align-bottom text-center">Scouts</th>
+                        @{ var nameHeight = Math.Clamp(badge.Scouts.Max(s => s.MemberName.Length) * 0.6 + 1.2, 3.5, 7).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture); }
+                        @foreach (var scout in badge.Scouts)
+                        {
+                            <th class="text-center" style="writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; height: @(nameHeight)rem;">@scout.MemberName</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var requirement in badge.Requirements)
+                    {
+                        <tr>
+                            <td style="max-width: 32rem;">@requirement.Label</td>
+                            <td class="text-center">@requirement.Scouts</td>
+                            @foreach (var scout in badge.Scouts)
+                            {
+                                <td style="min-width: 2rem; @(badge.IsMissing(scout, requirement) ? "" : "background-color: #d0d0d0;")" title="@(badge.IsMissing(scout, requirement) ? scout.MemberName + ": still to tick off" : "")"></td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+@code {
+    [Parameter]
+    public ReadyToSubmitReport Report { get; set; } = new ReadyToSubmitReport();
+}
