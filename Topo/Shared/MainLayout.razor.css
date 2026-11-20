@@ -64,10 +64,9 @@ main {
         position: sticky;
         top: 0;
         transition: width 0.15s ease-in-out;
-        /* When there are enough nav links to exceed one viewport height (e.g. the full leader
-           menu), scroll them inside this box instead of letting them overflow past its bottom
-           edge onto the page's plain white background - see issue #197. */
-        overflow-y: auto;
+        /* Not scrollable itself: the nav links scroll inside .nav-scroll-area (see NavMenu.razor.css), which
+           fits the viewport, so a scrollbar here would be a second one. It also has to stay visible so the
+           collapse toggle can sit over its right edge. See issue #197. */
     }
 
     .sidebar.icon-only {
