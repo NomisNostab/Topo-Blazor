@@ -69,10 +69,10 @@ namespace Topo.Services
             }
 
             // one Scout: the Reading line names them the short way, as the reports do
-            var shortNames = SiaProgressBuilder.ShortNames(members);
+            var shortNames = MemberNames.GetDisplayNames(members, m => m.first_name, m => m.last_name, false);
             for (var i = 0; i < members.Count; i++)
             {
-                progress?.Invoke($"{(shortNames.TryGetValue(members[i].id, out var shortName) ? shortName : members[i].first_name)} ({i + 1} of {members.Count})");
+                progress?.Invoke($"{(shortNames.TryGetValue(members[i], out var shortName) ? shortName : members[i].first_name)} ({i + 1} of {members.Count})");
                 input.Members.Add(MemberInput(members[i], await _terrainAPIService.GetSIAResultsForMember(members[i].id)));
             }
 

@@ -256,18 +256,19 @@ namespace TopoReportFunctionTest
         public void TheReadingLineNamesScoutsTheShortWay()
         {
             MemberListModel Scout(string id, string first, string last) => new MemberListModel { id = id, first_name = first, last_name = last };
-            var names = SiaProgressBuilder.ShortNames(new[]
+            var scouts = new[]
             {
                 Scout("1", "Amy", "Chen"), Scout("2", "Sam", "Brown"), Scout("3", "Sam", "Black"), Scout("4", "Pat", "Lee"), Scout("5", "Pat", "Lee"), Scout("6", "Eve", "")
-            });
+            };
+            var names = MemberNames.GetDisplayNames(scouts, m => m.first_name, m => m.last_name, false);
 
-            Assert.AreEqual("Amy", names["1"]); // a first name that is not shared stands alone
-            Assert.AreEqual("Sam Br", names["2"]); // shared ones get letters of the surname until they differ
-            Assert.AreEqual("Sam Bl", names["3"]);
-            Assert.AreEqual("Pat Lee (1)", names["4"]); // the same name twice is numbered
-            Assert.AreEqual("Pat Lee (2)", names["5"]);
-            Assert.AreEqual("Eve", names["6"]);
-            Assert.AreEqual(0, SiaProgressBuilder.ShortNames(new List<MemberListModel>()).Count);
+            Assert.AreEqual("Amy", names[scouts[0]]); // a first name that is not shared stands alone
+            Assert.AreEqual("Sam Br", names[scouts[1]]); // shared ones get letters of the surname until they differ
+            Assert.AreEqual("Sam Bl", names[scouts[2]]);
+            Assert.AreEqual("Pat Lee (1)", names[scouts[3]]); // the same name twice is numbered
+            Assert.AreEqual("Pat Lee (2)", names[scouts[4]]);
+            Assert.AreEqual("Eve", names[scouts[5]]);
+            Assert.AreEqual(0, MemberNames.GetDisplayNames(new List<MemberListModel>(), m => m.first_name, m => m.last_name, false).Count);
         }
 
         [TestMethod]
