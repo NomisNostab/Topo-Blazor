@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using Topo.Model;
+using System.Globalization;
 using Topo.Model.Approvals;
 using Topo.Model.SIA;
 
@@ -35,7 +36,7 @@ namespace Topo.Services
                             area = myTI.ToTitleCase(r.answers.special_interest_area_selection.Replace("sia_", "").Replace("_", " ")),
                             projectName = r.answers.project_name,
                             status = myTI.ToTitleCase(r.status.Replace("_", " ")),
-                            statusUpdated = r.status_updated,
+                            statusUpdated = AwardDate.Resolve(r.date_awarded, r.imported?.date_awarded, r.status_updated),
                             achievement_id = r.id
                         })
                         .ToList();
