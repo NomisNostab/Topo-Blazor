@@ -16,8 +16,8 @@ namespace Topo.Services
         public Task<List<EventListModel>> GetEventsForDates(DateTime fromDate, DateTime toDate);
         public Task<EventListModel> GetAttendanceForEvent(string eventId);
         public Task<AttendanceReportModel> GenerateAttendanceReportData(DateTime fromDate, DateTime toDate, string[] selectedCalendars);
-        public Task<List<MemberListModel>> GetInviteesForEvent(string eventId, SignInSheetOptions? options = null);
-        public Task<List<MemberListModel>> GetMembersForScope(SignInSheetOptions options);
+        public Task<List<MemberListModel>> GetInviteesForEvent(string eventId, IEnumerable<string> unitIds);
+        public Task<List<MemberListModel>> GetMembersForUnits(IEnumerable<string> unitIds);
         public Task<List<ProgramIdeaItemModel>?> GetProgramIdeas(DateTime fromDate, DateTime? highlightFromDate, string[] selectedCalendars);
         public Task<List<ProposedActivityModel>?> GetProposedActivities(DateTime? since = null);
     }
@@ -167,30 +167,10 @@ namespace Topo.Services
             return new List<EventListModel>();
         }
 
-        // Unit-wide and group-wide events both build their roster from whichever units the options
-        // scope selects (default: just the current unit); patrol and member events already name
-        // exactly who's invited, so the scope doesn't apply to them.
-        private List<string> ResolveUnitIdsForScope(SignInSheetOptions options)
+        // Unit-wide and group-wide events invite everyone in the units given (the units the sheet is for); patrol and member
+        // events already name exactly who's invited, so the units don't apply to them.
+        public async Task<List<MemberListModel>> GetInviteesForEvent(string eventId, IEnumerable<string> unitIds)
         {
-            var units = _storageService.Units ?? new Dictionary<string, string>();
-            switch (options.SectionsScope)
-            {
-                case SignInSectionsScope.WholeGroup:
-                    return units.Keys.ToList();
-                case SignInSectionsScope.ChooseSections:
-                    var unitSections = _storageService.UnitSections ?? new Dictionary<string, string>();
-                    return unitSections
-                        .Where(us => options.SelectedSections.Contains(us.Value, StringComparer.OrdinalIgnoreCase))
-                        .Select(us => us.Key)
-                        .ToList();
-                default:
-                    return new List<string> { _storageService.UnitId };
-            }
-        }
-
-        public async Task<List<MemberListModel>> GetInviteesForEvent(string eventId, SignInSheetOptions? options = null)
-        {
-            options ??= new SignInSheetOptions();
             List<MemberListModel> members = new List<MemberListModel>();
             var getEventResultModel = await _terrainAPIService.GetEventAsync(eventId);
             if (getEventResultModel != null && getEventResultModel.invitees.Length != 0)
@@ -198,7 +178,7 @@ namespace Topo.Services
                 var inviteeType = getEventResultModel.invitees[0].invitee_type;
                 if (inviteeType != "patrol" && inviteeType != "member")
                 {
-                    members = await GetMembersForScope(options);
+                    members = await GetMembersForUnits(unitIds);
                 }
                 if (inviteeType == "patrol")
                 {
@@ -224,12 +204,12 @@ namespace Topo.Services
             return members;
         }
 
-        // Everyone in the units the options select: the selected unit, the whole group or chosen sections.
-        public async Task<List<MemberListModel>> GetMembersForScope(SignInSheetOptions options)
+        // Everyone in the units given, in the order given
+        public async Task<List<MemberListModel>> GetMembersForUnits(IEnumerable<string> unitIds)
         {
             var members = new List<MemberListModel>();
             var unitSections = _storageService.UnitSections ?? new Dictionary<string, string>();
-            foreach (var unitId in ResolveUnitIdsForScope(options))
+            foreach (var unitId in unitIds)
             {
                 // copies, so the section is not written onto the unit's cached member list
                 var unitMembers = (await _memberService.GetMembersAsync(unitId)).Select(m => m.Clone()).ToList();
