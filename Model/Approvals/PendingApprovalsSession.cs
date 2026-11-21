@@ -1,29 +1,29 @@
 namespace Topo.Model.Approvals
 {
-    // The state of one walk through the pending approvals: where the leader is, what they have done, and what is left.
-    // It holds no Terrain calls. The page hands CompleteAsync the call that does the write, and the walk only moves on
+    // The state of one pass through the pending approvals: where the leader is, what they have done, and what is left.
+    // It holds no Terrain calls. The page hands CompleteAsync the call that does the write, and the session only moves on
     // when that call says it worked.
     //
     // The queue keeps its order. Skipping moves on and leaves the item pending, Back returns to the nearest earlier item
-    // that is still pending, and an item that has been actioned is gone for good. Past the last item the walk reaches its
+    // that is still pending, and an item that has been actioned is gone for good. Past the last item the session reaches its
     // end: if items were skipped they are still waiting (Restart goes back to the first of them), otherwise it is all done.
-    public class ApprovalWalkthrough
+    public class PendingApprovalsSession
     {
         private enum ItemState { Pending, Done, Gone }
 
-        private readonly List<ApprovalWalkItem> _items;
+        private readonly List<PendingApprovalItem> _items;
         private readonly List<ItemState> _states;
-        private readonly List<(ApprovalWalkItem Item, ApprovalAction Action)> _completed = new();
+        private readonly List<(PendingApprovalItem Item, ApprovalAction Action)> _completed = new();
         private int _index;
 
-        public ApprovalWalkthrough(IEnumerable<ApprovalWalkItem> items)
+        public PendingApprovalsSession(IEnumerable<PendingApprovalItem> items)
         {
             _items = items.ToList();
             _states = _items.Select(_ => ItemState.Pending).ToList();
         }
 
-        // The item being shown, or null once the walk has reached its end or been stopped
-        public ApprovalWalkItem? Current => !IsStopped && _index < _items.Count ? _items[_index] : null;
+        // The item being shown, or null once the session has reached its end or been stopped
+        public PendingApprovalItem? Current => !IsStopped && _index < _items.Count ? _items[_index] : null;
 
         public bool IsStopped { get; private set; }
 
@@ -35,7 +35,7 @@ namespace Topo.Model.Approvals
         // Items still waiting for an answer: the one being shown and anything skipped or not yet reached
         public int RemainingCount => _states.Count(s => s == ItemState.Pending);
 
-        // For "3 of 12". Items another leader dealt with while the walk was open are not counted in either number.
+        // For "3 of 12". Items another leader dealt with while the page was open are not counted in either number.
         public int Total => _states.Count(s => s != ItemState.Gone);
 
         public int Position
@@ -52,9 +52,9 @@ namespace Topo.Model.Approvals
         // Skipped and still waiting: pending items before the one shown. At the end, every pending item.
         public int SkippedCount => _states.Take(Math.Min(_index, _items.Count)).Count(s => s == ItemState.Pending);
 
-        public IReadOnlyList<(ApprovalWalkItem Item, ApprovalAction Action)> Completed => _completed;
+        public IReadOnlyList<(PendingApprovalItem Item, ApprovalAction Action)> Completed => _completed;
 
-        public IEnumerable<ApprovalWalkItem> Remaining => _items.Where((_, i) => _states[i] == ItemState.Pending);
+        public IEnumerable<PendingApprovalItem> Remaining => _items.Where((_, i) => _states[i] == ItemState.Pending);
 
         // Why the last attempt did not go through; cleared by the next action that does
         public string? LastError { get; private set; }
@@ -84,10 +84,10 @@ namespace Topo.Model.Approvals
             _index = NextPendingIndex(0);
         }
 
-        // Does the action on the current item. When the call says it worked the item is done and the walk moves to the
+        // Does the action on the current item. When the call says it worked the item is done and the session moves to the
         // next one; when it says it did not, or throws, nothing changes and LastError says why.
         // Returns whether it worked.
-        public async Task<bool> CompleteAsync(ApprovalAction action, Func<ApprovalWalkItem, ApprovalAction, Task<string?>> perform)
+        public async Task<bool> CompleteAsync(ApprovalAction action, Func<PendingApprovalItem, ApprovalAction, Task<string?>> perform)
         {
             var item = Current;
             if (item == null) return false;
@@ -116,7 +116,7 @@ namespace Topo.Model.Approvals
         }
 
         // After re-reading Terrain's pending list: items that are no longer on it were dealt with elsewhere (another leader,
-        // or by hand in Terrain). They are dropped from the walk. Returns how many were dropped.
+        // or by hand in Terrain). They are dropped from the session. Returns how many were dropped.
         public int Reconcile(IEnumerable<string> stillPendingSubmissionIds)
         {
             var pending = new HashSet<string>(stillPendingSubmissionIds);

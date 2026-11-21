@@ -1,11 +1,11 @@
-@page "/approvals/walkthrough"
-@inherits Controller.ApprovalsWalkthroughController
+@page "/approvals/pending"
+@inherits Controller.PendingApprovalsController
 @using Topo.Model.Approvals
 
-<PageTitle>Topo / Approvals walk-through</PageTitle>
+<PageTitle>Topo / Pending Approvals</PageTitle>
 
 <div class="mt-3 mb-3 row">
-    <h2>Approvals walk-through @GroupName</h2>
+    <h2>Pending Approvals @GroupName</h2>
 </div>
 
 <div class="form-group mb-3 row">
@@ -35,7 +35,7 @@ else if (!string.IsNullOrEmpty(LoadError))
     <div class="alert alert-danger" role="alert">@LoadError</div>
     <button type="button" class="btn btn-primary" @onclick="StartClick">Try again</button>
 }
-else if (Walk == null)
+else if (Session == null)
 {
     <p>Select a unit to go through its pending approvals one at a time.</p>
 }
@@ -44,7 +44,7 @@ else
     @if (NotActionable > 0)
     {
         <p class="text-muted" id="not-actionable">
-            @NotActionable pending @(NotActionable == 1 ? "request is" : "requests are") not in this walk-through: @(NotActionable == 1 ? "it is" : "they are") your own, or you have already actioned @(NotActionable == 1 ? "it" : "them").
+            @NotActionable pending @(NotActionable == 1 ? "request is" : "requests are") not listed here: @(NotActionable == 1 ? "it is" : "they are") your own, or you have already actioned @(NotActionable == 1 ? "it" : "them").
         </p>
     }
 
@@ -53,11 +53,11 @@ else
         <div class="alert @(NoticeIsWarning ? "alert-warning" : "alert-success")" role="status" id="notice">@Notice</div>
     }
 
-    @if (Walk.IsStopped)
+    @if (Session.IsStopped)
     {
         <div class="card mb-3" id="stopped">
             <div class="card-body">
-                <h4 class="card-title">Walk-through stopped</h4>
+                <h4 class="card-title">Session-through stopped</h4>
                 <p>@Summary()</p>
                 <p>
                     <button type="button" class="btn btn-primary" @onclick="StartClick">Start again</button>
@@ -66,16 +66,16 @@ else
             </div>
         </div>
     }
-    else if (Walk.Current == null)
+    else if (Session.Current == null)
     {
         <div class="card mb-3" id="end">
             <div class="card-body">
-                @if (Walk.IsAllDone && Walk.Completed.Count == 0)
+                @if (Session.IsAllDone && Session.Completed.Count == 0)
                 {
                     <h4 class="card-title">Nothing to approve</h4>
                     <p>There are no pending requests for you to approve or send back in this unit.</p>
                 }
-                else if (Walk.IsAllDone)
+                else if (Session.IsAllDone)
                 {
                     <h4 class="card-title">All done</h4>
                     <p>@Summary()</p>
@@ -83,20 +83,20 @@ else
                 else
                 {
                     <h4 class="card-title">End of the list</h4>
-                    <p>@Summary() @Walk.RemainingCount @(Walk.RemainingCount == 1 ? "request was" : "requests were") skipped and @(Walk.RemainingCount == 1 ? "is" : "are") still pending.</p>
+                    <p>@Summary() @Session.RemainingCount @(Session.RemainingCount == 1 ? "request was" : "requests were") skipped and @(Session.RemainingCount == 1 ? "is" : "are") still pending.</p>
                     <ul>
-                        @foreach (var item in Walk.Remaining)
+                        @foreach (var item in Session.Remaining)
                         {
                             <li>@item.MemberName, @item.AchievementName (@item.SubmissionType)</li>
                         }
                     </ul>
                 }
                 <p>
-                    @if (!Walk.IsAllDone)
+                    @if (!Session.IsAllDone)
                     {
                         <button type="button" class="btn btn-primary" @onclick="RestartClick">Go through the skipped ones</button>
                     }
-                    @if (Walk.CanGoBack)
+                    @if (Session.CanGoBack)
                     {
                         <button type="button" class="btn btn-outline-secondary" @onclick="BackClick">Back</button>
                     }
@@ -108,15 +108,15 @@ else
     }
     else
     {
-        var item = Walk.Current;
+        var item = Session.Current;
         <div class="mb-2" id="progress">
-            <strong>@Walk.Position of @Walk.Total</strong>
-            @if (Walk.SkippedCount > 0)
+            <strong>@Session.Position of @Session.Total</strong>
+            @if (Session.SkippedCount > 0)
             {
-                <span class="text-muted"> (@Walk.SkippedCount skipped)</span>
+                <span class="text-muted"> (@Session.SkippedCount skipped)</span>
             }
             <div class="progress" style="height: 6px;">
-                <div class="progress-bar" role="progressbar" style="width: @(100 * Walk.Completed.Count / Math.Max(1, Walk.Completed.Count + Walk.RemainingCount))%"></div>
+                <div class="progress-bar" role="progressbar" style="width: @(100 * Session.Completed.Count / Math.Max(1, Session.Completed.Count + Session.RemainingCount))%"></div>
             </div>
         </div>
 
@@ -253,7 +253,7 @@ else
         }
 
         <div class="mb-3">
-            <button type="button" class="btn btn-outline-secondary" id="back" @onclick="BackClick" disabled="@(!Walk.CanGoBack || IsBusy)">Back</button>
+            <button type="button" class="btn btn-outline-secondary" id="back" @onclick="BackClick" disabled="@(!Session.CanGoBack || IsBusy)">Back</button>
             <button type="button" class="btn btn-outline-secondary" id="skip" @onclick="SkipClick" disabled="@IsBusy">Skip</button>
             <button type="button" class="btn btn-outline-danger" id="stop" @onclick="StopClick" disabled="@IsBusy">Stop</button>
         </div>
@@ -264,7 +264,7 @@ else
     // What has been done so far, in words
     private string Summary()
     {
-        var done = Walk!.Completed;
+        var done = Session!.Completed;
         if (done.Count == 0) return "Nothing was actioned.";
         var parts = done
             .GroupBy(c => c.Action.PastTense)

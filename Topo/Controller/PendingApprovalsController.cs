@@ -4,7 +4,7 @@ using Topo.Services;
 
 namespace Topo.Controller
 {
-    public class ApprovalsWalkthroughController : ComponentBase
+    public class PendingApprovalsController : ComponentBase
     {
         [Inject]
         public StorageService _storageService { get; set; } = default!;
@@ -20,7 +20,7 @@ namespace Topo.Controller
         public string UnitId = string.Empty;
 
         // null until the pending approvals have been read
-        public ApprovalWalkthrough? Walk;
+        public PendingApprovalsSession? Session;
         public int NotActionable;
         public bool IsLoading;
         public bool IsBusy;
@@ -59,7 +59,7 @@ namespace Topo.Controller
         {
             UnitId = e.Value?.ToString() ?? "";
             _storageService.UnitId = UnitId;
-            Walk = null;
+            Session = null;
             ClearChoice();
             Notice = null;
             LoadError = null;
@@ -77,15 +77,15 @@ namespace Topo.Controller
             var unitId = UnitId;
             try
             {
-                var queue = await _approvalsService.GetWalkthroughQueue(unitId);
+                var queue = await _approvalsService.GetPendingApprovalQueue(unitId);
                 // The leader picked another unit while this was loading; that unit's own read decides what is shown
                 if (unitId != UnitId) return;
-                Walk = new ApprovalWalkthrough(queue.Items);
+                Session = new PendingApprovalsSession(queue.Items);
                 NotActionable = queue.NotActionable;
             }
             catch (Exception)
             {
-                Walk = null;
+                Session = null;
                 LoadError = "Could not read the pending approvals from Terrain.";
             }
             finally
@@ -99,28 +99,28 @@ namespace Topo.Controller
         internal async Task SkipClick()
         {
             if (IsBusy) return;
-            Walk?.Skip();
+            Session?.Skip();
             await AfterMove();
         }
 
         internal async Task BackClick()
         {
             if (IsBusy) return;
-            Walk?.Back();
+            Session?.Back();
             await AfterMove();
         }
 
         internal async Task StopClick()
         {
             if (IsBusy) return;
-            Walk?.Stop();
+            Session?.Stop();
             await AfterMove();
         }
 
         internal async Task RestartClick()
         {
             if (IsBusy) return;
-            Walk?.Restart();
+            Session?.Restart();
             await AfterMove();
         }
 
@@ -138,7 +138,7 @@ namespace Topo.Controller
         // Checks the action and puts up the confirmation; nothing goes to Terrain yet
         private void Choose(ApprovalAction action)
         {
-            var item = Walk?.Current;
+            var item = Session?.Current;
             if (item == null || IsBusy) return;
             ValidationMessage = action.Problem(item.SubmissionType);
             Pending = ValidationMessage == null ? action : null;
@@ -153,20 +153,20 @@ namespace Topo.Controller
         // The leader has confirmed: write to Terrain, and only if that worked check it has left the pending list and move on
         internal async Task ConfirmClick()
         {
-            var walk = Walk;
+            var session = Session;
             var action = Pending;
-            var item = walk?.Current;
-            if (walk == null || action == null || item == null || IsBusy) return;
+            var item = session?.Current;
+            if (session == null || action == null || item == null || IsBusy) return;
 
             IsBusy = true;
             try
             {
-                var worked = await walk.CompleteAsync(action, (i, a) => _approvalsService.PerformAction(i.SubmissionId, a));
+                var worked = await session.CompleteAsync(action, (i, a) => _approvalsService.PerformAction(i.SubmissionId, a));
                 if (!worked)
                 {
                     // Stay on this item with what was typed still there, so the leader can try again or skip it
                     Pending = null;
-                    Notice = $"{walk.LastError} Nothing was changed in Terrain.";
+                    Notice = $"{session.LastError} Nothing was changed in Terrain.";
                     NoticeIsWarning = true;
                     return;
                 }
@@ -174,7 +174,7 @@ namespace Topo.Controller
                 ClearChoice();
                 Notice = $"{action.PastTense}: {item.MemberName}, {item.AchievementName}.";
                 NoticeIsWarning = false;
-                await CheckAgainstTerrain(walk, item);
+                await CheckAgainstTerrain(session, item);
             }
             finally
             {
@@ -184,7 +184,7 @@ namespace Topo.Controller
         }
 
         // Reads the pending list again, to drop what others have dealt with and to check Terrain took the write
-        private async Task CheckAgainstTerrain(ApprovalWalkthrough walk, ApprovalWalkItem done)
+        private async Task CheckAgainstTerrain(PendingApprovalsSession session, PendingApprovalItem done)
         {
             try
             {
@@ -203,7 +203,7 @@ namespace Topo.Controller
                 }
                 // An empty list while items are still waiting is more likely a failed read than every one having been
                 // dealt with elsewhere, so it is not used to drop them; Terrain refuses a write on one that is gone anyway
-                var dropped = stillPending.Count > 0 || walk.RemainingCount == 0 ? walk.Reconcile(stillPending) : 0;
+                var dropped = stillPending.Count > 0 || session.RemainingCount == 0 ? session.Reconcile(stillPending) : 0;
                 if (dropped > 0)
                     Notice += $" {dropped} other {(dropped == 1 ? "request was" : "requests were")} dealt with elsewhere and left out.";
             }
@@ -220,7 +220,7 @@ namespace Topo.Controller
 
         private async Task LoadDetails()
         {
-            var item = Walk?.Current;
+            var item = Session?.Current;
             if (item == null)
             {
                 _detailsFor = null;
@@ -248,7 +248,7 @@ namespace Topo.Controller
             }
 
             // The leader moved on while this was loading; that move reads its own
-            if (Walk?.Current?.SubmissionId != item.SubmissionId) return;
+            if (Session?.Current?.SubmissionId != item.SubmissionId) return;
             Details = details;
             DetailsFailed = details == null;
             DetailsLoading = false;

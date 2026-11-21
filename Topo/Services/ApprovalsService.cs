@@ -14,10 +14,10 @@ namespace Topo.Services
         public Task UpdateApproval(string unitId, ApprovalsListModel approval);
         public Task<string> DownloadApprovalList(string unitId);
         public Task UploadApprovals(IBrowserFile approvalsFile, string unitId);
-        public Task<ApprovalWalkQueue> GetWalkthroughQueue(string unitId);
+        public Task<PendingApprovalQueue> GetPendingApprovalQueue(string unitId);
         public Task<List<PendingSubmission>> GetPendingSubmissions(string unitId);
         public Task<string?> PerformAction(string submissionId, ApprovalAction action);
-        public Task<SubmissionDetails?> GetSubmissionDetails(ApprovalWalkItem item);
+        public Task<SubmissionDetails?> GetSubmissionDetails(PendingApprovalItem item);
     }
     public class ApprovalsService : IApprovalsService
     {
@@ -325,10 +325,10 @@ namespace Topo.Services
 
         // Terrain's own Approvals page lists these same pending submissions. A 403 from Terrain means no access to the
         // unit's submissions, which the call returns as an empty list.
-        public async Task<ApprovalWalkQueue> GetWalkthroughQueue(string unitId)
+        public async Task<PendingApprovalQueue> GetPendingApprovalQueue(string unitId)
         {
             var pending = await _terrainAPIService.GetUnitApprovals(unitId, "pending");
-            return ApprovalWalkQueue.FromPending(pending.results, CurrentMemberId(unitId));
+            return PendingApprovalQueue.FromPending(pending.results, CurrentMemberId(unitId));
         }
 
         public async Task<List<PendingSubmission>> GetPendingSubmissions(string unitId)
@@ -347,7 +347,7 @@ namespace Topo.Services
 
         // What Terrain's "View submission details" shows: the youth member's answers laid out on the template they filled in.
         // Null when Terrain's record or template could not be read.
-        public async Task<SubmissionDetails?> GetSubmissionDetails(ApprovalWalkItem item)
+        public async Task<SubmissionDetails?> GetSubmissionDetails(PendingApprovalItem item)
         {
             var achievementJson = await _terrainAPIService.GetMemberAchievementJson(item.MemberId, item.AchievementId, item.AchievementType);
             string? template = null;

@@ -3,9 +3,9 @@ using Topo.Model.Approvals;
 namespace TopoReportFunctionTest
 {
     [TestClass]
-    public class ApprovalWalkthroughTests
+    public class PendingApprovalsTests
     {
-        private static ApprovalWalkItem Item(string id, string type = "review") => new()
+        private static PendingApprovalItem Item(string id, string type = "review") => new()
         {
             SubmissionId = id,
             SubmissionType = type,
@@ -13,37 +13,37 @@ namespace TopoReportFunctionTest
             AchievementName = "Milestone 1"
         };
 
-        private static ApprovalWalkthrough Walk(params string[] ids) => new(ids.Select(i => Item(i)));
+        private static PendingApprovalsSession Session(params string[] ids) => new(ids.Select(i => Item(i)));
 
-        private static string? Ids(ApprovalWalkthrough walk) => walk.Current?.SubmissionId;
+        private static string? Ids(PendingApprovalsSession session) => session.Current?.SubmissionId;
 
-        private static Task<string?> Works(ApprovalWalkItem item, ApprovalAction action) => Task.FromResult<string?>(null);
+        private static Task<string?> Works(PendingApprovalItem item, ApprovalAction action) => Task.FromResult<string?>(null);
 
-        private static Task<string?> Fails(ApprovalWalkItem item, ApprovalAction action) => Task.FromResult<string?>("Terrain said no.");
+        private static Task<string?> Fails(PendingApprovalItem item, ApprovalAction action) => Task.FromResult<string?>("Terrain said no.");
 
         // ---- order, position and progress ----
 
         [TestMethod]
         public void ItStartsOnTheFirstItemWithProgressOfOneOfTheTotal()
         {
-            var walk = Walk("a", "b", "c");
-            Assert.AreEqual("a", Ids(walk));
-            Assert.AreEqual(1, walk.Position);
-            Assert.AreEqual(3, walk.Total);
-            Assert.IsFalse(walk.CanGoBack);
+            var session = Session("a", "b", "c");
+            Assert.AreEqual("a", Ids(session));
+            Assert.AreEqual(1, session.Position);
+            Assert.AreEqual(3, session.Total);
+            Assert.IsFalse(session.CanGoBack);
         }
 
         [TestMethod]
         public async Task ActioningItemsVisitsThemInOrderAndProgressFollows()
         {
-            var walk = Walk("a", "b", "c");
-            Assert.IsTrue(await walk.CompleteAsync(ApprovalAction.Approve(""), Works));
-            Assert.AreEqual("b", Ids(walk));
-            Assert.AreEqual(2, walk.Position);
-            Assert.AreEqual(3, walk.Total);
-            Assert.IsTrue(await walk.CompleteAsync(ApprovalAction.RequestImprovement("redo"), Works));
-            Assert.AreEqual("c", Ids(walk));
-            Assert.AreEqual(3, walk.Position);
+            var session = Session("a", "b", "c");
+            Assert.IsTrue(await session.CompleteAsync(ApprovalAction.Approve(""), Works));
+            Assert.AreEqual("b", Ids(session));
+            Assert.AreEqual(2, session.Position);
+            Assert.AreEqual(3, session.Total);
+            Assert.IsTrue(await session.CompleteAsync(ApprovalAction.RequestImprovement("redo"), Works));
+            Assert.AreEqual("c", Ids(session));
+            Assert.AreEqual(3, session.Position);
         }
 
         [TestMethod]
@@ -56,7 +56,7 @@ namespace TopoReportFunctionTest
                 Pending("s2b", "Ben", "Young", new DateTime(2026, 11, 2)),
                 Pending("s2a", "Alf", "Young", new DateTime(2026, 11, 2)),
             };
-            var queue = ApprovalWalkQueue.FromPending(pending, "leader");
+            var queue = PendingApprovalQueue.FromPending(pending, "leader");
             CollectionAssert.AreEqual(new[] { "s1", "s2a", "s2b", "s3" }, queue.Items.Select(i => i.SubmissionId).ToArray());
         }
 
@@ -65,26 +65,26 @@ namespace TopoReportFunctionTest
         [TestMethod]
         public void SkippingMovesOnAndLeavesTheItemPending()
         {
-            var walk = Walk("a", "b", "c");
-            walk.Skip();
-            Assert.AreEqual("b", Ids(walk));
-            Assert.AreEqual(2, walk.Position);
-            Assert.AreEqual(3, walk.RemainingCount);
-            Assert.AreEqual(1, walk.SkippedCount);
-            Assert.AreEqual(0, walk.Completed.Count);
+            var session = Session("a", "b", "c");
+            session.Skip();
+            Assert.AreEqual("b", Ids(session));
+            Assert.AreEqual(2, session.Position);
+            Assert.AreEqual(3, session.RemainingCount);
+            Assert.AreEqual(1, session.SkippedCount);
+            Assert.AreEqual(0, session.Completed.Count);
         }
 
         [TestMethod]
         public async Task SkippedItemsAreStepsOverWhenMovingOnAfterAnAction()
         {
-            var walk = Walk("a", "b", "c", "d");
-            walk.Skip();                      // a skipped, now on b
-            await walk.CompleteAsync(ApprovalAction.Approve(""), Works); // b done, on c
-            walk.Skip();                      // c skipped, now on d
-            await walk.CompleteAsync(ApprovalAction.Approve(""), Works); // d done, end
-            Assert.IsNull(walk.Current);
-            Assert.IsTrue(walk.IsAtEnd);
-            CollectionAssert.AreEqual(new[] { "a", "c" }, walk.Remaining.Select(i => i.SubmissionId).ToArray());
+            var session = Session("a", "b", "c", "d");
+            session.Skip();                      // a skipped, now on b
+            await session.CompleteAsync(ApprovalAction.Approve(""), Works); // b done, on c
+            session.Skip();                      // c skipped, now on d
+            await session.CompleteAsync(ApprovalAction.Approve(""), Works); // d done, end
+            Assert.IsNull(session.Current);
+            Assert.IsTrue(session.IsAtEnd);
+            CollectionAssert.AreEqual(new[] { "a", "c" }, session.Remaining.Select(i => i.SubmissionId).ToArray());
         }
 
         // ---- back ----
@@ -92,40 +92,40 @@ namespace TopoReportFunctionTest
         [TestMethod]
         public void BackGoesToTheEarlierItemAndForwardAgainIsSkip()
         {
-            var walk = Walk("a", "b", "c");
-            walk.Skip();
-            walk.Skip();
-            Assert.AreEqual("c", Ids(walk));
-            walk.Back();
-            Assert.AreEqual("b", Ids(walk));
-            walk.Back();
-            Assert.AreEqual("a", Ids(walk));
-            Assert.IsFalse(walk.CanGoBack);
-            walk.Back();
-            Assert.AreEqual("a", Ids(walk), "Back on the first item stays put");
+            var session = Session("a", "b", "c");
+            session.Skip();
+            session.Skip();
+            Assert.AreEqual("c", Ids(session));
+            session.Back();
+            Assert.AreEqual("b", Ids(session));
+            session.Back();
+            Assert.AreEqual("a", Ids(session));
+            Assert.IsFalse(session.CanGoBack);
+            session.Back();
+            Assert.AreEqual("a", Ids(session), "Back on the first item stays put");
         }
 
         [TestMethod]
         public async Task BackNeverReturnsToAnItemThatWasActioned()
         {
-            var walk = Walk("a", "b", "c");
-            await walk.CompleteAsync(ApprovalAction.Approve(""), Works); // a done
-            walk.Skip();                                                  // b skipped, on c
-            walk.Back();
-            Assert.AreEqual("b", Ids(walk));
-            Assert.IsFalse(walk.CanGoBack, "a is done, so there is nothing before b");
+            var session = Session("a", "b", "c");
+            await session.CompleteAsync(ApprovalAction.Approve(""), Works); // a done
+            session.Skip();                                                  // b skipped, on c
+            session.Back();
+            Assert.AreEqual("b", Ids(session));
+            Assert.IsFalse(session.CanGoBack, "a is done, so there is nothing before b");
         }
 
         [TestMethod]
         public void BackFromTheEndReturnsToTheLastItemStillWaiting()
         {
-            var walk = Walk("a", "b");
-            walk.Skip();
-            walk.Skip();
-            Assert.IsTrue(walk.IsAtEnd);
-            Assert.IsTrue(walk.CanGoBack);
-            walk.Back();
-            Assert.AreEqual("b", Ids(walk));
+            var session = Session("a", "b");
+            session.Skip();
+            session.Skip();
+            Assert.IsTrue(session.IsAtEnd);
+            Assert.IsTrue(session.CanGoBack);
+            session.Back();
+            Assert.AreEqual("b", Ids(session));
         }
 
         // ---- the end ----
@@ -133,49 +133,49 @@ namespace TopoReportFunctionTest
         [TestMethod]
         public async Task ActioningEverythingEndsAllDone()
         {
-            var walk = Walk("a", "b");
-            await walk.CompleteAsync(ApprovalAction.Approve(""), Works);
-            await walk.CompleteAsync(ApprovalAction.RequestImprovement(""), Works);
-            Assert.IsNull(walk.Current);
-            Assert.IsTrue(walk.IsAtEnd);
-            Assert.IsTrue(walk.IsAllDone);
-            Assert.AreEqual(2, walk.Completed.Count);
-            Assert.IsFalse(walk.CanGoBack);
+            var session = Session("a", "b");
+            await session.CompleteAsync(ApprovalAction.Approve(""), Works);
+            await session.CompleteAsync(ApprovalAction.RequestImprovement(""), Works);
+            Assert.IsNull(session.Current);
+            Assert.IsTrue(session.IsAtEnd);
+            Assert.IsTrue(session.IsAllDone);
+            Assert.AreEqual(2, session.Completed.Count);
+            Assert.IsFalse(session.CanGoBack);
         }
 
         [TestMethod]
         public void AnEmptyQueueIsAlreadyAtTheEnd()
         {
-            var walk = Walk();
-            Assert.IsNull(walk.Current);
-            Assert.IsTrue(walk.IsAtEnd);
-            Assert.IsTrue(walk.IsAllDone);
-            Assert.AreEqual(0, walk.Total);
+            var session = Session();
+            Assert.IsNull(session.Current);
+            Assert.IsTrue(session.IsAtEnd);
+            Assert.IsTrue(session.IsAllDone);
+            Assert.AreEqual(0, session.Total);
         }
 
         [TestMethod]
         public void SkippingTheLastItemEndsWithTheSkippedOnesStillPendingAndRestartReturnsToThem()
         {
-            var walk = Walk("a", "b");
-            walk.Skip();
-            walk.Skip();
-            Assert.IsTrue(walk.IsAtEnd);
-            Assert.IsFalse(walk.IsAllDone);
-            Assert.AreEqual(2, walk.RemainingCount);
-            walk.Restart();
-            Assert.AreEqual("a", Ids(walk));
+            var session = Session("a", "b");
+            session.Skip();
+            session.Skip();
+            Assert.IsTrue(session.IsAtEnd);
+            Assert.IsFalse(session.IsAllDone);
+            Assert.AreEqual(2, session.RemainingCount);
+            session.Restart();
+            Assert.AreEqual("a", Ids(session));
         }
 
         [TestMethod]
         public async Task CompleteAndSkipDoNothingOnceThereIsNoCurrentItem()
         {
-            var walk = Walk();
+            var session = Session();
             var called = false;
-            Assert.IsFalse(await walk.CompleteAsync(ApprovalAction.Approve(""), (i, a) => { called = true; return Task.FromResult<string?>(null); }));
+            Assert.IsFalse(await session.CompleteAsync(ApprovalAction.Approve(""), (i, a) => { called = true; return Task.FromResult<string?>(null); }));
             Assert.IsFalse(called);
-            walk.Skip();
-            walk.Back();
-            Assert.IsNull(walk.Current);
+            session.Skip();
+            session.Back();
+            Assert.IsNull(session.Current);
         }
 
         // ---- stop ----
@@ -183,29 +183,29 @@ namespace TopoReportFunctionTest
         [TestMethod]
         public async Task StoppingKeepsWhatWasDoneAndShowsNoCurrentItem()
         {
-            var walk = Walk("a", "b", "c");
-            await walk.CompleteAsync(ApprovalAction.Approve(""), Works);
-            walk.Stop();
-            Assert.IsTrue(walk.IsStopped);
-            Assert.IsNull(walk.Current);
-            Assert.IsFalse(walk.IsAtEnd, "stopped is not the same as reaching the end");
-            Assert.AreEqual(1, walk.Completed.Count);
-            Assert.AreEqual(2, walk.RemainingCount);
-            Assert.IsFalse(walk.CanGoBack);
+            var session = Session("a", "b", "c");
+            await session.CompleteAsync(ApprovalAction.Approve(""), Works);
+            session.Stop();
+            Assert.IsTrue(session.IsStopped);
+            Assert.IsNull(session.Current);
+            Assert.IsFalse(session.IsAtEnd, "stopped is not the same as reaching the end");
+            Assert.AreEqual(1, session.Completed.Count);
+            Assert.AreEqual(2, session.RemainingCount);
+            Assert.IsFalse(session.CanGoBack);
         }
 
         [TestMethod]
         public async Task NothingIsSentOnceStopped()
         {
-            var walk = Walk("a", "b");
-            walk.Stop();
+            var session = Session("a", "b");
+            session.Stop();
             var called = false;
-            Assert.IsFalse(await walk.CompleteAsync(ApprovalAction.Approve(""), (i, a) => { called = true; return Task.FromResult<string?>(null); }));
+            Assert.IsFalse(await session.CompleteAsync(ApprovalAction.Approve(""), (i, a) => { called = true; return Task.FromResult<string?>(null); }));
             Assert.IsFalse(called);
-            walk.Skip();
-            walk.Back();
-            walk.Restart();
-            Assert.IsNull(walk.Current);
+            session.Skip();
+            session.Back();
+            session.Restart();
+            Assert.IsNull(session.Current);
         }
 
         // ---- a failed action ----
@@ -213,43 +213,43 @@ namespace TopoReportFunctionTest
         [TestMethod]
         public async Task AFailedActionDoesNotAdvanceAndSaysWhy()
         {
-            var walk = Walk("a", "b");
-            Assert.IsFalse(await walk.CompleteAsync(ApprovalAction.Approve("ok"), Fails));
-            Assert.AreEqual("a", Ids(walk));
-            Assert.AreEqual(1, walk.Position);
-            Assert.AreEqual(2, walk.RemainingCount);
-            Assert.AreEqual(0, walk.Completed.Count);
-            Assert.AreEqual("Terrain said no.", walk.LastError);
+            var session = Session("a", "b");
+            Assert.IsFalse(await session.CompleteAsync(ApprovalAction.Approve("ok"), Fails));
+            Assert.AreEqual("a", Ids(session));
+            Assert.AreEqual(1, session.Position);
+            Assert.AreEqual(2, session.RemainingCount);
+            Assert.AreEqual(0, session.Completed.Count);
+            Assert.AreEqual("Terrain said no.", session.LastError);
         }
 
         [TestMethod]
         public async Task AThrownErrorCountsAsAFailureToo()
         {
-            var walk = Walk("a", "b");
-            var worked = await walk.CompleteAsync(ApprovalAction.Approve(""), (i, a) => throw new InvalidOperationException("boom"));
+            var session = Session("a", "b");
+            var worked = await session.CompleteAsync(ApprovalAction.Approve(""), (i, a) => throw new InvalidOperationException("boom"));
             Assert.IsFalse(worked);
-            Assert.AreEqual("a", Ids(walk));
-            Assert.AreEqual(0, walk.Completed.Count);
-            Assert.AreEqual("boom", walk.LastError);
+            Assert.AreEqual("a", Ids(session));
+            Assert.AreEqual(0, session.Completed.Count);
+            Assert.AreEqual("boom", session.LastError);
         }
 
         [TestMethod]
         public async Task ARetryAfterAFailureCanWorkAndClearsTheError()
         {
-            var walk = Walk("a", "b");
-            await walk.CompleteAsync(ApprovalAction.Approve(""), Fails);
-            Assert.IsTrue(await walk.CompleteAsync(ApprovalAction.Approve(""), Works));
-            Assert.AreEqual("b", Ids(walk));
-            Assert.IsNull(walk.LastError);
+            var session = Session("a", "b");
+            await session.CompleteAsync(ApprovalAction.Approve(""), Fails);
+            Assert.IsTrue(await session.CompleteAsync(ApprovalAction.Approve(""), Works));
+            Assert.AreEqual("b", Ids(session));
+            Assert.IsNull(session.LastError);
         }
 
         [TestMethod]
         public async Task TheActionIsDoneToTheCurrentItemAndEachItemIsSentOnce()
         {
-            var walk = Walk("a", "b", "c");
-            walk.Skip();
+            var session = Session("a", "b", "c");
+            session.Skip();
             var sent = new List<string>();
-            await walk.CompleteAsync(ApprovalAction.RequestImprovement("more"), (i, a) => { sent.Add($"{i.SubmissionId}:{a.Outcome}"); return Task.FromResult<string?>(null); });
+            await session.CompleteAsync(ApprovalAction.RequestImprovement("more"), (i, a) => { sent.Add($"{i.SubmissionId}:{a.Outcome}"); return Task.FromResult<string?>(null); });
             CollectionAssert.AreEqual(new[] { "b:rejected" }, sent);
         }
 
@@ -258,24 +258,24 @@ namespace TopoReportFunctionTest
         [TestMethod]
         public void ItemsNoLongerPendingInTerrainAreDroppedAndProgressShrinks()
         {
-            var walk = Walk("a", "b", "c", "d");
-            var dropped = walk.Reconcile(new[] { "a", "d" });
+            var session = Session("a", "b", "c", "d");
+            var dropped = session.Reconcile(new[] { "a", "d" });
             Assert.AreEqual(2, dropped);
-            Assert.AreEqual(2, walk.Total);
-            Assert.AreEqual("a", Ids(walk));
-            walk.Skip();
-            Assert.AreEqual("d", Ids(walk));
-            Assert.AreEqual(2, walk.Position);
+            Assert.AreEqual(2, session.Total);
+            Assert.AreEqual("a", Ids(session));
+            session.Skip();
+            Assert.AreEqual("d", Ids(session));
+            Assert.AreEqual(2, session.Position);
         }
 
         [TestMethod]
-        public void IfTheItemOnScreenWasDealtWithElsewhereTheWalkMovesToTheNext()
+        public void IfTheItemOnScreenWasDealtWithElsewhereTheListMovesToTheNext()
         {
-            var walk = Walk("a", "b");
-            walk.Reconcile(new[] { "b" });
-            Assert.AreEqual("b", Ids(walk));
-            Assert.AreEqual(1, walk.Position);
-            Assert.AreEqual(1, walk.Total);
+            var session = Session("a", "b");
+            session.Reconcile(new[] { "b" });
+            Assert.AreEqual("b", Ids(session));
+            Assert.AreEqual(1, session.Position);
+            Assert.AreEqual(1, session.Total);
         }
 
         // ---- what Terrain is sent ----
@@ -337,20 +337,20 @@ namespace TopoReportFunctionTest
             var alreadyDone = Pending("s2", "Amy", "Brown", new DateTime(2026, 11, 2), actionedBy: "leader");
             var offered = Pending("s3", "Ben", "Green", new DateTime(2026, 11, 3), actionedBy: "someone-else");
 
-            var queue = ApprovalWalkQueue.FromPending(new[] { own, alreadyDone, offered }, "leader");
+            var queue = PendingApprovalQueue.FromPending(new[] { own, alreadyDone, offered }, "leader");
 
             CollectionAssert.AreEqual(new[] { "s3" }, queue.Items.Select(i => i.SubmissionId).ToArray());
             Assert.AreEqual(2, queue.NotActionable);
         }
 
         [TestMethod]
-        public void AwardRequestsAreLeftOutOfTheWalk()
+        public void AwardRequestsAreLeftOutOfPendingApprovals()
         {
             var review = Pending("s1", "Amy", "Brown", new DateTime(2026, 11, 1));
             var approval = Pending("s2", "Ben", "Green", new DateTime(2026, 11, 2), type: "approval");
             var award = Pending("s3", "Cal", "White", new DateTime(2026, 11, 3), type: "award");
 
-            var queue = ApprovalWalkQueue.FromPending(new[] { review, approval, award }, "leader");
+            var queue = PendingApprovalQueue.FromPending(new[] { review, approval, award }, "leader");
 
             CollectionAssert.AreEqual(new[] { "s1", "s2" }, queue.Items.Select(i => i.SubmissionId).ToArray());
             Assert.AreEqual(0, queue.NotActionable);
@@ -359,7 +359,7 @@ namespace TopoReportFunctionTest
         [TestMethod]
         public void WhenTheLeadersOwnIdIsUnknownNothingIsOffered()
         {
-            var queue = ApprovalWalkQueue.FromPending(new[] { Pending("s1", "Amy", "Brown", new DateTime(2026, 11, 1)) }, null);
+            var queue = PendingApprovalQueue.FromPending(new[] { Pending("s1", "Amy", "Brown", new DateTime(2026, 11, 1)) }, null);
             Assert.AreEqual(0, queue.Items.Count);
             Assert.AreEqual(1, queue.NotActionable);
         }
@@ -373,7 +373,7 @@ namespace TopoReportFunctionTest
             result.submission.actioned_by[0].member_last_name = "Jones";
             result.submission.actioned_by[0].comment = "Looks good";
 
-            var item = ApprovalWalkQueue.FromPending(new[] { result }, "leader").Items.Single();
+            var item = PendingApprovalQueue.FromPending(new[] { result }, "leader").Items.Single();
 
             Assert.AreEqual("Amy Brown", item.MemberName);
             Assert.AreEqual("Milestone 2", item.AchievementName);
