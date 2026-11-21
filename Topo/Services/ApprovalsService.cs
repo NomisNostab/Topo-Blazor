@@ -14,15 +14,23 @@ namespace Topo.Services
         public Task UpdateApproval(string unitId, ApprovalsListModel approval);
         public Task<string> DownloadApprovalList(string unitId);
         public Task UploadApprovals(IBrowserFile approvalsFile, string unitId);
+        public Task<ApprovalWalkQueue> GetWalkthroughQueue(string unitId);
+        public Task<List<PendingSubmission>> GetPendingSubmissions(string unitId);
+        public Task<string?> PerformAction(string submissionId, ApprovalAction action);
+        public Task<SubmissionDetails?> GetSubmissionDetails(ApprovalWalkItem item);
     }
     public class ApprovalsService : IApprovalsService
     {
         private readonly IMembersService _memberService;
         private readonly ITerrainAPIService _terrainAPIService;
         private readonly ILocalStorageService _localStorageService;
+        private readonly StorageService _storageService;
+        // Template files do not change while the page is open
+        private readonly Dictionary<string, string> _templates = new();
 
-        public ApprovalsService(IMembersService membersService, ITerrainAPIService terrainAPIService, ILocalStorageService localStorageService)
+        public ApprovalsService(IMembersService membersService, ITerrainAPIService terrainAPIService, ILocalStorageService localStorageService, StorageService storageService)
         {
+            _storageService = storageService;
             _memberService = membersService;
             _terrainAPIService = terrainAPIService;
             _localStorageService = localStorageService;
@@ -172,35 +180,8 @@ namespace Topo.Services
                     Console.Write($"Type:{item.achievement.type} ");
                     approvalItem.achievement_type = item.achievement.type;
                     approvalItem.achievement_id = item.achievement.id;
-                    switch (item.achievement.type)
-                    {
-                        case "special_interest_area":
-                            var sia_area = string.IsNullOrEmpty(item.achievement.achievement_meta?.sia_area) ? "special_interest_area" : item.achievement.achievement_meta?.sia_area;
-                            Console.Write($"Area:{sia_area} ");
-                            approvalItem.achievement_name = $"{sia_area.Replace("_", " ")}";
-                            break;
-                        case "milestone":
-                            Console.Write($"Stage:{item.achievement.achievement_meta?.stage} ");
-                            approvalItem.achievement_name = $"milestone {item.achievement.achievement_meta?.stage}";
-                            break;
-                        case "outdoor_adventure_skill":
-                            Console.Write($"Stream:{item.achievement.achievement_meta?.stream} Stage:{item.achievement.achievement_meta?.stage} ");
-                            approvalItem.achievement_name = item.achievement.achievement_meta?.stream == item.achievement.achievement_meta?.branch
-                                    ? $"OAS {item.achievement.achievement_meta?.stream} {item.achievement.achievement_meta?.stage}"
-                                    : $"OAS {item.achievement.achievement_meta?.stream} {item.achievement.achievement_meta?.branch} {item.achievement.achievement_meta?.stage}";
-                            break;
-                        case "intro_section":
-                            approvalItem.achievement_name = "intro to section";
-                            break;
-                        case "intro_scouting":
-                            approvalItem.achievement_name = "intro to scouting";
-                            break;
-                        default:
-                            approvalItem.achievement_name = item.achievement.type.Replace("_", " ");
-                            break;
-                    }
+                    approvalItem.achievement_name = ApprovalNames.AchievementName(item.achievement.type, item.achievement.achievement_meta);
                     TextInfo myTI = new CultureInfo("en-AU", false).TextInfo;
-                    approvalItem.achievement_name = myTI.ToTitleCase(approvalItem.achievement_name);
 
                     approvalItem.member_id = item.member.id;
                     approvalItem.member_first_name = item.member.first_name;
@@ -340,6 +321,77 @@ namespace Topo.Services
             {
                 return;
             }
+        }
+
+        // Terrain's own Approvals page lists these same pending submissions. A 403 from Terrain means no access to the
+        // unit's submissions, which the call returns as an empty list.
+        public async Task<ApprovalWalkQueue> GetWalkthroughQueue(string unitId)
+        {
+            var pending = await _terrainAPIService.GetUnitApprovals(unitId, "pending");
+            return ApprovalWalkQueue.FromPending(pending.results, CurrentMemberId(unitId));
+        }
+
+        public async Task<List<PendingSubmission>> GetPendingSubmissions(string unitId)
+        {
+            var pending = await _terrainAPIService.GetUnitApprovals(unitId, "pending");
+            var me = CurrentMemberId(unitId);
+            return pending.results
+                .Select(r => new PendingSubmission(r.submission.id, !string.IsNullOrEmpty(me) && r.submission.actioned_by.Any(a => a.member_id == me)))
+                .ToList();
+        }
+
+        public Task<string?> PerformAction(string submissionId, ApprovalAction action)
+        {
+            return _terrainAPIService.PostSubmissionAssessment(submissionId, action);
+        }
+
+        // What Terrain's "View submission details" shows: the youth member's answers laid out on the template they filled in.
+        // Null when Terrain's record or template could not be read.
+        public async Task<SubmissionDetails?> GetSubmissionDetails(ApprovalWalkItem item)
+        {
+            var achievementJson = await _terrainAPIService.GetMemberAchievementJson(item.MemberId, item.AchievementId, item.AchievementType);
+            string? template = null;
+            int? version = null;
+            try
+            {
+                using var document = System.Text.Json.JsonDocument.Parse(achievementJson);
+                var root = document.RootElement;
+                if (root.TryGetProperty("template", out var t) && t.ValueKind == System.Text.Json.JsonValueKind.String)
+                    template = t.GetString();
+                if (root.TryGetProperty("version", out var v) && v.TryGetInt32(out var n))
+                    version = n;
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                return null;
+            }
+            if (string.IsNullOrEmpty(template)) return null;
+
+            // Terrain reads an OAS stage's latest template; the others, the version the record was filled in on. If that
+            // file is not there, the latest.
+            string? templateJson = null;
+            if (item.AchievementType != "outdoor_adventure_skill" && version != null)
+                templateJson = await GetTemplate($"{template}/{version}.json");
+            templateJson ??= await GetTemplate($"{template}/latest.json");
+            return SubmissionDetails.Build(templateJson, achievementJson);
+        }
+
+        private async Task<string?> GetTemplate(string path)
+        {
+            if (_templates.TryGetValue(path, out var cached)) return cached;
+            var json = await _terrainAPIService.GetTemplateJson(path);
+            if (!json.TrimStart().StartsWith("{")) return null;
+            _templates[path] = json;
+            return json;
+        }
+
+        // The signed in leader's own member id in that unit, as Terrain knows them
+        private string? CurrentMemberId(string unitId)
+        {
+            return _storageService.GetProfilesResult?.profiles?
+                .Where(p => p.unit?.id == unitId && p.member?.name == (_storageService.MemberName ?? ""))
+                .Select(p => p.member?.id)
+                .FirstOrDefault();
         }
     }
 }
