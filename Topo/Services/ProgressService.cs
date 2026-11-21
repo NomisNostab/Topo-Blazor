@@ -100,7 +100,6 @@ namespace Topo.Services
             foreach (var milestoneResult in AchievementSelection.OnePerMilestoneStage(milestones.results.Where(r => r.section == _storageService.Section)))
             {
                 var participantCount = 0;
-                var assistCount = 0;
                 var leadCount = 0;
                 switch (milestoneResult.achievement_meta.stage)
                 {
@@ -137,12 +136,11 @@ namespace Topo.Services
                 {
                 }
 
-                // Add dummy imported entries
+                // Add dummy imported entries. Assists are no longer a role, so any imported assist counts as a lead.
                 if (milestoneResult.imported != null)
                 {
                     var challengeArea = "";
                     var importedParticipantCount = 0;
-                    var importedAssistCount = 0;
                     var importedLeadCount = 0;
                     for (int c = 0; c < 4; c++)
                     {
@@ -152,43 +150,28 @@ namespace Topo.Services
                             case 0:
                                 challengeArea = "community";
                                 importedParticipantCount = (int)milestoneResult.imported.event_count.participant.community;
-                                importedAssistCount = (int)milestoneResult.imported.event_count.assistant.community;
-                                importedLeadCount = (int)milestoneResult.imported.event_count.leader.community;
+                                importedLeadCount = (int)milestoneResult.imported.event_count.leader.community + (int)milestoneResult.imported.event_count.assistant.community;
                                 break;
                             case 1:
                                 challengeArea = "creative";
                                 importedParticipantCount = (int)milestoneResult.imported.event_count.participant.creative;
-                                importedAssistCount = (int)milestoneResult.imported.event_count.assistant.creative;
-                                importedLeadCount = (int)milestoneResult.imported.event_count.leader.creative;
+                                importedLeadCount = (int)milestoneResult.imported.event_count.leader.creative + (int)milestoneResult.imported.event_count.assistant.creative;
                                 break;
                             case 2:
                                 challengeArea = "personal_growth";
                                 importedParticipantCount = (int)milestoneResult.imported.event_count.participant.personal_growth;
-                                importedAssistCount = (int)milestoneResult.imported.event_count.assistant.personal_growth;
-                                importedLeadCount = (int)milestoneResult.imported.event_count.leader.personal_growth;
+                                importedLeadCount = (int)milestoneResult.imported.event_count.leader.personal_growth + (int)milestoneResult.imported.event_count.assistant.personal_growth;
                                 break;
                             case 3:
                                 challengeArea = "outdoors";
                                 importedParticipantCount = (int)milestoneResult.imported.event_count.participant.outdoors;
-                                importedAssistCount = (int)milestoneResult.imported.event_count.assistant.outdoors;
-                                importedLeadCount = (int)milestoneResult.imported.event_count.leader.outdoors;
+                                importedLeadCount = (int)milestoneResult.imported.event_count.leader.outdoors + (int)milestoneResult.imported.event_count.assistant.outdoors;
                                 break;
                         }
                         var importedDate = MilestoneDates.AwardedDate(milestoneResult);
                         for (int i = 0; i < importedParticipantCount; i++)
                         {
                             milestoneSummary.ParticipateLogs.Add(
-                                new MilestoneLog
-                                {
-                                    ChallengeArea = challengeArea,
-                                    EventName = "Imported",
-                                    EventDate = importedDate
-                                });
-                        }
-
-                        for (int i = 0; i < importedAssistCount; i++)
-                        {
-                            milestoneSummary.AssistLogs.Add(
                                 new MilestoneLog
                                 {
                                     ChallengeArea = challengeArea,
@@ -237,7 +220,7 @@ namespace Topo.Services
                         });
                 }
 
-                var eventCount = milestoneSummary.ParticipateLogs.Count + milestoneSummary.AssistLogs.Count + milestoneSummary.LeadLogs.Count;
+                var eventCount = milestoneSummary.ParticipateLogs.Count + milestoneSummary.LeadLogs.Count;
                 switch (milestoneResult.achievement_meta.stage)
                 {
                     case 1:

@@ -46,7 +46,6 @@ namespace Topo.Services
         {
             intro,
             participate,
-            assist,
             lead,
             oasCore,
             oasLand,
@@ -2275,6 +2274,9 @@ namespace Topo.Services
             sheet.Range[rowNumber, 2, rowNumber, 10].Merge();
             sheet.SetRowHeight(rowNumber, 25);
 
+            // Assists are no longer a role in Terrain; the column only shows when an event in the list still has one
+            var showAssist = eventEntries.Any(e => !string.IsNullOrWhiteSpace(e.Assist));
+
             //Headings
             rowNumber++;
             rowNumber++;
@@ -2305,9 +2307,12 @@ namespace Topo.Services
             columnNumber++;
             sheet.Range[rowNumber, columnNumber].Text = "Lead";
             sheet.Range[rowNumber, columnNumber].BorderAround();
-            columnNumber++;
-            sheet.Range[rowNumber, columnNumber].Text = "Assist";
-            sheet.Range[rowNumber, columnNumber].BorderAround();
+            if (showAssist)
+            {
+                columnNumber++;
+                sheet.Range[rowNumber, columnNumber].Text = "Assist";
+                sheet.Range[rowNumber, columnNumber].BorderAround();
+            }
             columnNumber++;
             sheet.Range[rowNumber, columnNumber].Text = "Duty Patrol";
             sheet.Range[rowNumber, columnNumber].BorderAround();
@@ -2373,9 +2378,12 @@ namespace Topo.Services
                 columnNumber++;
                 sheet.Range[rowNumber, columnNumber].Text = eventEntry.Lead;
                 sheet.Range[rowNumber, columnNumber].BorderAround();
-                columnNumber++;
-                sheet.Range[rowNumber, columnNumber].Text = eventEntry.Assist;
-                sheet.Range[rowNumber, columnNumber].BorderAround();
+                if (showAssist)
+                {
+                    columnNumber++;
+                    sheet.Range[rowNumber, columnNumber].Text = eventEntry.Assist;
+                    sheet.Range[rowNumber, columnNumber].BorderAround();
+                }
                 columnNumber++;
                 sheet.Range[rowNumber, columnNumber].Text = "";
                 sheet.Range[rowNumber, columnNumber].BorderAround();
