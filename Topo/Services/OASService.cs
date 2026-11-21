@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.IO;
+using Topo.Model;
 using Topo.Model.Members;
 using Topo.Model.OAS;
 
@@ -32,11 +33,11 @@ namespace Topo.Services
             if (_storageService.OASStages.Any())
                 return _storageService.OASStages;
             var oasStageList = new List<OASStageListModel>();
-            foreach (var stream in GetOASStreamList())
-            {
-                var stageList = await GetOASStageList(stream.Key);
+            // Each stream's stages are a request of their own. They are read a few at a time instead of one after another, and
+            // joined in the order the streams are listed, so the stage list comes out the same as before.
+            var stageLists = await ReadsAtOnce.SelectAsync(GetOASStreamList().Keys, GetOASStageList);
+            foreach (var stageList in stageLists)
                 oasStageList.AddRange(stageList);
-            }
             _storageService.OASStages = oasStageList;
             return oasStageList;
         }
