@@ -44,6 +44,9 @@ namespace Topo.Services
         public Task<GetAdditionalAwardsSpecificationsResultModel> GetAdditionalAwardSpecifications();
         public Task<GetUnitAchievementsResultModel> GetUnitAdditionalAwardAchievements(string unitId);
         public Task<GetApprovalsResultModel> GetUnitApprovals(string unitId, string status);
+        public Task<string?> PostSubmissionAssessment(string submissionId, ApprovalAction action);
+        public Task<string> GetMemberAchievementJson(string memberId, string achievementId, string achievementType);
+        public Task<string> GetTemplateJson(string path);
         public Task<GetMemberAchievementResultModel> GetMemberAchievementResult(string member_id, string achievement_id, string achievement_type);
         public Task<GetMilestoneResultModel> GetMilestoneResultsForMember(string memberId);
         public Task<GetIntroductionResultsModel> GetIntroductionToScoutingResultsForMember(string memberId);
@@ -444,6 +447,60 @@ namespace Topo.Services
             var getApprovalsResult = DeserializeObject<GetApprovalsResultModel>(result);
 
             return getApprovalsResult ?? new GetApprovalsResultModel();
+        }
+
+        // Approves or sends back a pending submission, as the buttons on Terrain's own Approvals page do.
+        // Terrain answers 204 with no body when it worked. Returns null then, otherwise what went wrong in words for the
+        // leader. Unlike SendRequest this looks at the status, because a write that did not happen must not be taken as done.
+        // The request and response bodies are left out of the log: the comment is the leader's own words about a member.
+        public async Task<string?> PostSubmissionAssessment(string submissionId, ApprovalAction action)
+        {
+            await RefreshTokenAsync();
+
+            var requestUri = $"{achievementsAddress}submissions/{Uri.EscapeDataString(submissionId)}/assessments";
+            try
+            {
+                var httpRequest = new HttpRequestMessage(HttpMethod.Post, requestUri)
+                {
+                    Content = new StringContent(JsonConvert.SerializeObject(action.ToRequestBody()), Encoding.UTF8, "application/json")
+                };
+                httpRequest.Headers.Add("authorization", _storageService?.AuthenticationResult?.IdToken);
+                httpRequest.Headers.Add("accept", "application/json, text/plain, */*");
+
+                var response = await _httpClient.SendAsync(httpRequest);
+                _logger.LogInformation($"Version: {_storageService.Version}; Date: {DateTime.Now.ToString("dd/MM/yyyy : HH:mm:ss")}; Request: POST {requestUri} ({action.Outcome}); StatusCode: {(int)response.StatusCode}");
+                if (response.IsSuccessStatusCode)
+                    return null;
+                return (int)response.StatusCode switch
+                {
+                    401 => "Terrain did not accept your sign in. Sign in again and retry.",
+                    403 => "Terrain says you do not have permission to do this.",
+                    404 => "Terrain could not find this request. It may already have been dealt with.",
+                    _ => $"Terrain did not accept it (status {(int)response.StatusCode})."
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation($"Version: {_storageService.Version}; Date: {DateTime.Now.ToString("dd/MM/yyyy : HH:mm:ss")}; Request: POST {requestUri} ({action.Outcome}); Exception: {ex.Message}");
+                return "Could not reach Terrain. Check your connection and try again.";
+            }
+        }
+
+        // The achievement record as Terrain sends it (answers and uploads included), for the submission details
+        public async Task<string> GetMemberAchievementJson(string memberId, string achievementId, string achievementType)
+        {
+            await RefreshTokenAsync();
+
+            var requestUri = $"{achievementsAddress}members/{Uri.EscapeDataString(memberId)}/achievements/{Uri.EscapeDataString(achievementId)}?type={Uri.EscapeDataString(achievementType)}";
+            return await SendRequest(HttpMethod.Get, requestUri);
+        }
+
+        // A template file such as sia/scout/plan/2.json; a path that does not exist comes back as something that is not JSON
+        public async Task<string> GetTemplateJson(string path)
+        {
+            await RefreshTokenAsync();
+
+            return await SendRequest(HttpMethod.Get, $"{templatesAddress}{path}");
         }
 
         public async Task<GetMemberAchievementResultModel> GetMemberAchievementResult(string member_id, string achievement_id, string achievement_type)
