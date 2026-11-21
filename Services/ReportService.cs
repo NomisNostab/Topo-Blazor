@@ -699,12 +699,18 @@ namespace Topo.Services
                     sheet.SetRowHeight(rowNumber, 62);
             }
 
+            // Names longer than this wrap onto two lines, so the name columns stay narrow enough for a portrait page
+            const int nameWrapChars = 20;
+            const double nameColumnMaxWidth = nameWrapChars * 1.15 + 0.5;
+
             void WriteMembers(IEnumerable<MemberListModel> members)
             {
                 foreach (var member in members)
                 {
                     rowNumber++;
                     sheet.Range[rowNumber, 1].Text = displayNames[member.id];
+                    // a long name wraps onto a second line rather than widening the sheet beyond what fits a portrait page
+                    sheet.Range[rowNumber, 1].CellStyle.WrapText = true;
                     sheet.Range[rowNumber, 2].Text = member.patrol_name;
                     sheet.Range[rowNumber, 3].Text = member.patrol_duty;
                     for (var c = 1; c <= lastColumn; c++)
@@ -712,11 +718,12 @@ namespace Topo.Services
                     if (options.IncludeParticipationColumns)
                     {
                         sheet.Range[rowNumber, participationNameColumn].Text = displayNames[member.id];
+                        sheet.Range[rowNumber, participationNameColumn].CellStyle.WrapText = true;
                         for (var c = participationNameColumn; c <= participationLastColumn; c++)
                             sheet.Range[rowNumber, c].BorderAround();
                     }
                     // taller rows so there is room to write a signature
-                    sheet.SetRowHeight(rowNumber, options.UseTimeInOutSignature ? 24 : 18);
+                    sheet.SetRowHeight(rowNumber, displayNames[member.id].Length > nameWrapChars ? 30 : options.UseTimeInOutSignature ? 24 : 18);
                 }
             }
 
@@ -728,9 +735,14 @@ namespace Topo.Services
             {
                 if (group.Heading != null)
                 {
+                    // each section starts on a new page, so a section is kept on one page when it fits (a longer one runs on to the next)
                     if (group != groups.First())
-                        rowNumber++; // a blank row between sections
-                    rowNumber++;
+                    {
+                        rowNumber++;
+                        sheet.HPageBreaks.Add(sheet.Range[rowNumber, 1]);
+                    }
+                    else
+                        rowNumber++;
                     sheet.Range[rowNumber, 1].Text = group.Heading;
                     sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
                     sheet.Range[rowNumber, 1].CellStyle.Font.Size = 12;
@@ -749,7 +761,7 @@ namespace Topo.Services
             // border to the Role column. So the name and patrol columns are never narrower than that with a little to spare.
             var longestName = memberListModel.Select(m => displayNames[m.id].Length).DefaultIfEmpty(0).Max();
             var longestPatrol = memberListModel.Select(m => (m.patrol_name ?? "").Length).DefaultIfEmpty(0).Max();
-            sheet.SetColumnWidth(1, Math.Max(sheet.GetColumnWidth(1), longestName * 1.15 + 0.5));
+            sheet.SetColumnWidth(1, Math.Min(Math.Max(sheet.GetColumnWidth(1), longestName * 1.15 + 0.5), nameColumnMaxWidth));
             sheet.SetColumnWidth(2, Math.Max(sheet.GetColumnWidth(2), longestPatrol * 1.15 + 0.5));
             const double portraitPageWidth = 97;
             const double landscapePageWidth = 140;
@@ -760,13 +772,14 @@ namespace Topo.Services
             {
                 // autofit sizes the spacer and the sideways-headed tick columns badly
                 sheet.SetColumnWidth(lastColumn + 1, 3);
+                sheet.SetColumnWidth(participationNameColumn, Math.Min(sheet.GetColumnWidth(participationNameColumn), nameColumnMaxWidth));
                 for (var c = participationNameColumn + 1; c <= participationLastColumn; c++)
                     sheet.SetColumnWidth(c, tickColumnWidth);
             }
             if (options.UseTimeInOutSignature)
             {
                 for (var c = attendanceFirstColumn; c <= lastColumn; c++)
-                    sheet.SetColumnWidth(c, (c - attendanceFirstColumn) % 2 == 0 ? 10 : 22);
+                    sheet.SetColumnWidth(c, (c - attendanceFirstColumn) % 2 == 0 ? 8 : 14);
             }
             else
             {
@@ -777,7 +790,10 @@ namespace Topo.Services
             var lastUsedColumn = options.IncludeParticipationColumns ? participationLastColumn : lastColumn;
             for (var c = 1; c <= lastUsedColumn; c++)
                 usedWidth += sheet.GetColumnWidth(c);
-            var portrait = usedWidth <= portraitPageWidth;
+            // portrait where it can be had: a sheet a little wider than the page is shrunk to fit rather than turned sideways,
+            // down to about two thirds of full size, which is still readable
+            const double portraitMaxWidth = portraitPageWidth / 0.68;
+            var portrait = usedWidth <= portraitMaxWidth;
             var spare = (portrait ? portraitPageWidth : landscapePageWidth) - usedWidth;
             if (spare > 0)
             {
