@@ -1,0 +1,57 @@
+@using Topo.Model.SectionReport
+
+@* The badges used part of the section report: one line for each kind of badge, then the badges of that kind one by one. *@
+@if (Badges.AnyUsed)
+{
+    <div class="block">@Title</div>
+    @if (Badges.PeakAwards > 0)
+    {
+        <div class="line"><div class="label">Peak Award</div><div class="detail">@Badges.PeakAwards</div></div>
+    }
+    @if (Badges.MilestonesTotal > 0)
+    {
+        <div class="line"><div class="label">Milestones@(SectionSpecific ? " (Section Specific)" : "")</div><div class="detail">
+            <div>Total: @Badges.MilestonesTotal</div>
+            @foreach (var m in Badges.Milestones) { <div>@m.Name: @m.Count</div> }
+        </div></div>
+    }
+    @if (Badges.OasBadgesTotal > 0)
+    {
+        <div class="line"><div class="label">Outdoor Adventure Skills</div><div class="detail">
+            <div>Badges: @Badges.OasBadgesTotal</div>
+            @foreach (var o in Badges.OasStages) { <div>@o.Stream stage @o.Stage: @o.Count</div> }
+        </div></div>
+    }
+    @if (Badges.SiaTotal > 0)
+    {
+        <div class="line"><div class="label">Special Interest Areas@(SectionSpecific ? " (Section Specific)" : "")</div><div class="detail">
+            <div>Total: @Badges.SiaTotal</div>
+            @foreach (var s in Badges.SiaCategories) { <div>@s.Name: @s.Count</div> }
+        </div></div>
+    }
+    @if (Badges.AdditionalAwardsTotal > 0)
+    {
+        <div class="line"><div class="label">Other badges</div><div class="detail">
+            <div>Total: @Badges.AdditionalAwardsTotal</div>
+            @foreach (var a in Badges.AdditionalAwards) { <div>@a.Name: @a.Count</div> }
+        </div></div>
+    }
+    @if (Badges.InvestitureItems.Count > 0)
+    {
+        <div class="line"><div class="label">For new members</div><div class="detail">
+            @foreach (var i in Badges.InvestitureItems) { <div>@i.Name: @i.Count</div> }
+        </div></div>
+    }
+}
+
+@code {
+    [Parameter]
+    public SectionBadges Badges { get; set; } = new SectionBadges();
+
+    // Milestone and Special Interest Area badges look different in each section, so the group's totals say so
+    [Parameter]
+    public bool SectionSpecific { get; set; }
+
+    [Parameter]
+    public string Title { get; set; } = "Badges used";
+}

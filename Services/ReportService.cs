@@ -1994,18 +1994,24 @@ namespace Topo.Services
                     $"Outdoor Adventure Skill progressions: {badges.OasProgressions}",
                     $"Additional Awards: {badges.AdditionalAwardsTotal}"
                 });
+                BadgesUsed(badges, unitPrefix == "" ? "Badges used" : $"{unitPrefix} badges used");
+            }
+
+            // Each kind of badge, then the badges of that kind one by one
+            void BadgesUsed(SectionBadges badges, string title, bool sectionSpecific = false)
+            {
                 if (!badges.AnyUsed)
                     return;
-                Block(unitPrefix == "" ? "Badges used" : $"{unitPrefix} badges used");
+                Block(title);
                 if (badges.PeakAwards > 0)
                     Row("Peak Award", new[] { badges.PeakAwards.ToString() });
                 if (badges.MilestonesTotal > 0)
-                    Row("Milestones", new[] { $"Total: {badges.MilestonesTotal}" }.Concat(Counts(badges.Milestones)));
+                    Row(sectionSpecific ? "Milestones (Section Specific)" : "Milestones", new[] { $"Total: {badges.MilestonesTotal}" }.Concat(Counts(badges.Milestones)));
                 if (badges.OasBadgesTotal > 0)
                     Row("Outdoor Adventure Skills", new[] { $"Badges: {badges.OasBadgesTotal}" }
                         .Concat(badges.OasStages.Select(o => $"{o.Stream} stage {o.Stage}: {o.Count}")));
                 if (badges.SiaTotal > 0)
-                    Row("Special Interest Areas", new[] { $"Total: {badges.SiaTotal}" }.Concat(Counts(badges.SiaCategories)));
+                    Row(sectionSpecific ? "Special Interest Areas (Section Specific)" : "Special Interest Areas", new[] { $"Total: {badges.SiaTotal}" }.Concat(Counts(badges.SiaCategories)));
                 if (badges.AdditionalAwardsTotal > 0)
                     Row("Other badges", new[] { $"Total: {badges.AdditionalAwardsTotal}" }.Concat(Counts(badges.AdditionalAwards)));
                 if (badges.InvestitureItems.Count > 0)
@@ -2040,18 +2046,12 @@ namespace Topo.Services
                 Row("Awarded in the period", new[]
                 {
                     $"Peak Awards: {report.TotalPeakAwards}",
-                    $"Milestones: {report.TotalMilestones}",
-                    $"Special Interest Areas: {report.TotalSia}",
+                    $"Milestones: {report.TotalMilestones} (Section Specific)",
+                    $"Special Interest Areas: {report.TotalSia} (Section Specific)",
                     $"Outdoor Adventure Skill progressions: {report.TotalOasProgressions}",
                     $"Additional Awards: {report.TotalAdditionalAwards}"
                 });
-                if (report.TotalOasBadges > 0)
-                    Row("Badges needed", new[]
-                    {
-                        $"Outdoor Adventure Skill badges: {report.TotalOasBadges}"
-                    });
-                if (report.TotalInvestitureItems.Count > 0)
-                    Row("For new members", Counts(report.TotalInvestitureItems));
+                BadgesUsed(report.TotalBadges, "Badges needed", sectionSpecific: true);
             }
 
             foreach (var unit in report.Sections)

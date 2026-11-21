@@ -53,26 +53,12 @@
         <div class="line"><div class="label">Leaders</div><div class="detail">@Report.TotalLeaders current @(Report.TotalLeaders == 1 ? "leader" : "leaders")</div></div>
         <div class="line"><div class="label">Awarded in the period</div><div class="detail">
             <div>Peak Awards: @Report.TotalPeakAwards</div>
-            <div>Milestones: @Report.TotalMilestones</div>
-            <div>Special Interest Areas: @Report.TotalSia</div>
+            <div>Milestones: @Report.TotalMilestones (Section Specific)</div>
+            <div>Special Interest Areas: @Report.TotalSia (Section Specific)</div>
             <div>Outdoor Adventure Skill progressions: @Report.TotalOasProgressions</div>
             <div>Additional Awards: @Report.TotalAdditionalAwards</div>
         </div></div>
-        @if (Report.TotalOasBadges > 0)
-        {
-            <div class="line"><div class="label">Badges needed</div><div class="detail">
-                <div>Outdoor Adventure Skill badges: @Report.TotalOasBadges</div>
-            </div></div>
-        }
-        @if (Report.TotalInvestitureItems.Any())
-        {
-            <div class="line"><div class="label">For new members</div><div class="detail">
-                @foreach (var item in Report.TotalInvestitureItems)
-                {
-                    <div>@item.Name: @item.Count</div>
-                }
-            </div></div>
-        }
+        <SectionBadgesUsed Badges="Report.TotalBadges" Title="Badges needed" SectionSpecific="true" />
     }
 
     @foreach (var unit in Report.Sections)
@@ -191,48 +177,7 @@
             <div>Additional Awards: @badges.AdditionalAwardsTotal</div>
         </div></div>
 
-        @if (badges.AnyUsed)
-        {
-            <div class="block">@(Report.IsGroup ? unit.UnitName + ": badges used" : "Badges used")</div>
-            @if (badges.PeakAwards > 0)
-            {
-                <div class="line"><div class="label">Peak Award</div><div class="detail">@badges.PeakAwards</div></div>
-            }
-            @if (badges.MilestonesTotal > 0)
-            {
-                <div class="line"><div class="label">Milestones</div><div class="detail">
-                    <div>Total: @badges.MilestonesTotal</div>
-                    @foreach (var m in badges.Milestones) { <div>@m.Name: @m.Count</div> }
-                </div></div>
-            }
-            @if (badges.OasBadgesTotal > 0)
-            {
-                <div class="line"><div class="label">Outdoor Adventure Skills</div><div class="detail">
-                    <div>Badges: @badges.OasBadgesTotal</div>
-                    @foreach (var o in badges.OasStages) { <div>@o.Stream stage @o.Stage: @o.Count</div> }
-                </div></div>
-            }
-            @if (badges.SiaTotal > 0)
-            {
-                <div class="line"><div class="label">Special Interest Areas</div><div class="detail">
-                    <div>Total: @badges.SiaTotal</div>
-                    @foreach (var s in badges.SiaCategories) { <div>@s.Name: @s.Count</div> }
-                </div></div>
-            }
-            @if (badges.AdditionalAwardsTotal > 0)
-            {
-                <div class="line"><div class="label">Other badges</div><div class="detail">
-                    <div>Total: @badges.AdditionalAwardsTotal</div>
-                    @foreach (var a in badges.AdditionalAwards) { <div>@a.Name: @a.Count</div> }
-                </div></div>
-            }
-            @if (badges.InvestitureItems.Count > 0)
-            {
-                <div class="line"><div class="label">For new members</div><div class="detail">
-                    @foreach (var i in badges.InvestitureItems) { <div>@i.Name: @i.Count</div> }
-                </div></div>
-            }
-        }
+        <SectionBadgesUsed Badges="badges" Title="@(Report.IsGroup ? unit.UnitName + ": badges used" : "Badges used")" />
     }
 
     <div class="block">About these numbers</div>

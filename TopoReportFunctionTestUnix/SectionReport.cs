@@ -641,6 +641,33 @@ namespace TopoReportFunctionTest
             Assert.AreEqual(3, set.TotalLeaders);
         }
 
+        // The group's "badges needed" lists each badge, adding the units together
+        [TestMethod]
+        public void GroupBadgesAreListedBadgeByBadge()
+        {
+            SectionReportModel Unit(int bronze, int silver) => new SectionReportModel
+            {
+                Badges = new SectionBadges
+                {
+                    PeakAwards = 1,
+                    Milestones = new List<UnitBadgeCount> { new UnitBadgeCount { Name = "Milestone 1", Count = bronze } },
+                    OasStages = new List<OasStageCount>
+                    {
+                        new OasStageCount { Stream = "Bushcraft", Stage = 2, Count = bronze },
+                        new OasStageCount { Stream = "Bushcraft", Stage = 3, Count = silver }
+                    }
+                }
+            };
+            var set = new SectionReportSet { IsGroup = true, Sections = new List<SectionReportModel> { Unit(2, 1), Unit(3, 0) } };
+
+            var badges = set.TotalBadges;
+            Assert.AreEqual(2, badges.PeakAwards);
+            Assert.AreEqual(5, badges.Milestones.Single(m => m.Name == "Milestone 1").Count);
+            Assert.AreEqual(5, badges.OasStages.Single(o => o.Stage == 2).Count);
+            Assert.AreEqual(1, badges.OasStages.Single(o => o.Stage == 3).Count);
+            Assert.AreEqual(6, badges.OasBadgesTotal);
+        }
+
         // The report only reads a new member's other records (to say where they came from) for people invested in the period
         [TestMethod]
         public void AMemberIsNewWhenTheirIntroToSectionWasOnTerrainsOwnDateInThePeriod()

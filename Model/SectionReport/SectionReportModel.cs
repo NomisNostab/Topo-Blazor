@@ -189,6 +189,32 @@ namespace Topo.Model.SectionReport
             .GroupBy(i => i.Name)
             .Select(g => new UnitBadgeCount { Name = g.Key, Count = g.Sum(i => i.Count) })
             .ToList();
+        // Every unit's badges added together, badge by badge, for the group's "badges needed"
+        public SectionBadges TotalBadges
+        {
+            get
+            {
+                List<UnitBadgeCount> Add(IEnumerable<IEnumerable<UnitBadgeCount>> lists) => lists
+                    .SelectMany(l => l)
+                    .GroupBy(i => i.Name)
+                    .Select(g => new UnitBadgeCount { Name = g.Key, Count = g.Sum(i => i.Count) })
+                    .ToList();
+                return new SectionBadges
+                {
+                    PeakAwards = TotalPeakAwards,
+                    Milestones = Add(Sections.Select(s => s.Badges.Milestones)),
+                    InvestitureItems = TotalInvestitureItems,
+                    OasProgressions = TotalOasProgressions,
+                    OasStages = Sections.SelectMany(s => s.Badges.OasStages)
+                        .GroupBy(o => (o.Stream, o.Stage))
+                        .Select(g => new OasStageCount { Stream = g.Key.Stream, Stage = g.Key.Stage, Count = g.Sum(o => o.Count) })
+                        .OrderBy(o => o.Stream).ThenBy(o => o.Stage)
+                        .ToList(),
+                    SiaCategories = Add(Sections.Select(s => s.Badges.SiaCategories)),
+                    AdditionalAwards = Add(Sections.Select(s => s.Badges.AdditionalAwards))
+                };
+            }
+        }
         public bool AnyNewMembers => Sections.Any(s => s.AnyNewMembers);
         public bool AnyLeaving => Sections.Any(s => s.AnyLeaving);
         public int TotalMovedUp => Sections.Sum(s => s.MovedUp);

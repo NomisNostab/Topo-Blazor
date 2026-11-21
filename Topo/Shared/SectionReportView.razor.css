@@ -1,4 +1,5 @@
-/* Laid out like the exported pdf: a logo and centred titles, grey headed blocks, bold labels beside their details */
+/* The block, line, label and detail rules reach into SectionBadgesUsed too (a child component is not styled by this file otherwise).
+   Laid out like the exported pdf: a logo and centred titles, grey headed blocks, bold labels beside their details */
 .report {
     max-width: 60rem;
     font-size: 0.9rem;
@@ -34,7 +35,7 @@
     font-size: 1.1rem;
 }
 
-.block {
+.report ::deep .block {
     margin-top: 1.25rem;
     padding: 0.15rem 0.4rem;
     background-color: #c0c0c0;
@@ -42,18 +43,18 @@
     font-size: 1rem;
 }
 
-.line {
+.report ::deep .line {
     display: flex;
     gap: 1rem;
     padding: 0.15rem 0.4rem;
 }
 
-.label {
+.report ::deep .label {
     flex: 0 0 12rem;
     font-weight: bold;
 }
 
-.detail {
+.report ::deep .detail {
     flex: 1;
 }
 
@@ -97,12 +98,12 @@
 }
 
 @media (max-width: 576px) {
-    .line {
+    .report ::deep .line {
         flex-direction: column;
         gap: 0;
     }
 
-    .label {
+    .report ::deep .label {
         flex: none;
     }
 }

@@ -35,9 +35,11 @@ namespace Topo.Controller
         public bool Busy;
         public string Progress = "";
 
-        // Only offered to someone who can see more than one unit
-        public bool CanDoGroup => model.Units.Count > 1;
-        public bool IsGroup => model.UnitId == SectionReportPageViewModel.WholeGroup;
+        // More than one unit ticked makes it a group report
+        public bool IsGroup => model.SelectedUnits.Count > 1;
+        // What the downloads are called: the report's own title
+        public string ReportName => Result?.Report.IsGroup == true ? "Group Report" : "Section Report";
+        public bool AllUnitsSelected => model.Units.Count > 0 && model.SelectedUnits.Count == model.Units.Count;
 
         private static string RosterKey(string unitId) => $"SectionReportRoster_{unitId}";
 
@@ -53,27 +55,41 @@ namespace Topo.Controller
             model.Units = _storageService.Units ?? new Dictionary<string, string>();
             model.Calendars = await _programService.GetCalendars();
             SetPeriod(ThisQuarterStart(), ThisQuarterStart().AddMonths(3).AddDays(-1));
-            if (!string.IsNullOrEmpty(_storageService.UnitId))
-                SelectUnit(_storageService.UnitId);
+            if (!string.IsNullOrEmpty(_storageService.UnitId) && model.Units.ContainsKey(_storageService.UnitId))
+                ToggleUnit(_storageService.UnitId, true);
         }
 
-        internal void UnitChange(ChangeEventArgs e)
+        // The calendar named after a unit, if there is one
+        private string? CalendarOf(string unitId) => CalendarMatcher.FindForUnit(model.Calendars, model.Units[unitId]);
+
+        internal void ToggleUnit(string unitId, bool selected)
         {
-            SelectUnit(e.Value?.ToString() ?? "");
+            if (selected)
+                model.SelectedUnits.Add(unitId);
+            else
+                model.SelectedUnits.Remove(unitId);
             Result = null;
+
+            // a unit's calendar is ticked and unticked with it; any other calendar ticked by hand stays as it is
+            var calendar = CalendarOf(unitId);
+            if (calendar != null)
+            {
+                if (selected)
+                    model.SelectedCalendars.Add(calendar);
+                else
+                    model.SelectedCalendars.Remove(calendar);
+            }
+            if (model.SelectedUnits.Count == 1)
+                _storageService.UnitId = model.SelectedUnits.First();
         }
 
-        private void SelectUnit(string unitId)
+        internal void ToggleAllUnits(bool selected)
         {
-            model.UnitId = unitId;
-            if (unitId == SectionReportPageViewModel.WholeGroup || unitId == "")
-                return;
-
-            _storageService.UnitId = unitId;
-            // use the calendar named after the unit when there is one
-            var match = CalendarMatcher.FindForUnit(model.Calendars, _storageService.UnitName);
-            if (match != null)
-                model.SelectedCalendars = new HashSet<string> { match };
+            foreach (var unitId in model.Units.Keys)
+            {
+                if (selected != model.SelectedUnits.Contains(unitId))
+                    ToggleUnit(unitId, selected);
+            }
         }
 
         internal void ToggleCalendar(string calendarId, bool selected)
@@ -110,14 +126,15 @@ namespace Topo.Controller
         {
             model.ErrorMessage = "";
             model.Message = "";
-            if (string.IsNullOrEmpty(model.UnitId))
-                model.ErrorMessage = "Please select a unit.";
+            if (model.SelectedUnits.Count == 0)
+                model.ErrorMessage = "Please select at least one unit.";
             else if (model.To < model.From)
                 model.ErrorMessage = "The to date must be after the from date.";
             if (model.ErrorMessage != "")
                 return;
 
-            var unitIds = IsGroup ? model.Units.Keys.ToList() : new List<string> { model.UnitId };
+            // in the order the units are listed
+            var unitIds = model.Units.Keys.Where(model.SelectedUnits.Contains).ToList();
             var request = new SectionReportRequest
             {
                 UnitIds = unitIds,
@@ -127,11 +144,10 @@ namespace Topo.Controller
             };
             foreach (var unitId in unitIds)
             {
-                // a group report reads each unit's events from the calendar named after it
-                var calendars = IsGroup
-                    ? new[] { CalendarMatcher.FindForUnit(model.Calendars, model.Units[unitId]) }.Where(c => c != null).Select(c => c!).ToArray()
-                    : model.SelectedCalendars.ToArray();
-                request.CalendarIdsByUnit[unitId] = calendars;
+                // a unit reads its events from its own calendar and from any calendar that is not another ticked unit's
+                // (a group calendar, say), so a joint event is listed under each unit that is in the report
+                var otherUnitCalendars = unitIds.Where(id => id != unitId).Select(CalendarOf).Where(c => c != null).ToHashSet();
+                request.CalendarIdsByUnit[unitId] = model.SelectedCalendars.Where(c => !otherUnitCalendars.Contains(c)).ToArray();
                 var saved = await ReadRoster(unitId);
                 if (saved != null)
                     request.PreviousRosters[unitId] = saved;
