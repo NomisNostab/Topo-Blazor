@@ -13,6 +13,8 @@ namespace Topo.Model.BadgeStore
         public DateTime created_datetime { get; set; }
         public string status { get; set; } = "";
         public EventCommentMember member { get; set; } = new EventCommentMember();
+        // Not from Terrain: the event the comment was read from, set by whoever reads it, so a record can be undone
+        public string EventId { get; set; } = "";
     }
 
     public class EventCommentMember

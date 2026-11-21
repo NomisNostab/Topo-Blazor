@@ -15,6 +15,7 @@ namespace Topo.Model.BadgeStore
         public string RecordedById { get; set; } = "";
         public DateTime RecordedAt { get; set; }
         public string CommentId { get; set; } = "";
+        public string EventId { get; set; } = "";
     }
 
     public class BadgeStoreContents
@@ -76,7 +77,8 @@ namespace Topo.Model.BadgeStore
                     Presented = presented,
                     RecordedById = comment.member.id,
                     RecordedAt = comment.created_datetime,
-                    CommentId = comment.id
+                    CommentId = comment.id,
+                    EventId = comment.EventId
                 };
             }
 

@@ -66,12 +66,24 @@ Rules for reading:
 - Comments with `status` `deleted` are ignored. Unknown extra fields are ignored.
 - Reading and writing the same record any number of times is safe.
 
-## Writing (not built yet)
+## Writing
 
-Writing is a comment as above, posted as the signed-in leader. A mistaken record is taken back by posting a `revoke`, or by
-the author deleting the comment (`DELETE events /events/{eventId}/comments/{commentId}`, 204). If a group has no store event,
-a group leader can create one (`POST events /groups/{groupId}/events`, an ordinary planned group event with the title,
-dates and description above and the leader as organiser). Topo asks before creating or changing anything in Terrain.
+Writing is a comment as above, posted as the signed-in leader (`BadgeStoreService`, `Model/BadgeStore/BadgeStoreWrites.cs`).
+Topo always shows the leader what will be written first and asks before changing anything in Terrain.
+
+- **Create the store** (once per group, a group leader only): `POST events /groups/{groupId}/events` with an ordinary planned
+  group event: the title, dates and description above, the leader as organiser and verifier, `event_type`
+  `{ "type": "group", "id": groupId }`, no attendance, status `planned`. Terrain answers 204 and does not say which event it made,
+  so Topo finds it again in the leader's organised events (`GET events /members/{memberId}/organised-events`), which shows it
+  whichever calendars are on. It is never created if one already exists.
+- **Record an award:** post an `award` comment. Topo reads the store first and does not post it again if the store already
+  says the same (a request with no presented date never takes away a presented date already recorded). It then reads the
+  comments back to confirm it is there.
+- **Take a record back:** post a `revoke`, or delete the comment you wrote (`DELETE events /events/{eventId}/comments/{commentId}`).
+- **Which event:** if more than one store event exists, writes go to the one with the lowest id, so two leaders never split
+  the records; reads merge all of them.
+- A write Terrain refuses can come back to a browser as no reply at all (the events host's rejections can carry no CORS header).
+  Topo reports it as a failure and leaves the store as it was.
 
 ## What was tested in Terrain (2026-11-22, a leader's own record, everything deleted afterwards)
 
