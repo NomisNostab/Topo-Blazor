@@ -1,6 +1,7 @@
 ﻿using Topo.Model;
 using Topo.Model.Approvals;
 using Topo.Model.Milestone;
+using Topo.Model.Members;
 using Topo.Model.Progress;
 using Topo.Model.Wallchart;
 using Topo.Pages;
@@ -55,27 +56,46 @@ namespace Topo.Services
                 return none;
             }
 
+            // Everything the wallchart reads from Terrain is asked for at once instead of one read after another:
+            //  - the unit-wide reads, none of which depends on another or needs a profile taken on, and
+            //  - each Scout's logbook totals, which can only be read one Scout at a time (Terrain keeps one profile taken on at a
+            //    time), but which don't stop the unit-wide reads from working, so the two overlap instead of waiting for each other.
+            progress?.Invoke("the unit's records");
+            var logbookRead = ReadLogbookTotals(youth, progress);
             // Terrain works out each member's Peak Award Progress itself; read it rather than estimating it here
-            var terrainPeakProgress = (await _terrainAPIService.GetUnitMetrics(selectedUnitId))
-                .GroupBy(m => m.member_id)
-                .ToDictionary(g => g.Key, g => g.First().achievement_metrics.peak_award_progress);
-            // Read each kind of record once for the whole unit instead of once per member.
+            var peakProgressRead = _terrainAPIService.GetUnitMetrics(selectedUnitId);
+            // Each kind of record is read once for the whole unit instead of once per member.
             // Every record carries its member_id, so ToLookup lets the loop below ask for "this member's records" as it did before;
             // a member with none gets an empty list.
-            var milestonesByMember = (await _terrainAPIService.GetUnitAchievementsOfType<GetMilestoneResultModel>(selectedUnitId, "milestone")).results.ToLookup(r => r.member_id);
-            var oasByMember = (await _terrainAPIService.GetUnitAchievementsOfType<Topo.Model.OAS.GetUnitAchievementsResultsModel>(selectedUnitId, "outdoor_adventure_skill")).results.ToLookup(r => r.member_id);
-            var introScoutingByMember = (await _terrainAPIService.GetUnitAchievementsOfType<GetIntroductionResultsModel>(selectedUnitId, "intro_scouting")).results.ToLookup(r => r.member_id);
-            var introSectionByMember = (await _terrainAPIService.GetUnitAchievementsOfType<GetIntroductionResultsModel>(selectedUnitId, "intro_section")).results.ToLookup(r => r.member_id);
-            var siaByMember = (await _terrainAPIService.GetUnitAchievementsOfType<Topo.Model.SIA.GetSIAResultsModel>(selectedUnitId, "special_interest_area")).results.ToLookup(r => r.member_id);
-            var courseReflectionByMember = (await _terrainAPIService.GetUnitAchievementsOfType<GetPeakAwardsResultsModel>(selectedUnitId, "course_reflection")).results.ToLookup(r => r.member_id);
-            var adventurousJourneyByMember = (await _terrainAPIService.GetUnitAchievementsOfType<GetPeakAwardsResultsModel>(selectedUnitId, "adventurous_journey")).results.ToLookup(r => r.member_id);
-            var personalReflectionByMember = (await _terrainAPIService.GetUnitAchievementsOfType<GetPeakAwardsResultsModel>(selectedUnitId, "personal_reflection")).results.ToLookup(r => r.member_id);
-            var peakAwardByMember = (await _terrainAPIService.GetUnitAchievementsOfType<GetPeakAwardsResultsModel>(selectedUnitId, "peak_award")).results.ToLookup(r => r.member_id);
+            var milestonesRead = _terrainAPIService.GetUnitAchievementsOfType<GetMilestoneResultModel>(selectedUnitId, "milestone");
+            var oasRead = _terrainAPIService.GetUnitAchievementsOfType<Topo.Model.OAS.GetUnitAchievementsResultsModel>(selectedUnitId, "outdoor_adventure_skill");
+            var introScoutingRead = _terrainAPIService.GetUnitAchievementsOfType<GetIntroductionResultsModel>(selectedUnitId, "intro_scouting");
+            var introSectionRead = _terrainAPIService.GetUnitAchievementsOfType<GetIntroductionResultsModel>(selectedUnitId, "intro_section");
+            var siaRead = _terrainAPIService.GetUnitAchievementsOfType<Topo.Model.SIA.GetSIAResultsModel>(selectedUnitId, "special_interest_area");
+            var courseReflectionRead = _terrainAPIService.GetUnitAchievementsOfType<GetPeakAwardsResultsModel>(selectedUnitId, "course_reflection");
+            var adventurousJourneyRead = _terrainAPIService.GetUnitAchievementsOfType<GetPeakAwardsResultsModel>(selectedUnitId, "adventurous_journey");
+            var personalReflectionRead = _terrainAPIService.GetUnitAchievementsOfType<GetPeakAwardsResultsModel>(selectedUnitId, "personal_reflection");
+            var peakAwardRead = _terrainAPIService.GetUnitAchievementsOfType<GetPeakAwardsResultsModel>(selectedUnitId, "peak_award");
+            await Task.WhenAll(logbookRead, peakProgressRead, milestonesRead, oasRead, introScoutingRead, introSectionRead, siaRead,
+                courseReflectionRead, adventurousJourneyRead, personalReflectionRead, peakAwardRead);
+
+            var logbookTotals = logbookRead.Result;
+            var terrainPeakProgress = peakProgressRead.Result
+                .GroupBy(m => m.member_id)
+                .ToDictionary(g => g.Key, g => g.First().achievement_metrics.peak_award_progress);
+            var milestonesByMember = milestonesRead.Result.results.ToLookup(r => r.member_id);
+            var oasByMember = oasRead.Result.results.ToLookup(r => r.member_id);
+            var introScoutingByMember = introScoutingRead.Result.results.ToLookup(r => r.member_id);
+            var introSectionByMember = introSectionRead.Result.results.ToLookup(r => r.member_id);
+            var siaByMember = siaRead.Result.results.ToLookup(r => r.member_id);
+            var courseReflectionByMember = courseReflectionRead.Result.results.ToLookup(r => r.member_id);
+            var adventurousJourneyByMember = adventurousJourneyRead.Result.results.ToLookup(r => r.member_id);
+            var personalReflectionByMember = personalReflectionRead.Result.results.ToLookup(r => r.member_id);
+            var peakAwardByMember = peakAwardRead.Result.results.ToLookup(r => r.member_id);
 
             var wallchartItems = new List<WallchartItemModel>();
             foreach (var member in youth)
             {
-                progress?.Invoke($"{member.first_name} {member.last_name} ({youth.IndexOf(member) + 1} of {youth.Count})");
                 var wallchartItem = new WallchartItemModel();
 
                 // Get Milestone for member
@@ -185,12 +205,8 @@ namespace Topo.Services
                 wallchartItem.IntroToSection = IntroDate(AchievementSelection.LatestAwardedIntro(introSectionByMember[member.id], _storageService.Section));
                 wallchartItem.YearsOfService = YearsOfServiceCalculator.CalculateCompletedYears(wallchartItem.IntroToSection, DateTime.Now);
                 // Logbook
-                await _terrainAPIService.AssumeProfile(member.id);
-                var getMemberLogbookMetrics = await _terrainAPIService.GetMemberLogbookMetrics(member.id);
-                await _terrainAPIService.RevokeAssumedProfiles();
-                var totalNightsCamped = getMemberLogbookMetrics.results.Where(r => r.name == "total_nights_camped").FirstOrDefault()?.value ?? 0;
+                var (totalNightsCamped, totalKmsHiked) = logbookTotals[member.id];
                 var totalNightsCampedInSection = totalNightsCamped;
-                var totalKmsHiked = (getMemberLogbookMetrics.results.Where(r => r.name == "total_distance_hiked").FirstOrDefault()?.value ?? 0) / 1000.0f;
                 wallchartItem.NightsCamped = (int)totalNightsCamped;
                 wallchartItem.NightsCampedInSection = (int)totalNightsCampedInSection;
                 wallchartItem.KMsHiked = (int)totalKmsHiked;
@@ -237,6 +253,35 @@ namespace Topo.Services
             }
             _storageService.CachedWallchartItems.Add(new KeyValuePair<string, List<WallchartItemModel>>(selectedUnitId, wallchartItems));
             return wallchartItems;
+        }
+
+        // Each Scout's logbook totals. A Scout's profile has to be taken on to read them, and Terrain keeps only one profile
+        // taken on at a time, so this goes one Scout at a time. It is started alongside the unit-wide reads, which work while a
+        // profile is taken on, so it doesn't hold them up.
+        private async Task<Dictionary<string, (float nights, float kms)>> ReadLogbookTotals(List<MemberListModel> youth, Action<string>? progress)
+        {
+            var totals = new Dictionary<string, (float nights, float kms)>();
+            try
+            {
+                for (var i = 0; i < youth.Count; i++)
+                {
+                    var member = youth[i];
+                    progress?.Invoke($"{member.first_name} {member.last_name} ({i + 1} of {youth.Count})");
+                    await _terrainAPIService.AssumeProfile(member.id);
+                    var metrics = await _terrainAPIService.GetMemberLogbookMetrics(member.id);
+                    await _terrainAPIService.RevokeAssumedProfiles();
+                    var nights = metrics.results.Where(r => r.name == "total_nights_camped").FirstOrDefault()?.value ?? 0;
+                    var kms = (metrics.results.Where(r => r.name == "total_distance_hiked").FirstOrDefault()?.value ?? 0) / 1000.0f;
+                    totals[member.id] = (nights, kms);
+                }
+            }
+            catch
+            {
+                // a failed read mustn't leave a Scout's profile taken on
+                await _terrainAPIService.RevokeAssumedProfiles();
+                throw;
+            }
+            return totals;
         }
 
         // A leader approving a milestone is functionally "done" - the formal award is just the
