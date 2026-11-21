@@ -5,6 +5,7 @@ using Topo.Model.Login;
 using Topo.Model.Members;
 using Topo.Model.Milestone;
 using Topo.Model.OAS;
+using Topo.Model.BadgeStore;
 using Topo.Model.Program;
 using Topo.Model.SIA;
 using Topo.Model.AdditionalAwards;
@@ -27,6 +28,7 @@ namespace Topo.Services
         public Task PutCalendarsAsync(string userId, GetCalendarsResultModel putCalendarsResultModel);
         public Task<GetEventsResultModel?> GetEventsAsync(string userId, DateTime fromDate, DateTime toDate);
         public Task<GetEventResultModel?> GetEventAsync(string eventId);
+        public Task<GetEventCommentsResultModel> GetEventCommentsAsync(string eventId);
         public Task<List<ProposedActivityModel>?> GetProposedActivitiesAsync(string unitId);
         public Task<GetOASTreeResultsModel?> GetOASTreeAsync(string stream);
         public Task<GetOASTemplateResultModel?> GetOASTemplateAsync(string stream);
@@ -229,6 +231,16 @@ namespace Topo.Services
             var getEventsResultModel = DeserializeObject<GetEventsResultModel>(result);
 
             return getEventsResultModel;
+        }
+
+        // The comments on an event, newest first. Topo keeps its badge records as comments on one event (see Model/BadgeStore).
+        public async Task<GetEventCommentsResultModel> GetEventCommentsAsync(string eventId)
+        {
+            await RefreshTokenAsync();
+
+            string requestUri = $"{eventsAddress}events/{eventId}/comments";
+            var result = await SendRequest(HttpMethod.Get, requestUri);
+            return DeserializeObject<GetEventCommentsResultModel>(result) ?? new GetEventCommentsResultModel();
         }
 
         public async Task<GetEventResultModel?> GetEventAsync(string eventId)
