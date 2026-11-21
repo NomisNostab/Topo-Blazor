@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using Topo.Model;
 using Topo.Model.Logbook;
 
 namespace Topo.Services
@@ -29,9 +30,12 @@ namespace Topo.Services
                 var getMemberLogbookSummary = await _terrainAPIService.GetMemberLogbookSummary(memberKVP.Key);
                 if (getMemberLogbookSummary != null)
                 {
-                    foreach (var summaryResult in getMemberLogbookSummary.results)
+                    // The summary only lists the entries; each one's detail is a request of its own. They are read a few at a time
+                    // (all while this Scout's profile is assumed) and come back in the order listed, so the report is unchanged.
+                    var logbookDetails = await ReadsAtOnce.SelectAsync(getMemberLogbookSummary.results,
+                        summaryResult => _terrainAPIService.GetMemberLogbookDetail(memberKVP.Key, summaryResult.id));
+                    foreach (var getLogbookDetail in logbookDetails)
                     {
-                        var getLogbookDetail = await _terrainAPIService.GetMemberLogbookDetail(memberKVP.Key, summaryResult.id);
                         if (getLogbookDetail != null)
                         {
                             var activityDate = DateTime.ParseExact(getLogbookDetail.start_date, "yyyy-MM-dd", CultureInfo.InvariantCulture);
