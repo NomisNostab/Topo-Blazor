@@ -183,7 +183,9 @@ namespace Topo.Services
                 wallchartItem.MemberPatrol = member.patrol_name;
                 wallchartItem.IntroToScouting = IntroDate(AchievementSelection.LatestAwardedIntro(introScoutingByMember[member.id]));
                 wallchartItem.IntroToSection = IntroDate(AchievementSelection.LatestAwardedIntro(introSectionByMember[member.id], _storageService.Section));
-                wallchartItem.YearsOfService = YearsOfServiceCalculator.CalculateCompletedYears(wallchartItem.IntroToSection, DateTime.Now);
+                // Years of service run from the first event the member earned a credit at in this section; the intro is only the fallback
+                var firstEvent = YearsOfServiceCalculator.FirstEvent(milestonesByMember[member.id].Where(r => r.section == _storageService.Section));
+                wallchartItem.YearsOfService = YearsOfServiceCalculator.CalculateCompletedYears(firstEvent, wallchartItem.IntroToSection, DateTime.Now);
                 // Logbook
                 await _terrainAPIService.AssumeProfile(member.id);
                 var getMemberLogbookMetrics = await _terrainAPIService.GetMemberLogbookMetrics(member.id);
