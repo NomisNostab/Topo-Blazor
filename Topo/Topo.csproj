@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" />
-    <PackageReference Include="Faso.Blazor.SpinKit" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
     <PackageReference Include="Newtonsoft.Json" />
