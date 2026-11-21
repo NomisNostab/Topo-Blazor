@@ -110,6 +110,12 @@
         line-height: 3rem;
     }
 
+/* A long name (Section/Group Report) wraps onto two lines, so its lines sit close together and stay centred beside the icon
+   instead of each taking the link's full 3rem line height */
+.nav-text {
+    line-height: 1.2;
+}
+
 .nav-item ::deep a.active {
     background-color: rgba(255,255,255,0.25);
     color: white;
