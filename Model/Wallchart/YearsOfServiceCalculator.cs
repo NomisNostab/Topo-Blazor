@@ -19,12 +19,16 @@ namespace Topo.Model.Wallchart
                 foreach (var logged in record.event_log)
                 {
                     if (logged.event_start_datetime == default)
+                    {
                         continue;
+                    }
                     // Terrain's times are UTC, so an early morning event belongs to the day before there; the date that counts is the local one
                     var start = logged.event_start_datetime;
                     var date = (start.Kind == DateTimeKind.Utc ? start.ToLocalTime() : start).Date;
                     if (first == null || date < first)
+                    {
                         first = date;
+                    }
                 }
             }
             return first;
@@ -38,11 +42,15 @@ namespace Topo.Model.Wallchart
         public static int? CalculateCompletedYears(DateTime? startOfService, DateTime asOf)
         {
             if (!startOfService.HasValue)
+            {
                 return null;
+            }
 
             var years = asOf.Year - startOfService.Value.Year;
             if (startOfService.Value.AddYears(years) > asOf)
+            {
                 years--;
+            }
 
             return years < 0 ? 0 : years;
         }
