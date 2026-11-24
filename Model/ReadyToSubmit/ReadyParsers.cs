@@ -14,7 +14,9 @@ namespace Topo.Model.ReadyToSubmit
             {
                 using var document = JsonDocument.Parse(json);
                 if (document.RootElement.ValueKind != JsonValueKind.Object || !document.RootElement.TryGetProperty("results", out var results) || results.ValueKind != JsonValueKind.Array)
+                {
                     return records;
+                }
                 foreach (var item in results.EnumerateArray())
                 {
                     var record = new AchievementRecord
@@ -30,7 +32,9 @@ namespace Topo.Model.ReadyToSubmit
                         Meta = Flatten(item, "achievement_meta")
                     };
                     if (DateTime.TryParse(Text(item, "status_updated"), CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var updated))
+                    {
                         record.StatusUpdated = updated.ToLocalTime();
+                    }
                     records.Add(record);
                 }
             }
@@ -48,7 +52,9 @@ namespace Topo.Model.ReadyToSubmit
             {
                 using var document = JsonDocument.Parse(json);
                 if (document.RootElement.ValueKind == JsonValueKind.Object && document.RootElement.TryGetProperty("document", out var body))
+                {
                     WalkQuestions(body, questions);
+                }
             }
             catch (JsonException)
             {
@@ -64,20 +70,28 @@ namespace Topo.Model.ReadyToSubmit
             {
                 using var document = JsonDocument.Parse(json);
                 if (document.RootElement.ValueKind != JsonValueKind.Object || !document.RootElement.TryGetProperty("document", out var body) || body.ValueKind != JsonValueKind.Array)
+                {
                     return ids;
+                }
                 foreach (var page in body.EnumerateArray())
                 {
                     if (page.ValueKind != JsonValueKind.Object || !page.TryGetProperty("input_groups", out var groups) || groups.ValueKind != JsonValueKind.Array)
+                    {
                         continue;
+                    }
                     foreach (var group in groups.EnumerateArray())
                     {
                         if (group.ValueKind != JsonValueKind.Object || !group.TryGetProperty("inputs", out var inputs) || inputs.ValueKind != JsonValueKind.Array)
+                        {
                             continue;
+                        }
                         foreach (var input in inputs.EnumerateArray())
                         {
                             var id = Text(input, "id");
                             if (id != "" && id != "file_uploader")
+                            {
                                 ids.Add(new FormQuestion { Id = id, Type = Text(input, "type"), Label = Text(input, "label").Trim() });
+                            }
                         }
                     }
                 }
@@ -99,7 +113,9 @@ namespace Topo.Model.ReadyToSubmit
             {
                 var id = Text(element, "id");
                 if (id != "" && element.TryGetProperty("type", out _) && element.TryGetProperty("label", out _))
+                {
                     questions.Add(new FormQuestion { Id = id, Type = Text(element, "type"), Label = Text(element, "label").TrimEnd('*').Trim() });
+                }
                 foreach (var property in element.EnumerateObject())
                     WalkQuestions(property.Value, questions);
             }
@@ -111,7 +127,9 @@ namespace Topo.Model.ReadyToSubmit
         {
             var values = new Dictionary<string, string>();
             if (!parent.TryGetProperty(name, out var obj) || obj.ValueKind != JsonValueKind.Object)
+            {
                 return values;
+            }
             foreach (var property in obj.EnumerateObject())
             {
                 switch (property.Value.ValueKind)

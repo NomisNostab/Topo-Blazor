@@ -45,7 +45,9 @@ namespace Topo.Controller
             model.GroupName = _storageService.GroupNameDisplay;
             model.Units = _storageService.Units;
             if (!string.IsNullOrEmpty(_storageService.UnitId))
+            {
                 await UnitChange(_storageService.UnitId);
+            }
         }
 
         internal async Task UnitChange(ChangeEventArgs e) => await UnitChange(e.Value?.ToString() ?? "");
@@ -57,7 +59,9 @@ namespace Topo.Controller
             Report = null;
             _data = null;
             if (string.IsNullOrEmpty(unitId))
+            {
                 return;
+            }
 
             _storageService.UnitId = unitId;
             Loading = true;
@@ -85,7 +89,9 @@ namespace Topo.Controller
         private void Recalculate()
         {
             if (_data == null)
+            {
                 return;
+            }
             Report = ReadyToSubmitBuilder.Build(new ReadyToSubmitInput
             {
                 UnitName = _storageService.UnitName ?? "",
@@ -106,7 +112,9 @@ namespace Topo.Controller
         private async Task Download(OutputType outputType)
         {
             if (Report == null)
+            {
                 return;
+            }
             var groupName = _storageService.GroupName ?? "Group Name";
             var unitName = Report.UnitName;
             var bytes = await _reportService.GetReadyToSubmitReport(groupName, Report.Section, unitName, outputType, JsonConvert.SerializeObject(Report));

@@ -173,7 +173,9 @@ namespace Topo.Services
                 sheet.PageSetup.FitToPagesTall = 0;
                 // a second page starts with the headings again
                 if (headingRow > 0)
+                {
                     sheet.PageSetup.PrintTitleRows = $"${headingRow}:${headingRow}";
+                }
             }
 
             // 1. Everything done
@@ -203,7 +205,9 @@ namespace Topo.Services
                         sheet.Range[row, 1, row, 4].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
                         // a line between one Scout and the next
                         if (first && row > headingRow + 1)
+                        {
                             sheet.Range[row, 1, row, 4].CellStyle.Borders[ExcelBordersIndex.EdgeTop].LineStyle = ExcelLineStyle.Thin;
+                        }
                         sheet.SetRowHeight(row, Math.Max(16, Math.Ceiling(item.Badge.Length / 34.0) * 15));
                         first = false;
                     }
@@ -308,7 +312,9 @@ namespace Topo.Services
                         {
                             var cell = sheet.Range[row, 3 + s];
                             if (!badge.IsMissing(badge.Scouts[s], requirement))
+                            {
                                 cell.CellStyle.Color = grey;
+                            }
                         }
                         sheet.Range[row, 1, row, 2 + badge.Scouts.Count].CellStyle.VerticalAlignment = ExcelVAlign.VAlignTop;
                         foreach (var cell in sheet.Range[row, 1, row, 2 + badge.Scouts.Count].Cells)

@@ -44,13 +44,21 @@ namespace Topo.Model.ReadyToSubmit
         public static ReadyCategory? CategoryOf(string type)
         {
             if (type == Type_Milestone)
+            {
                 return ReadyCategory.Milestone;
+            }
             if (type == Type_Oas)
+            {
                 return ReadyCategory.OutdoorAdventureSkill;
+            }
             if (type == Type_Sia)
+            {
                 return ReadyCategory.SpecialInterestArea;
+            }
             if (PeakAwardTypes.Contains(type))
+            {
                 return ReadyCategory.PeakAward;
+            }
             return null;
         }
 
@@ -58,7 +66,9 @@ namespace Topo.Model.ReadyToSubmit
         public static string FormTemplatePath(AchievementRecord record)
         {
             if (record.Status == "draft_review" && record.Template.EndsWith("/plan", StringComparison.OrdinalIgnoreCase))
+            {
                 return record.Template.Substring(0, record.Template.Length - "plan".Length) + "review";
+            }
             return record.Template;
         }
 
@@ -96,10 +106,14 @@ namespace Topo.Model.ReadyToSubmit
                 {
                     var category = CategoryOf(record.Type);
                     if (category == null || !input.Categories.Contains(category.Value))
+                    {
                         continue;
+                    }
                     var verdict = Judge(record, input);
                     if (verdict == null)
+                    {
                         continue;
+                    }
                     items.Add(new ReadyItem
                     {
                         Kind = verdict.Kind,
@@ -119,11 +133,17 @@ namespace Topo.Model.ReadyToSubmit
                 foreach (var item in items.OrderBy(i => i.Category).ThenBy(i => i.Badge, StringComparer.OrdinalIgnoreCase))
                 {
                     if (item.Kind == ReadyKind.Ready)
+                    {
                         ready.Add(item);
+                    }
                     else if (item.Kind == ReadyKind.LogbookTickOnly)
+                    {
                         logbook.Add(item);
+                    }
                     else
+                    {
                         nearly.Add((item, order));
+                    }
                 }
             }
 
@@ -168,34 +188,48 @@ namespace Topo.Model.ReadyToSubmit
         {
             var templates = input.Templates;
             if (record.Type == Type_Milestone)
+            {
                 return (record.Status == "in_progress" || record.Status == "draft_review") && record.RequirementStatus == "complete"
                     ? new Verdict { Kind = ReadyKind.Ready, Waiting = "Requirements complete, not sent for review" }
                     : null;
+            }
 
             if (record.Type == Type_Oas)
             {
                 if (record.Status != "draft_review" || !templates.OasInputs.TryGetValue(record.Template, out var inputs) || inputs.Count == 0)
+                {
                     return null;
+                }
                 var left = inputs.Where(q => !OasInputDone(record, q.Id)).ToList();
                 var positions = left.Select(q => inputs.IndexOf(q)).ToList();
                 if (left.Count == 0)
+                {
                     return new Verdict { Kind = ReadyKind.Ready, Waiting = "Every requirement ticked off, not sent for review" };
+                }
                 var missing = left.Select(q => q.Label == "" ? q.Id : q.Label).ToList();
                 // only the Scout's own logbook tick is left
                 if (input.LogbookTickOptional && left.Count == 1 && left[0].Id == LogbookInput)
+                {
                     return new Verdict { Kind = ReadyKind.LogbookTickOnly, Waiting = "Everything ticked off but the Scout's logbook tick", Missing = missing, MissingPositions = positions };
+                }
                 if (left.Count <= input.MaxTicksShort)
+                {
                     return new Verdict { Kind = ReadyKind.NearlyThere, Waiting = $"{left.Count} {(left.Count == 1 ? "tick" : "ticks")} short", Missing = missing, MissingPositions = positions };
+                }
                 return null;
             }
 
             if (IsFormType(record.Type) && (record.Status == "draft_approval" || record.Status == "draft_review"))
             {
                 if (!templates.Forms.TryGetValue(FormTemplatePath(record), out var questions))
+                {
                     return null;
+                }
                 var toAnswer = questions.Where(q => !NotQuestions.Contains(q.Type) && !OptionalIds.Contains(q.Id) && !q.Label.Contains("optional", StringComparison.OrdinalIgnoreCase)).ToList();
                 if (toAnswer.Count == 0 || !toAnswer.All(q => Answered(record, q)))
+                {
                     return null;
+                }
                 return new Verdict { Kind = ReadyKind.Ready, Waiting = record.Status == "draft_approval" ? "Plan finished, not sent for approval" : "Finished, not sent for review" };
             }
             return null;
@@ -204,7 +238,9 @@ namespace Topo.Model.ReadyToSubmit
         private static bool OasInputDone(AchievementRecord record, string id)
         {
             if (record.Answers.TryGetValue(id + "_verifiedDate", out var date) && !string.IsNullOrWhiteSpace(date))
+            {
                 return true;
+            }
             // the logbook tick is stored under its own name
             return id == LogbookInput && record.Answers.TryGetValue(id, out var ticked) && ticked == "true";
         }
@@ -212,7 +248,9 @@ namespace Topo.Model.ReadyToSubmit
         private static bool Answered(AchievementRecord record, FormQuestion question)
         {
             if (!record.Answers.TryGetValue(question.Id, out var answer) || string.IsNullOrWhiteSpace(answer))
+            {
                 return false;
+            }
             return question.Type != "checkbox" || answer == "true";
         }
 
@@ -225,7 +263,9 @@ namespace Topo.Model.ReadyToSubmit
         private static int BadgeOrderOf(AchievementRecord record)
         {
             if (record.Type != Type_Oas)
+            {
                 return int.MaxValue;
+            }
             var stream = OasOrder.ToList().IndexOf((record.Meta.TryGetValue("stream", out var s) ? s : "").ToLowerInvariant());
             var stage = record.Meta.TryGetValue("stage", out var l) && int.TryParse(l, out var level) ? level : 0;
             return (stream < 0 ? OasOrder.Length : stream) * 100 + stage;

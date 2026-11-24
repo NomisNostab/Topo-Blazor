@@ -20,10 +20,22 @@ namespace Topo.Model.ReadyToSubmit
         public List<ReadyCategory> SelectedCategories()
         {
             var categories = new List<ReadyCategory>();
-            if (Milestones) categories.Add(ReadyCategory.Milestone);
-            if (OutdoorAdventureSkills) categories.Add(ReadyCategory.OutdoorAdventureSkill);
-            if (SpecialInterestAreas) categories.Add(ReadyCategory.SpecialInterestArea);
-            if (PeakAwardParts) categories.Add(ReadyCategory.PeakAward);
+            if (Milestones)
+            {
+                categories.Add(ReadyCategory.Milestone);
+            }
+            if (OutdoorAdventureSkills)
+            {
+                categories.Add(ReadyCategory.OutdoorAdventureSkill);
+            }
+            if (SpecialInterestAreas)
+            {
+                categories.Add(ReadyCategory.SpecialInterestArea);
+            }
+            if (PeakAwardParts)
+            {
+                categories.Add(ReadyCategory.PeakAward);
+            }
             return categories;
         }
     }
