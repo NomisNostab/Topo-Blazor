@@ -64,7 +64,10 @@ namespace TopoReportFunctionTest
                 await ReadsAtOnce.SelectAsync(Enumerable.Range(0, 10), async i =>
                 {
                     await Task.Delay(5);
-                    if (i == 4) throw new InvalidOperationException("boom");
+                    if (i == 4)
+                    {
+                        throw new InvalidOperationException("boom");
+                    }
                     return i;
                 }));
         }
@@ -78,7 +81,10 @@ namespace TopoReportFunctionTest
                 {
                     Interlocked.Increment(ref started);
                     await Task.Delay(10);
-                    if (i == 0) throw new InvalidOperationException("boom");
+                    if (i == 0)
+                    {
+                        throw new InvalidOperationException("boom");
+                    }
                     return i;
                 }, atOnce: 2));
 
