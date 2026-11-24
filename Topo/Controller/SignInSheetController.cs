@@ -124,9 +124,13 @@ namespace Topo.Controller
         private void SetUnit(string unitId, bool selected)
         {
             if (selected)
+            {
                 model.SelectedUnits.Add(unitId);
+            }
             else
+            {
                 model.SelectedUnits.Remove(unitId);
+            }
             SetCalendarOfUnit(unitId, selected);
         }
 
@@ -134,7 +138,9 @@ namespace Topo.Controller
         {
             // one unit on its own is the unit the rest of Topo works on
             if (model.SelectedUnits.Count == 1)
+            {
                 _storageService.UnitId = model.SelectedUnits.First();
+            }
             await LoadEventsAsync();
             await RefreshPreview();
         }
@@ -147,11 +153,15 @@ namespace Topo.Controller
         {
             var calendarId = FindCalendarForUnit(model.Units[unitId]);
             if (calendarId == null)
+            {
                 return;
+            }
 
             var calendars = model.SelectedCalendars.Where(c => c != calendarId).ToList();
             if (selected)
+            {
                 calendars.Add(calendarId);
+            }
             model.SelectedCalendars = calendars.ToArray();
             _syncCalendarSelection = true;
         }

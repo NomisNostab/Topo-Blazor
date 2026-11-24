@@ -742,7 +742,9 @@ namespace Topo.Services
                         sheet.HPageBreaks.Add(sheet.Range[rowNumber, 1]);
                     }
                     else
+                    {
                         rowNumber++;
+                    }
                     sheet.Range[rowNumber, 1].Text = group.Heading;
                     sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
                     sheet.Range[rowNumber, 1].CellStyle.Font.Size = 12;
