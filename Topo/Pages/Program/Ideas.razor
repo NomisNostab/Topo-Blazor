@@ -13,10 +13,10 @@
 <EditForm Model="@model">
     <div class="form-group mb-3 row">
         <label for="calendars" class="col-sm-2 col-form-label">
-            Select Calendars
+            Select Unit
         </label>
         <div class="col-sm-8">
-            <select @ref="_select2Reference" id="calendars" class="form-select select2" multiple @bind="model.SelectedCalendars" title="Select one or more calendars to search">
+            <select @ref="_select2Reference" id="calendars" class="form-select select2" multiple @bind="model.SelectedCalendars" title="Select one or more units to search">
                 @foreach (var calendar in model.Calendars)
                 {
                     <option value="@calendar.Key">@calendar.Value</option>

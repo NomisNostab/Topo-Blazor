@@ -298,8 +298,8 @@ namespace Topo.Services
         }
 
         // The activities the unit's youth have proposed in Terrain, or null when they could not be read, with how many times each has
-        // been proposed and run before (from the given date, or all of them). The runs come from the events on the calendars selected in Terrain (nothing is changed there),
-        // and are left unknown if those events could not be read.
+        // been proposed and run before (from the given date, or all of them). The runs come from the events on the unit's own calendar, which is switched on in
+        // Terrain for the read and put back as it was, and are left unknown if those events could not be read.
         public async Task<List<ProposedActivityModel>?> GetProposedActivities(DateTime? since = null)
         {
             if (string.IsNullOrEmpty(_storageService.UnitId))
@@ -310,9 +310,26 @@ namespace Topo.Services
 
             var now = DateTime.Now;
             var from = since != null && since.Value > EarliestEventDate ? since.Value : EarliestEventDate;
-            var events = proposals.Count == 0 ? null : await _terrainAPIService.GetEventsAsync(GetUser(), from, now);
+            var events = proposals.Count == 0 ? null : await GetUnitEventsAsync(_storageService.UnitId, from, now);
             ProposedActivities.AddHistory(proposals, events?.results?.Where(e => !string.IsNullOrWhiteSpace(e.title)).Select(e => (e.title, e.start_datetime)), now);
             return proposals;
+        }
+
+        // The unit's events, whichever calendars happen to be on in Terrain: the unit's calendar (a unit's calendar has the unit's id) is the only one
+        // switched on while they are read, and the calendars are put back as they were
+        private async Task<GetEventsResultModel?> GetUnitEventsAsync(string unitId, DateTime from, DateTime to)
+        {
+            // what is on now is what gets put back, so it is read first
+            await GetCalendars();
+            await SetCalendar(unitId);
+            try
+            {
+                return await _terrainAPIService.GetEventsAsync(GetUser(), from, to);
+            }
+            finally
+            {
+                await ResetCalendar();
+            }
         }
 
         // Terrain's events API does not take a minimum date, so "all of the unit's history" starts well before Terrain existed
