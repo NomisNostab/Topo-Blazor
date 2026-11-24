@@ -50,7 +50,9 @@ namespace Topo.Controller
             model.GroupName = _storageService.GroupNameDisplay;
             model.Units = _storageService.Units;
             if (!string.IsNullOrEmpty(_storageService.UnitId))
+            {
                 await UnitChange(_storageService.UnitId);
+            }
         }
 
         internal async Task UnitChange(ChangeEventArgs e) => await UnitChange(e.Value?.ToString() ?? "");
@@ -102,7 +104,9 @@ namespace Topo.Controller
             model.ProjectId = "";
             model.Projects = new List<SiaProjectChoice>();
             if (string.IsNullOrEmpty(model.UnitId) || (NeedsMember && string.IsNullOrEmpty(model.MemberId)))
+            {
                 return;
+            }
 
             Loading = true;
             try
@@ -121,9 +125,13 @@ namespace Topo.Controller
                 {
                     model.Projects = SiaProgressBuilder.ProjectChoices(_data.Members.FirstOrDefault()?.Results ?? new Topo.Model.SIA.GetSIAResultsModel(), _storageService.Section);
                     if (model.Projects.Count == 1)
+                    {
                         model.ProjectId = model.Projects[0].Id;
+                    }
                     else if (model.Projects.Count == 0)
+                    {
                         model.ErrorMessage = "This Scout has no Special Interest Area projects in this section.";
+                    }
                 }
                 Recalculate();
             }
@@ -146,7 +154,9 @@ namespace Topo.Controller
             Report = null;
             // one project needs choosing first, from the Scout's list
             if (_data == null || (NeedsProject && string.IsNullOrEmpty(model.ProjectId)))
+            {
                 return;
+            }
 
             _data.ProjectId = NeedsProject ? model.ProjectId : "";
             _data.ExcludeCompleted = model.ExcludeCompleted;
@@ -162,7 +172,9 @@ namespace Topo.Controller
         private async Task Generate(OutputType outputType)
         {
             if (!CanExport)
+            {
                 return;
+            }
 
             try
             {

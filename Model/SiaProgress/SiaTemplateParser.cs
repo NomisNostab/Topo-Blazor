@@ -13,7 +13,9 @@ namespace Topo.Model.SiaProgress
             {
                 using var document = JsonDocument.Parse(json);
                 if (document.RootElement.ValueKind == JsonValueKind.Object && document.RootElement.TryGetProperty("document", out var body))
+                {
                     Walk(body, template);
+                }
             }
             catch (JsonException)
             {
@@ -35,7 +37,9 @@ namespace Topo.Model.SiaProgress
                 {
                     // a question; the file uploader is shown as the files attached
                     if (Text(element, "type") != "file_uploader")
+                    {
                         template.Questions.Add(new SiaQuestion { Id = id, Label = Text(element, "label").TrimEnd('*').Trim() });
+                    }
                 }
                 else if (id != "" && element.TryGetProperty("title", out _))
                 {

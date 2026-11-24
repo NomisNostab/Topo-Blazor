@@ -106,7 +106,9 @@ namespace Topo.Model.SiaProgress
         {
             DateTime? awarded = null;
             if (IsComplete(r))
+            {
                 awarded = AwardDate.Resolve(r.date_awarded, r.imported?.date_awarded, r.status_updated).Date;
+            }
 
             var options = templates.Plan.Options.Concat(templates.Review.Options)
                 .GroupBy(o => o.Key).ToDictionary(g => g.Key, g => g.First().Value);
@@ -134,7 +136,9 @@ namespace Topo.Model.SiaProgress
             {
                 var text = AnswerText(answers, question.Id, options);
                 if (text == "" && OptionalIds.Contains(question.Id))
+                {
                     continue;
+                }
                 list.Add(new SiaAnswer { Question = question.Label, Answer = text });
             }
             return list;
@@ -151,7 +155,9 @@ namespace Topo.Model.SiaProgress
         private static string AreaName(string key, Dictionary<string, string> options)
         {
             if (string.IsNullOrEmpty(key))
+            {
                 return "";
+            }
             return options.TryGetValue(key, out var title) ? title : CultureInfo.InvariantCulture.TextInfo.ToTitleCase(key.Replace("sia_", "").Replace("_", " "));
         }
 

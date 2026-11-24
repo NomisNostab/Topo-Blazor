@@ -106,7 +106,9 @@ namespace Topo.Services
             {
                 var logoPoints = sheet.Pictures.Count > 0 ? sheet.Pictures[0].Height * 0.75 : 0.0;
                 if (logoPoints + 6 <= usedPoints)
+                {
                     return rowNumber;
+                }
                 rowNumber++;
                 sheet.SetRowHeight(rowNumber, logoPoints + 6 - usedPoints);
                 return rowNumber;
@@ -215,7 +217,9 @@ namespace Topo.Services
                 var pages = SetUpPage(sheet, rowNumber, 4);
                 // a second page starts with the headings again
                 if (pages > 1)
+                {
                     sheet.PageSetup.PrintTitleRows = $"${headingRow}:${headingRow}";
+                }
                 printed.Add(("summary", sheet, pages));
             }
 
@@ -321,7 +325,9 @@ namespace Topo.Services
                 Row("Where it is up to", project.Status);
                 Row("Last updated", project.StatusUpdated.ToString(dateFormat, culture));
                 if (project.DateAwarded.HasValue)
+                {
                     Row("Awarded", project.DateAwarded.Value.ToString(dateFormat, culture));
+                }
 
                 Block("Plan");
                 Questions(project.Plan);
@@ -341,7 +347,9 @@ namespace Topo.Services
                 var pages = SetUpPage(sheet, rowNumber, 2);
                 // a second page says whose it is; the rows include the one the logo sits in, or its top is cut off
                 if (pages > 1)
+                {
                     sheet.PageSetup.PrintTitleRows = $"$1:${headerRows}";
+                }
                 printed.Add((project.MemberId, sheet, pages));
             }
 

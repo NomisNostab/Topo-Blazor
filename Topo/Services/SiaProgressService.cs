@@ -97,7 +97,9 @@ namespace Topo.Services
                 };
                 // a template that couldn't be read is tried again next time
                 if (templates.Plan.Questions.Count > 0)
+                {
                     _templates[section] = templates;
+                }
             }
             return templates;
         }
