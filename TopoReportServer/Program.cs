@@ -26,9 +26,13 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
 {
     // Topo runs in a browser, so its calls here are cross-origin and are preceded by an OPTIONS preflight
     if (allowedOrigins.Contains("*"))
+    {
         policy.AllowAnyOrigin();
+    }
     else
+    {
         policy.WithOrigins(allowedOrigins);
+    }
     policy.AllowAnyHeader().AllowAnyMethod();
 }));
 
@@ -43,9 +47,13 @@ app.UseCors();
 app.Use(async (context, next) =>
 {
     if (HttpMethods.IsGet(context.Request.Method) && context.Request.Path == "/appsettings.json")
+    {
         await Results.Json(new { ReportFunctionUrl = $"{context.Request.Scheme}://{context.Request.Host}/" }).ExecuteAsync(context);
+    }
     else
+    {
         await next();
+    }
 });
 
 app.UseBlazorFrameworkFiles();
@@ -86,9 +94,13 @@ app.MapMethods("/", new[] { "PUT", "POST" }, async (HttpRequest http, ILoggerFac
 
     // The real function swallows its own errors and returns "", so an empty answer means it failed (its stack trace is in the console)
     if (string.IsNullOrEmpty(result))
+    {
         log.LogWarning("No report came back after {Ms} ms (request was {Length} characters). The error, if any, is printed above.", timer.ElapsedMilliseconds, body.Length);
+    }
     else
+    {
         log.LogInformation("Report made in {Ms} ms: {Chars} base 64 characters from a {Length} character request", timer.ElapsedMilliseconds, result.Length, body.Length);
+    }
 
     return Results.Text(result, "text/plain");
 });
