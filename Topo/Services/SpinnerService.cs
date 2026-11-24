@@ -29,10 +29,14 @@
         public void Hide()
         {
             if (_requests > 0)
+            {
                 _requests--;
+            }
             // other requests are still running, or there is nothing showing
             if (_requests > 0 || !_visible)
+            {
                 return;
+            }
 
             var version = ++_version;
             _ = HideAfterDelay(version);
