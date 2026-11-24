@@ -4,7 +4,7 @@ name: Deploy alpha (develop)
 # https://<owner>.github.io/Topo-Blazor/alpha/ (a folder of the gh-pages branch, so the live site at the root is not touched).
 #
 # Repository settings it reads (all optional, see docs/alpha-site.md):
-#   secrets.SYNCFUSION_KEY            the same Syncfusion key main.yml uses
+#   secrets.SYNCFUSION_KEY            the same Syncfusion key main.yml uses, for the site and for the alpha Lambda
 #   secrets.ALPHA_AWS_ROLE_ARN        IAM role GitHub assumes (OIDC) to update the alpha Lambda
 #   vars.ALPHA_LAMBDA_FUNCTION        name of the alpha Lambda function; without it the Lambda step is skipped
 #   vars.ALPHA_REPORT_URL             that function's Function URL; without it the alpha site makes reports with the live Lambda
@@ -58,6 +58,17 @@ jobs:
         (cd lambda-out && zip -qr ../function.zip .)
         aws lambda update-function-code --function-name "$ALPHA_LAMBDA_FUNCTION" --zip-file fileb://function.zip
         aws lambda wait function-updated --function-name "$ALPHA_LAMBDA_FUNCTION"
+
+    # The function reads its Syncfusion key from the SyncfusionLicense environment variable. Set it from the same secret the site uses,
+    # keeping any other variables the function already has (update-function-configuration replaces them all)
+    - name: Set the function's Syncfusion key
+      if: ${{ env.ALPHA_LAMBDA_FUNCTION != '' && env.SYNCFUSION_KEY != '' }}
+      run: |
+        aws lambda get-function-configuration --function-name "$ALPHA_LAMBDA_FUNCTION" --query 'Environment.Variables' --output json > current-env.json
+        python3 -c 'import json,os; v=json.load(open("current-env.json")) or {}; v["SyncfusionLicense"]=os.environ["SYNCFUSION_KEY"]; json.dump({"Variables": v}, open("new-env.json","w"))'
+        aws lambda update-function-configuration --function-name "$ALPHA_LAMBDA_FUNCTION" --environment file://new-env.json > /dev/null
+        aws lambda wait function-updated --function-name "$ALPHA_LAMBDA_FUNCTION"
+        rm -f current-env.json new-env.json
 
     # ---- Site ----
     - name: Replace Syncfusion key

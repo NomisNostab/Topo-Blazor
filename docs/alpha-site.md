@@ -16,8 +16,8 @@ The alpha site is a folder (`alpha/`) of the same `gh-pages` branch the live sit
 ## What the workflow does
 
 1. Runs the unit tests. A failing test stops the deploy.
-2. If `ALPHA_LAMBDA_FUNCTION` is set: publishes `TopoReportFunction` (linux-x64, about 28 MB zipped) and updates that function with `aws lambda update-function-code`. This comes before the site so the site never talks to a function that does not know its report types.
-3. Replaces the Syncfusion key (`SYNCFUSION_KEY`, as `main.yml` does) and, if `ALPHA_REPORT_URL` is set, the report function address in `ReportService.cs`.
+2. If `ALPHA_LAMBDA_FUNCTION` is set: publishes `TopoReportFunction` (linux-x64, about 28 MB zipped) and updates that function with `aws lambda update-function-code`, then sets the function's `SyncfusionLicense` variable from the same `SYNCFUSION_KEY` secret. This comes before the site so the site never talks to a function that does not know its report types.
+3. Replaces the Syncfusion key in the site (`SYNCFUSION_KEY`, as `main.yml` does) and, if `ALPHA_REPORT_URL` is set, the report function address in `ReportService.cs`.
 4. Publishes the site, sets its base path to `/Topo-Blazor/alpha/`, and adds the banner.
 5. Publishes it to the `alpha` folder of `gh-pages`. Only that folder is replaced.
 
@@ -38,7 +38,7 @@ Repository settings (Settings > Secrets and variables > Actions):
 
 In AWS (region `ap-southeast-2`):
 
-1. **The alpha function.** Same settings as the live one: runtime .NET 10, x86_64, 1024 MB, 300 s timeout, handler `TopoReportFunction::TopoReportFunction.Function::FunctionHandler`, same execution role. Add the environment variable `SyncfusionLicense` (the key, so PDFs have no licence watermark). The first code can be anything; the workflow replaces it.
+1. **The alpha function.** Same settings as the live one: runtime .NET 10, x86_64, 1024 MB, 300 s timeout, handler `TopoReportFunction::TopoReportFunction.Function::FunctionHandler`, same execution role. The first code can be anything; the workflow replaces it. You do not set the Syncfusion key by hand: the workflow sets the function's `SyncfusionLicense` variable from the `SYNCFUSION_KEY` secret on every deploy, keeping any other variables the function has.
 2. **A Function URL** for it with auth type `NONE` and CORS allowing the origin `https://nomisnostab.github.io`, methods `PUT` and `POST`, header `content-type`. Put that URL in `ALPHA_REPORT_URL`.
 3. **Limits.** A Function URL with no auth can be called by anyone who has the address. Set reserved concurrency on the function (for example 5) and a billing alert.
 4. **GitHub sign-in without stored keys.** Add the identity provider `token.actions.githubusercontent.com` (audience `sts.amazonaws.com`) if the account does not have it, then a role GitHub can assume, with a trust condition limited to this repository's `develop` branch:
@@ -57,7 +57,7 @@ In AWS (region `ap-southeast-2`):
    }
    ```
 
-   Its permissions need only `lambda:UpdateFunctionCode`, `lambda:GetFunction` and `lambda:GetFunctionConfiguration` on the alpha function.
+   Its permissions need only `lambda:UpdateFunctionCode`, `lambda:UpdateFunctionConfiguration`, `lambda:GetFunction` and `lambda:GetFunctionConfiguration` on the alpha function.
 
 ## Things to know
 
