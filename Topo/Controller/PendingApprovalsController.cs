@@ -52,7 +52,9 @@ namespace Topo.Controller
             Units = _storageService.Units;
             UnitId = _storageService.UnitId;
             if (!string.IsNullOrEmpty(UnitId))
+            {
                 await StartClick();
+            }
         }
 
         internal async Task UnitChange(ChangeEventArgs e)
@@ -64,12 +66,17 @@ namespace Topo.Controller
             Notice = null;
             LoadError = null;
             if (!string.IsNullOrEmpty(UnitId))
+            {
                 await StartClick();
+            }
         }
 
         internal async Task StartClick()
         {
-            if (string.IsNullOrEmpty(UnitId)) return;
+            if (string.IsNullOrEmpty(UnitId))
+            {
+                return;
+            }
             IsLoading = true;
             LoadError = null;
             Notice = null;
@@ -79,7 +86,10 @@ namespace Topo.Controller
             {
                 var queue = await _approvalsService.GetPendingApprovalQueue(unitId);
                 // The leader picked another unit while this was loading; that unit's own read decides what is shown
-                if (unitId != UnitId) return;
+                if (unitId != UnitId)
+                {
+                    return;
+                }
                 Session = new PendingApprovalsSession(queue.Items);
                 NotActionable = queue.NotActionable;
             }
@@ -90,36 +100,54 @@ namespace Topo.Controller
             }
             finally
             {
-                if (unitId == UnitId) IsLoading = false;
+                if (unitId == UnitId)
+                {
+                    IsLoading = false;
+                }
             }
-            if (unitId == UnitId) await LoadDetails();
+            if (unitId == UnitId)
+            {
+                await LoadDetails();
+            }
         }
 
         // Skip, Back and Stop only move around; they never write anything
         internal async Task SkipClick()
         {
-            if (IsBusy) return;
+            if (IsBusy)
+            {
+                return;
+            }
             Session?.Skip();
             await AfterMove();
         }
 
         internal async Task BackClick()
         {
-            if (IsBusy) return;
+            if (IsBusy)
+            {
+                return;
+            }
             Session?.Back();
             await AfterMove();
         }
 
         internal async Task StopClick()
         {
-            if (IsBusy) return;
+            if (IsBusy)
+            {
+                return;
+            }
             Session?.Stop();
             await AfterMove();
         }
 
         internal async Task RestartClick()
         {
-            if (IsBusy) return;
+            if (IsBusy)
+            {
+                return;
+            }
             Session?.Restart();
             await AfterMove();
         }
@@ -139,7 +167,10 @@ namespace Topo.Controller
         private void Choose(ApprovalAction action)
         {
             var item = Session?.Current;
-            if (item == null || IsBusy) return;
+            if (item == null || IsBusy)
+            {
+                return;
+            }
             ValidationMessage = action.Problem(item.SubmissionType);
             Pending = ValidationMessage == null ? action : null;
             Notice = null;
@@ -156,7 +187,10 @@ namespace Topo.Controller
             var session = Session;
             var action = Pending;
             var item = session?.Current;
-            if (session == null || action == null || item == null || IsBusy) return;
+            if (session == null || action == null || item == null || IsBusy)
+            {
+                return;
+            }
 
             IsBusy = true;
             try
@@ -205,7 +239,9 @@ namespace Topo.Controller
                 // dealt with elsewhere, so it is not used to drop them; Terrain refuses a write on one that is gone anyway
                 var dropped = stillPending.Count > 0 || session.RemainingCount == 0 ? session.Reconcile(stillPending) : 0;
                 if (dropped > 0)
+                {
                     Notice += $" {dropped} other {(dropped == 1 ? "request was" : "requests were")} dealt with elsewhere and left out.";
+                }
             }
             catch (Exception)
             {
@@ -229,7 +265,10 @@ namespace Topo.Controller
                 DetailsLoading = false;
                 return;
             }
-            if (item.SubmissionId == _detailsFor && (Details != null || DetailsFailed)) return;
+            if (item.SubmissionId == _detailsFor && (Details != null || DetailsFailed))
+            {
+                return;
+            }
 
             _detailsFor = item.SubmissionId;
             Details = null;
@@ -248,7 +287,10 @@ namespace Topo.Controller
             }
 
             // The leader moved on while this was loading; that move reads its own
-            if (Session?.Current?.SubmissionId != item.SubmissionId) return;
+            if (Session?.Current?.SubmissionId != item.SubmissionId)
+            {
+                return;
+            }
             Details = details;
             DetailsFailed = details == null;
             DetailsLoading = false;

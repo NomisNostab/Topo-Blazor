@@ -61,15 +61,24 @@ namespace Topo.Model.Approvals
 
         public void Skip()
         {
-            if (Current == null) return;
+            if (Current == null)
+            {
+                return;
+            }
             _index = NextPendingIndex(_index + 1);
         }
 
         public void Back()
         {
-            if (IsStopped) return;
+            if (IsStopped)
+            {
+                return;
+            }
             var previous = PreviousPendingIndex();
-            if (previous >= 0) _index = previous;
+            if (previous >= 0)
+            {
+                _index = previous;
+            }
         }
 
         public void Stop()
@@ -80,7 +89,10 @@ namespace Topo.Model.Approvals
         // From the end with items skipped, go round again from the first of them
         public void Restart()
         {
-            if (IsStopped) return;
+            if (IsStopped)
+            {
+                return;
+            }
             _index = NextPendingIndex(0);
         }
 
@@ -90,7 +102,10 @@ namespace Topo.Model.Approvals
         public async Task<bool> CompleteAsync(ApprovalAction action, Func<PendingApprovalItem, ApprovalAction, Task<string?>> perform)
         {
             var item = Current;
-            if (item == null) return false;
+            if (item == null)
+            {
+                return false;
+            }
 
             string? error;
             try
@@ -133,7 +148,9 @@ namespace Topo.Model.Approvals
 
             // If the item on screen was one of those, move to the next that is left
             if (currentId != null && _index < _items.Count && _states[_index] != ItemState.Pending)
+            {
                 _index = NextPendingIndex(_index + 1);
+            }
             return dropped;
         }
 
@@ -141,14 +158,20 @@ namespace Topo.Model.Approvals
         private int NextPendingIndex(int from)
         {
             for (var i = Math.Max(from, 0); i < _items.Count; i++)
-                if (_states[i] == ItemState.Pending) return i;
+                if (_states[i] == ItemState.Pending)
+                {
+                    return i;
+                }
             return _items.Count;
         }
 
         private int PreviousPendingIndex()
         {
             for (var i = Math.Min(_index, _items.Count) - 1; i >= 0; i--)
-                if (_states[i] == ItemState.Pending) return i;
+                if (_states[i] == ItemState.Pending)
+                {
+                    return i;
+                }
             return -1;
         }
     }

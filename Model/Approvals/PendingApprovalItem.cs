@@ -40,7 +40,9 @@ namespace Topo.Model.Approvals
             {
                 // Award requests are not part of Pending Approvals and are not mentioned
                 if (string.Equals(result.submission.type, "award", StringComparison.OrdinalIgnoreCase))
+                {
                     continue;
+                }
 
                 var isOwn = !string.IsNullOrEmpty(currentMemberId) && result.member.id == currentMemberId;
                 var alreadyActioned = !string.IsNullOrEmpty(currentMemberId) && result.submission.actioned_by.Any(a => a.member_id == currentMemberId);

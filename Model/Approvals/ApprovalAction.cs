@@ -39,9 +39,13 @@ namespace Topo.Model.Approvals
         public string? Problem(string submissionType)
         {
             if (string.Equals(submissionType, "award", StringComparison.OrdinalIgnoreCase))
+            {
                 return "Award requests cannot be approved or sent back for improvement.";
+            }
             if (Comment.Length > MaxCommentLength)
+            {
                 return $"The comment can be at most {MaxCommentLength} characters.";
+            }
             return null;
         }
 

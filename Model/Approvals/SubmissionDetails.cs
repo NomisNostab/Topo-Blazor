@@ -15,14 +15,18 @@ namespace Topo.Model.Approvals
         public static SubmissionDetails? Build(string? templateJson, string? achievementJson)
         {
             if (!TryParse(templateJson, out var templateDoc) || !TryParse(achievementJson, out var achievementDoc))
+            {
                 return null;
+            }
             using (templateDoc)
             using (achievementDoc)
             {
                 var achievement = achievementDoc!.RootElement;
                 if (templateDoc!.RootElement.ValueKind != JsonValueKind.Object || achievement.ValueKind != JsonValueKind.Object
                     || !templateDoc.RootElement.TryGetProperty("document", out var document) || document.ValueKind != JsonValueKind.Array)
+                {
                     return null;
+                }
 
                 var answers = achievement.TryGetProperty("answers", out var a) && a.ValueKind == JsonValueKind.Object ? a : (JsonElement?)null;
                 var uploads = ReadUploads(achievement);
@@ -41,13 +45,22 @@ namespace Topo.Model.Approvals
                                 foreach (var input in inputs.EnumerateArray())
                                 {
                                     var field = ReadField(input, answers, uploads);
-                                    if (field != null) detailGroup.Fields.Add(field);
+                                    if (field != null)
+                                    {
+                                        detailGroup.Fields.Add(field);
+                                    }
                                 }
                             }
-                            if (detailGroup.Fields.Count > 0 || detailGroup.Title.Length > 0) detailSection.Groups.Add(detailGroup);
+                            if (detailGroup.Fields.Count > 0 || detailGroup.Title.Length > 0)
+                            {
+                                detailSection.Groups.Add(detailGroup);
+                            }
                         }
                     }
-                    if (detailSection.Groups.Count > 0) details.Sections.Add(detailSection);
+                    if (detailSection.Groups.Count > 0)
+                    {
+                        details.Sections.Add(detailSection);
+                    }
                 }
                 return details;
             }
@@ -90,7 +103,10 @@ namespace Topo.Model.Approvals
 
         private static List<DetailUpload> FilesChosen(JsonElement answer, List<DetailUpload> uploads)
         {
-            if (answer.ValueKind != JsonValueKind.Array) return new List<DetailUpload>();
+            if (answer.ValueKind != JsonValueKind.Array)
+            {
+                return new List<DetailUpload>();
+            }
             var ids = new HashSet<string>(answer.EnumerateArray().Where(a => a.ValueKind == JsonValueKind.String).Select(a => a.GetString() ?? string.Empty));
             return uploads.Where(u => ids.Contains(u.Id)).ToList();
         }
@@ -99,9 +115,15 @@ namespace Topo.Model.Approvals
         // <id>_verifierName, <id>_verifierContact and <id>_verifiedDate. Terrain shows it as "Verified by X (contact). Date D".
         private static string Verification(JsonElement? answers, string id)
         {
-            if (answers == null || id.Length == 0) return string.Empty;
+            if (answers == null || id.Length == 0)
+            {
+                return string.Empty;
+            }
             var name = Text(answers.Value, id + "_verifierName");
-            if (name.Length == 0) return string.Empty;
+            if (name.Length == 0)
+            {
+                return string.Empty;
+            }
             var contact = Text(answers.Value, id + "_verifierContact");
             var date = Text(answers.Value, id + "_verifiedDate");
             return $"Verified by {name}" + (contact.Length > 0 ? $" ({contact})" : "") + ". " + (date.Length > 0 ? $"Date {date}" : "").Trim();
@@ -113,17 +135,31 @@ namespace Topo.Model.Approvals
             var titles = new Dictionary<string, string>();
             void Collect(JsonElement selections)
             {
-                if (selections.ValueKind != JsonValueKind.Array) return;
+                if (selections.ValueKind != JsonValueKind.Array)
+                {
+                    return;
+                }
                 foreach (var selection in selections.EnumerateArray())
                 {
                     var id = Text(selection, "id");
-                    if (id.Length > 0) titles[id] = Text(selection, "title");
+                    if (id.Length > 0)
+                    {
+                        titles[id] = Text(selection, "title");
+                    }
                 }
             }
-            if (input.TryGetProperty("selections", out var direct)) Collect(direct);
+            if (input.TryGetProperty("selections", out var direct))
+            {
+                Collect(direct);
+            }
             if (input.TryGetProperty("tabs", out var tabs) && tabs.ValueKind == JsonValueKind.Array)
+            {
                 foreach (var tab in tabs.EnumerateArray())
-                    if (tab.TryGetProperty("selections", out var tabSelections)) Collect(tabSelections);
+                    if (tab.TryGetProperty("selections", out var tabSelections))
+                    {
+                        Collect(tabSelections);
+                    }
+            }
 
             var chosen = answer.ValueKind == JsonValueKind.Array
                 ? answer.EnumerateArray().Select(Display)
@@ -172,7 +208,10 @@ namespace Topo.Model.Approvals
         private static bool TryParse(string? json, out JsonDocument? document)
         {
             document = null;
-            if (string.IsNullOrWhiteSpace(json)) return false;
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return false;
+            }
             try
             {
                 document = JsonDocument.Parse(json);

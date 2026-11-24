@@ -470,7 +470,9 @@ namespace Topo.Services
                 var response = await _httpClient.SendAsync(httpRequest);
                 _logger.LogInformation($"Version: {_storageService.Version}; Date: {DateTime.Now.ToString("dd/MM/yyyy : HH:mm:ss")}; Request: POST {requestUri} ({action.Outcome}); StatusCode: {(int)response.StatusCode}");
                 if (response.IsSuccessStatusCode)
+                {
                     return null;
+                }
                 return (int)response.StatusCode switch
                 {
                     401 => "Terrain did not accept your sign in. Sign in again and retry.",

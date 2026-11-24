@@ -357,30 +357,45 @@ namespace Topo.Services
                 using var document = System.Text.Json.JsonDocument.Parse(achievementJson);
                 var root = document.RootElement;
                 if (root.TryGetProperty("template", out var t) && t.ValueKind == System.Text.Json.JsonValueKind.String)
+                {
                     template = t.GetString();
+                }
                 if (root.TryGetProperty("version", out var v) && v.TryGetInt32(out var n))
+                {
                     version = n;
+                }
             }
             catch (System.Text.Json.JsonException)
             {
                 return null;
             }
-            if (string.IsNullOrEmpty(template)) return null;
+            if (string.IsNullOrEmpty(template))
+            {
+                return null;
+            }
 
             // Terrain reads an OAS stage's latest template; the others, the version the record was filled in on. If that
             // file is not there, the latest.
             string? templateJson = null;
             if (item.AchievementType != "outdoor_adventure_skill" && version != null)
+            {
                 templateJson = await GetTemplate($"{template}/{version}.json");
+            }
             templateJson ??= await GetTemplate($"{template}/latest.json");
             return SubmissionDetails.Build(templateJson, achievementJson);
         }
 
         private async Task<string?> GetTemplate(string path)
         {
-            if (_templates.TryGetValue(path, out var cached)) return cached;
+            if (_templates.TryGetValue(path, out var cached))
+            {
+                return cached;
+            }
             var json = await _terrainAPIService.GetTemplateJson(path);
-            if (!json.TrimStart().StartsWith("{")) return null;
+            if (!json.TrimStart().StartsWith("{"))
+            {
+                return null;
+            }
             _templates[path] = json;
             return json;
         }
