@@ -265,7 +265,10 @@ else
     private string Summary()
     {
         var done = Session!.Completed;
-        if (done.Count == 0) return "Nothing was actioned.";
+        if (done.Count == 0)
+        {
+            return "Nothing was actioned.";
+        }
         var parts = done
             .GroupBy(c => c.Action.PastTense)
             .Select(g => $"{g.Count()} {g.Key.ToLower()}");
