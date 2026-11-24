@@ -1916,7 +1916,9 @@ namespace Topo.Services
 
             // nothing to fit when there are no approvals
             if (rowNumber >= 4)
+            {
                 sheet.Range[4, 2, rowNumber, 7].AutofitColumns();
+            }
 
             sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
             sheet.PageSetup.Orientation = ExcelPageOrientation.Portrait;
