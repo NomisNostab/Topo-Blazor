@@ -72,7 +72,9 @@ namespace Topo.Controller
                     ?? calendars.FirstOrDefault(c => c.title.Contains(name, StringComparison.OrdinalIgnoreCase)).id
                     ?? calendars.FirstOrDefault(c => c.title.Length > 0 && name.Contains(c.title, StringComparison.OrdinalIgnoreCase)).id;
                 if (match != null)
+                {
                     model.SelectedCalendars = new HashSet<string> { match };
+                }
             }
         }
 
@@ -92,22 +94,34 @@ namespace Topo.Controller
         internal void ToggleCalendar(string calendarId, bool selected)
         {
             if (selected)
+            {
                 model.SelectedCalendars.Add(calendarId);
+            }
             else
+            {
                 model.SelectedCalendars.Remove(calendarId);
+            }
         }
 
         internal async Task GenerateClick()
         {
             model.ErrorMessage = "";
             if (string.IsNullOrEmpty(model.UnitId))
+            {
                 model.ErrorMessage = "Please select a unit.";
+            }
             else if (model.SelectedCalendars.Count == 0)
+            {
                 model.ErrorMessage = "Please select at least one calendar.";
+            }
             else if (!model.AllTime && model.ToDate < model.FromDate)
+            {
                 model.ErrorMessage = "The to date must be after the from date.";
+            }
             if (model.ErrorMessage != "")
+            {
                 return;
+            }
 
             Busy = true;
             model.Report = null;
@@ -134,7 +148,9 @@ namespace Topo.Controller
         internal async Task DownloadClick(OutputType outputType)
         {
             if (model.Report == null)
+            {
                 return;
+            }
 
             var section = model.Report.Section;
             var report = await _reportService.GetUnitReport(_storageService.GroupName ?? "Group Name", section, model.Report.UnitName, outputType, JsonConvert.SerializeObject(model.Report));

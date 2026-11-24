@@ -113,7 +113,9 @@ namespace Topo.Model.History
             {
                 var current = sections.FirstOrDefault(s => s.SectionKey == Key(input.CurrentSection));
                 if (current != null)
+                {
                     current.CurrentRole = input.CurrentRole;
+                }
             }
 
             model.Sections = sections;
@@ -204,14 +206,20 @@ namespace Topo.Model.History
         {
             var dated = sections.Where(s => s.From != null).OrderBy(s => s.From).ToList();
             if (dated.Count == 0)
+            {
                 dated = sections.Take(1).ToList();
+            }
             if (dated.Count == 0)
+            {
                 return;
+            }
 
             foreach (var entry in input.Logbook)
             {
                 if (!DateTime.TryParseExact(entry.start_date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var start))
+                {
                     continue;
+                }
                 DateTime.TryParseExact(entry.end_date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var end);
 
                 var section = dated.LastOrDefault(s => s.From <= start) ?? dated.First();
@@ -229,11 +237,17 @@ namespace Topo.Model.History
 
                 var role = (entry.details?.your_role ?? "").Trim().ToLowerInvariant();
                 if (role.StartsWith("lead"))
+                {
                     section.Led++;
+                }
                 else if (role.Contains("assist"))
+                {
                     section.Assisted++;
+                }
                 else
+                {
                     section.Participated++;
+                }
             }
 
             foreach (var section in sections)
@@ -277,19 +291,29 @@ namespace Topo.Model.History
         public static string Duration(DateTime? from, DateTime? to)
         {
             if (from == null || to == null || to < from)
+            {
                 return "";
+            }
             var months = (to.Value.Year - from.Value.Year) * 12 + to.Value.Month - from.Value.Month;
             if (to.Value.Day < from.Value.Day)
+            {
                 months--;
+            }
             if (months < 1)
+            {
                 return "less than a month";
+            }
             var years = months / 12;
             months %= 12;
             var parts = new List<string>();
             if (years > 0)
+            {
                 parts.Add($"{years} year{(years == 1 ? "" : "s")}");
+            }
             if (months > 0)
+            {
                 parts.Add($"{months} month{(months == 1 ? "" : "s")}");
+            }
             return string.Join(" ", parts);
         }
 

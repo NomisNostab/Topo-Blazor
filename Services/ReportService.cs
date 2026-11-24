@@ -1947,7 +1947,9 @@ namespace Topo.Services
             {
                 var text = lines.ToList();
                 if (text.Count == 0)
+                {
                     text.Add("None");
+                }
                 rowNumber++;
                 sheet.Range[rowNumber, 1].Text = label;
                 sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
@@ -1971,7 +1973,9 @@ namespace Topo.Services
                 $"{m.CurrentLeaders} {(m.CurrentLeaders == 1 ? "leader" : "leaders")}"
             };
             if (m.YouthHelpers > 0)
+            {
                 currentMembers.Insert(1, $"{m.YouthHelpers} youth {(m.YouthHelpers == 1 ? "helper" : "helpers")}");
+            }
             Row("Current members", currentMembers);
             Row("Former members", new[] { $"{m.FormerAttendees} who attended the unit's events" });
             Row("Been part of the unit", new[] { m.Total.ToString() });
@@ -2073,7 +2077,9 @@ namespace Topo.Services
             {
                 var text = lines.ToList();
                 if (text.Count == 0)
+                {
                     text.Add("None");
+                }
                 rowNumber++;
                 sheet.Range[rowNumber, 1].Text = label;
                 sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
@@ -2094,7 +2100,9 @@ namespace Topo.Services
             {
                 var title = s.SectionName + (string.IsNullOrEmpty(s.Units) ? "" : " - " + s.Units);
                 if (s.From != null)
+                {
                     title += $"  ({Date(s.From)} to {Date(s.To)}{(string.IsNullOrEmpty(s.TimeInSection) ? "" : ", " + s.TimeInSection)})";
+                }
                 Block(title);
 
                 Row("Milestones", s.Milestones.Count == 0
@@ -2107,7 +2115,9 @@ namespace Topo.Services
                         .Concat(s.Oas.Select(o => $"{o.Stream} - final stage {o.FinalStage} ({Plural(o.Stages.Count, "stage")} in this section: {string.Join(", ", o.Stages.Select(st => st.Stage))})")));
                 var sia = s.Sia.Select(a => $"{a.Area}{(string.IsNullOrEmpty(a.Project) ? "" : " - " + a.Project)}{(a.Date != null ? " " + Date(a.Date) : "")}").ToList();
                 if (s.SiaInProgress > 0 && sia.Count > 0)
+                {
                     sia.Add($"{s.SiaInProgress} not yet awarded");
+                }
                 Row("Special Interest Areas", sia);
                 Row("Additional Awards", s.AdditionalAwards.Select(a => $"{a.Name}{(a.Date != null ? " " + Date(a.Date) : "")}"));
                 Row("Activities", new[]
@@ -2117,7 +2127,9 @@ namespace Topo.Services
                 });
                 var roles = new List<string> { ScoutingHistoryRoles.Text(s.Led, s.Assisted, s.Participated) };
                 if (!string.IsNullOrEmpty(s.CurrentRole))
+                {
                     roles.Add($"Current role: {s.CurrentRole}");
+                }
                 Row("Roles", roles);
             }
 

@@ -33,7 +33,9 @@ namespace TopoReportFunctionTest
                 }
             };
             if (categories != null)
+            {
                 evt.achievement_pathway_logbook_data = new Achievement_Pathway_Logbook_Data { categories = categories, distance_walkabout = walked };
+            }
             return new UnitEventInput { Scope = scope, Event = evt };
         }
 
