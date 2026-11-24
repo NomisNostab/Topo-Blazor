@@ -56,7 +56,9 @@ namespace Topo.Controller
             model.Calendars = await _programService.GetCalendars();
             SetPeriod(ThisQuarterStart(), ThisQuarterStart().AddMonths(3).AddDays(-1));
             if (!string.IsNullOrEmpty(_storageService.UnitId) && model.Units.ContainsKey(_storageService.UnitId))
+            {
                 ToggleUnit(_storageService.UnitId, true);
+            }
         }
 
         // The calendar named after a unit, if there is one
@@ -65,9 +67,13 @@ namespace Topo.Controller
         internal void ToggleUnit(string unitId, bool selected)
         {
             if (selected)
+            {
                 model.SelectedUnits.Add(unitId);
+            }
             else
+            {
                 model.SelectedUnits.Remove(unitId);
+            }
             Result = null;
 
             // a unit's calendar is ticked and unticked with it; any other calendar ticked by hand stays as it is
@@ -75,12 +81,18 @@ namespace Topo.Controller
             if (calendar != null)
             {
                 if (selected)
+                {
                     model.SelectedCalendars.Add(calendar);
+                }
                 else
+                {
                     model.SelectedCalendars.Remove(calendar);
+                }
             }
             if (model.SelectedUnits.Count == 1)
+            {
                 _storageService.UnitId = model.SelectedUnits.First();
+            }
         }
 
         internal void ToggleAllUnits(bool selected)
@@ -88,16 +100,22 @@ namespace Topo.Controller
             foreach (var unitId in model.Units.Keys)
             {
                 if (selected != model.SelectedUnits.Contains(unitId))
+                {
                     ToggleUnit(unitId, selected);
+                }
             }
         }
 
         internal void ToggleCalendar(string calendarId, bool selected)
         {
             if (selected)
+            {
                 model.SelectedCalendars.Add(calendarId);
+            }
             else
+            {
                 model.SelectedCalendars.Remove(calendarId);
+            }
         }
 
         public List<List<KeyValuePair<string, string>>> CalendarColumns() => CalendarMatcher.Columns(model.Calendars);
@@ -127,11 +145,17 @@ namespace Topo.Controller
             model.ErrorMessage = "";
             model.Message = "";
             if (model.SelectedUnits.Count == 0)
+            {
                 model.ErrorMessage = "Please select at least one unit.";
+            }
             else if (model.To < model.From)
+            {
                 model.ErrorMessage = "The to date must be after the from date.";
+            }
             if (model.ErrorMessage != "")
+            {
                 return;
+            }
 
             // in the order the units are listed
             var unitIds = model.Units.Keys.Where(model.SelectedUnits.Contains).ToList();
@@ -150,7 +174,9 @@ namespace Topo.Controller
                 request.CalendarIdsByUnit[unitId] = model.SelectedCalendars.Where(c => !otherUnitCalendars.Contains(c)).ToArray();
                 var saved = await ReadRoster(unitId);
                 if (saved != null)
+                {
                     request.PreviousRosters[unitId] = saved;
+                }
             }
 
             Busy = true;
@@ -186,7 +212,9 @@ namespace Topo.Controller
         internal async Task DownloadClick(OutputType outputType)
         {
             if (Result == null)
+            {
                 return;
+            }
 
             var report = Result.Report;
             var first = report.Sections.FirstOrDefault();

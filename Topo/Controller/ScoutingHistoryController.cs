@@ -76,7 +76,9 @@ namespace Topo.Controller
             model.ErrorMessage = "";
             var request = ++_loadRequest;
             if (string.IsNullOrEmpty(model.MemberId))
+            {
                 return;
+            }
 
             var member = model.Members.FirstOrDefault(m => m.id == model.MemberId);
             ScoutingHistoryModel? history = null;
@@ -91,16 +93,22 @@ namespace Topo.Controller
             }
 
             if (request != _loadRequest)
+            {
                 return;
+            }
             model.History = history;
             if (failed)
+            {
                 model.ErrorMessage = "Couldn't load that member's history.";
+            }
         }
 
         internal async Task DownloadClick(OutputType outputType)
         {
             if (model.History == null)
+            {
                 return;
+            }
 
             // the logo is the section the member is in now
             var section = model.History.Sections.LastOrDefault()?.SectionKey ?? "";

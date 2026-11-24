@@ -73,12 +73,18 @@ namespace Topo.Model.UnitReport
             {
                 var evt = item.Event;
                 if (!seen.Add(evt.id))
+                {
                     continue;
+                }
                 // only events that have happened in the range, and not cancelled ones
                 if (evt.start_datetime.Date < input.From.Date || evt.start_datetime.Date > input.To.Date || evt.start_datetime > input.AsOf)
+                {
                     continue;
+                }
                 if (evt.status.Contains("cancel", StringComparison.OrdinalIgnoreCase))
+                {
                     continue;
+                }
 
                 model.EventsCounted++;
 
@@ -102,15 +108,23 @@ namespace Topo.Model.UnitReport
                 {
                     var isLeader = current.TryGetValue(key, out var member) ? IsLeader(member) : leaderKeys.Contains(key);
                     if (isLeader)
+                    {
                         leaders++;
+                    }
                     else
+                    {
                         youth++;
+                    }
                     if (!current.ContainsKey(key))
+                    {
                         former.Add(key);
+                    }
                 }
 
                 if (attendees.Count == 0)
+                {
                     model.EventsWithoutAttendance++;
+                }
 
                 var hours = Math.Max(0, (evt.end_datetime - evt.start_datetime).TotalHours);
                 model.LeaderHours += hours * leaders;
@@ -128,7 +142,9 @@ namespace Topo.Model.UnitReport
                     model.HikeEvents++;
                     var km = logbook.distance_walkabout / 1000.0;
                     if (km > 0)
+                    {
                         model.HikeEventsWithDistance++;
+                    }
                     model.HikeKmOnce += km;
                     model.HikeKmPerPerson += km * (youth + leaders);
                 }

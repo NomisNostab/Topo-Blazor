@@ -28,7 +28,9 @@ namespace TopoReportFunctionTest
         {
             var records = new SectionMemberRecords();
             if (introSection != "")
+            {
                 records.IntroToSection.results = new[] { Intro(introSection, introDate) };
+            }
             records.AllAchievements.results = recordSections.Select(s =>
             {
                 var parts = s.Split('@');

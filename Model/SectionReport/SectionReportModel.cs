@@ -74,7 +74,9 @@ namespace Topo.Model.SectionReport
             get
             {
                 if (Evenness == null)
+                {
                     return "Too few members to say";
+                }
                 var how = Evenness >= 0.85 ? "Evenly spread" : Evenness >= 0.65 ? "Fairly even" : "Bunched together";
                 var lean = Lean < -0.25 ? ", leaning younger" : Lean > 0.25 ? ", leaning older" : "";
                 return $"{how}{lean} ({Evenness:P0})";

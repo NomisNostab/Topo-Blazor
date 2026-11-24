@@ -103,10 +103,14 @@ namespace Topo.Services
                 foreach (var summary in result?.results ?? new Topo.Model.Program.Event[0])
                 {
                     if (!seen.Add(summary.id))
+                    {
                         continue;
+                    }
                     var detail = await _terrainAPIService.GetEventAsync(summary.id);
                     if (detail != null)
+                    {
                         events.Add(new UnitEventInput { Scope = summary.invitee_type, Event = detail });
+                    }
                 }
             }
             return events;

@@ -91,7 +91,9 @@ namespace Topo.Model.SectionReport
         {
             var intro = LatestIntro(intros, section);
             if (intro == null)
+            {
                 return false;
+            }
             var invested = ScoutingHistoryBuilder.AwardedDate(intro.date_awarded, intro.imported?.date_awarded, intro.status_updated);
             return invested.Date >= from.Date && invested.Date <= to.Date;
         }
@@ -165,16 +167,22 @@ namespace Topo.Model.SectionReport
             foreach (var member in youth)
             {
                 if (!input.Records.TryGetValue(member.id, out var records))
+                {
                     continue;
+                }
 
                 var intro = LatestIntro(records.IntroToSection, section);
                 if (intro == null)
+                {
                     continue;
+                }
 
                 model.InvestedYouth++;
                 var invested = ScoutingHistoryBuilder.AwardedDate(intro.date_awarded, intro.imported?.date_awarded, intro.status_updated);
                 if (invested.Date < input.From.Date || invested.Date > input.To.Date)
+                {
                     continue;
+                }
 
                 model.InvestedInPeriod++;
                 model.NewMembers.Add(new NewMember { Name = Name(member), Origin = OriginOf(input, records, rank) });
@@ -199,9 +207,13 @@ namespace Topo.Model.SectionReport
             });
 
             if (elsewhere.Any(unit => input.GroupUnitIds.Contains(unit)))
+            {
                 return NewMemberOrigin.YoungerSection;
+            }
             if (input.GroupUnitIds.Count > 0 && elsewhere.Count > 0)
+            {
                 return NewMemberOrigin.AnotherGroup;
+            }
             // records with no unit on them (imported ones) or no way to tell the group's units apart: assume this group
             return earlierSection ? NewMemberOrigin.YoungerSection : NewMemberOrigin.OffTheStreet;
         }
@@ -248,15 +260,23 @@ namespace Topo.Model.SectionReport
             {
                 var key = PersonKey(next.Person.MemberNumber, next.Person.Id);
                 if (currentKeys.Contains(key))
+                {
                     continue;
+                }
                 var intro = LatestIntro(next.Records.IntroToSection, nextSection);
                 if (intro == null)
+                {
                     continue;
+                }
                 var invested = ScoutingHistoryBuilder.AwardedDate(intro.date_awarded, intro.imported?.date_awarded, intro.status_updated);
                 if (invested.Date < input.From.Date || invested.Date > input.To.Date)
+                {
                     continue;
+                }
                 if (next.Records.AllAchievements.results.Any(r => Key(r.section) == section))
+                {
                     Add(next.Person.Id, next.Person.MemberNumber, next.Person.Name, "");
+                }
             }
 
             if (input.Previous != null)
@@ -274,7 +294,9 @@ namespace Topo.Model.SectionReport
                 {
                     var key = PersonKey(person.member_number, person.id);
                     if (currentKeys.Contains(key) || leaderKeys.Contains(key))
+                    {
                         continue;
+                    }
                     Add(person.id, person.member_number, $"{person.first_name} {person.last_name}".Trim(), "Came to an event in the period");
                 }
             }
@@ -303,7 +325,9 @@ namespace Topo.Model.SectionReport
                 {
                     var key = PersonKey(person.member_number, person.id);
                     if (!currentKeys.Contains(key))
+                    {
                         departed.TryAdd(key, $"{person.first_name} {person.last_name}".Trim());
+                    }
                 }
             }
 
@@ -326,12 +350,18 @@ namespace Topo.Model.SectionReport
                     var key = PersonKey(person.member_number, person.id);
                     // a group event also lists other units' members, so only this unit's own are counted
                     if (item.Scope == "group" && !current.ContainsKey(key))
+                    {
                         continue;
+                    }
                     var isLeader = current.TryGetValue(key, out var member) ? UnitReportBuilder.IsLeader(member) : leaderKeys.Contains(key);
                     if (isLeader)
+                    {
                         leaders++;
+                    }
                     else
+                    {
                         youth++;
+                    }
                 }
                 return new ReportEvent
                 {
@@ -450,7 +480,9 @@ namespace Topo.Model.SectionReport
         {
             var match = System.Text.RegularExpressions.Regex.Match(member.age ?? "", @"^(\d+)y(?:\s*(\d+)m)?");
             if (!match.Success)
+            {
                 return null;
+            }
             return int.Parse(match.Groups[1].Value) + (match.Groups[2].Success ? int.Parse(match.Groups[2].Value) / 12.0 : 0);
         }
 
@@ -459,7 +491,9 @@ namespace Topo.Model.SectionReport
             var ages = youth.Select(AgeInYears).Where(a => a != null).Select(a => a!.Value).OrderBy(a => a).ToList();
             var profile = new AgeProfile { Counted = ages.Count };
             if (ages.Count == 0)
+            {
                 return profile;
+            }
 
             var (from, to) = SectionAges.TryGetValue(section, out var range) ? range : ((int)ages.First(), (int)ages.Last());
             from = Math.Min(from, (int)ages.First());

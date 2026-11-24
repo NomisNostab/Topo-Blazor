@@ -15,7 +15,9 @@ namespace Topo.Services
         public static string? FindForUnit(IEnumerable<KeyValuePair<string, string>> calendars, string? unitName)
         {
             if (string.IsNullOrWhiteSpace(unitName))
+            {
                 return null;
+            }
 
             var name = unitName.Trim();
             var titled = calendars.Select(c => (id: c.Key, title: c.Value.Trim())).ToList();
