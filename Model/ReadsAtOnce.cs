@@ -22,7 +22,9 @@ namespace Topo.Model
                     // Once a read has failed the caller is going to get that failure, so don't send Terrain any more requests,
                     // as reading one after another would have stopped at the first failure too.
                     if (Volatile.Read(ref failed[0]) == 1)
+                    {
                         return;
+                    }
                     try
                     {
                         results[i] = await read(item);
