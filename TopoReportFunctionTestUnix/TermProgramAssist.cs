@@ -31,7 +31,9 @@ namespace TopoReportFunctionTest
             for (int row = 1; row <= 10; row++)
             {
                 if (sheet.Range[row, 1].Text == "Start")
+                {
                     return Enumerable.Range(1, 16).Select(c => sheet.Range[row, c].Text).Where(t => !string.IsNullOrEmpty(t)).ToList();
+                }
             }
             Assert.Fail("No heading row found");
             return new List<string>();
