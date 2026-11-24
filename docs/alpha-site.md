@@ -11,7 +11,7 @@ Every push to `develop` publishes an **alpha** copy of Topo, and (once AWS is se
 
 The alpha site is a folder (`alpha/`) of the same `gh-pages` branch the live site is served from, because a repository has one GitHub Pages site. It has a red **ALPHA - develop abc1234 - not released** tag in the corner, so nobody mistakes it for the live site, and it says which commit it is.
 
-**The alpha site signs in to the real Terrain.** Anything on `develop` that writes to Terrain writes real records when used on the alpha site. Reports made there carry real members' names through the alpha Lambda.
+**The alpha site signs in to the real Terrain, and nothing is switched off on it.** Features that write to Terrain work on the alpha site exactly as they will once released, which is the point of trying them there; they write real records, so use them on real data with the same care as the live site. Reports made there carry real members' names through the alpha Lambda.
 
 ## What the workflow does
 
