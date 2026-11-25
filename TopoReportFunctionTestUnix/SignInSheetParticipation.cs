@@ -74,6 +74,34 @@ namespace TopoReportFunctionTest
             Assert.AreEqual(0, sheet.HPageBreaks.Count);
         }
 
+        private static int PdfPages(List<MemberListModel> members, SignInSheetOptions options)
+        {
+            var workbook = new ReportService().GenerateSignInSheetWorkbook(members, "Group", "", "Units", "Camp", options);
+            var renderer = new Syncfusion.XlsIORenderer.XlsIORenderer();
+            using var pdf = renderer.ConvertToPDF(workbook);
+            return pdf.Pages.Count;
+        }
+
+        private static List<MemberListModel> Section(string section, int count)
+        {
+            return Enumerable.Range(1, count).Select(i => new MemberListModel
+            {
+                id = section + i, first_name = section + " Member", last_name = "Number " + i, section = section, patrol_name = "Patrol " + (i % 4)
+            }).ToList();
+        }
+
+        // Each section is on one page: a long section is shrunk to fit its page, not run on to a second one
+        [TestMethod]
+        public void ALongSectionStillFitsOnOnePage()
+        {
+            foreach (var count in new[] { 12, 30, 45 })
+            {
+                var members = Section("cub", 5).Concat(Section("scout", count)).Concat(Section("venturer", 3)).ToList();
+                Assert.AreEqual(3, PdfPages(members, new SignInSheetOptions()), $"a section of {count}");
+                Assert.AreEqual(3, PdfPages(members, new SignInSheetOptions { UseTimeInOutSignature = true, IncludeParticipationColumns = true }), $"a section of {count} with every column");
+            }
+        }
+
         // Portrait wherever it can be had: with the usual columns a sheet is portrait (a little shrunk to fit), not turned sideways
         [TestMethod]
         public void TheUsualSheetIsPortraitOnA4()
