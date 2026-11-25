@@ -244,6 +244,37 @@ namespace TopoReportFunctionTest
             Assert.AreEqual(DepartureStatus.MovedGroup, back.Sections[0].Departed.Single(d => d.Name == "Gone Youth").Status);
         }
 
+        // An adult the leader has said is not a leader of the section (a group leader, say) is left out of everything about leaders
+        [TestMethod]
+        public void AnAdultSetAsideIsNotCountedAsALeaderOfTheSection()
+        {
+            var before = SectionReportBuilder.Build(CubUnit());
+            var input = CubUnit();
+            input.To = new DateTime(2026, 9, 30);
+            input.NotLeaders.Add("10"); // Lee
+
+            var report = SectionReportBuilder.Build(input);
+
+            Assert.AreEqual(before.CurrentLeaders - 1, report.CurrentLeaders);
+            CollectionAssert.DoesNotContain(report.Leaders.Select(l => l.MemberNumber).ToList(), "10");
+            Assert.AreEqual(1, report.PastEvents.First().LeadersAttended); // only the leader who has gone: Lee came too, but is set aside
+            CollectionAssert.AreEqual(new[] { "Leader40 X", "Old Leader" }, report.DepartedLeaders); // Lee does not turn up as a departed leader
+            Assert.IsFalse(report.Departed.Any(d => d.Name.StartsWith("Lee")));
+            Assert.AreEqual(before.CurrentYouth, report.CurrentYouth);
+        }
+
+        [TestMethod]
+        public void SettingAnAdultAsideDoesNotChangeYouthOrTheRoster()
+        {
+            var members = new List<MemberListModel> { Member("y1", "1", "Yara"), Member("l1", "10", "Lee", adult: 1), Member("l2", "11", "Lou", adult: 1) };
+
+            var kept = SectionReportBuilder.WithoutNotLeaders(members, new HashSet<string> { "10", "1" });
+
+            // the youth with a matching number is not an adult leader, so only Lee goes
+            CollectionAssert.AreEqual(new[] { "y1", "l2" }, kept.Select(m => m.id).ToList());
+            Assert.AreEqual("10", SectionReportBuilder.KeyOf(members[1]));
+        }
+
         [TestMethod]
         public void CountsYouthInvestedAndLeaders()
         {

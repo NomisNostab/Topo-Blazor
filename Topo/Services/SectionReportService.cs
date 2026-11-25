@@ -17,6 +17,8 @@ namespace Topo.Services
         public Dictionary<string, string[]> CalendarIdsByUnit { get; set; } = new Dictionary<string, string[]>();
         // The roster saved by each unit's last report, if there is one
         public Dictionary<string, RosterSnapshot> PreviousRosters { get; set; } = new Dictionary<string, RosterSnapshot>();
+        // Adults the leader has said are not leaders of each unit (a group leader, say), by SectionReportBuilder.KeyOf
+        public Dictionary<string, HashSet<string>> NotLeadersByUnit { get; set; } = new Dictionary<string, HashSet<string>>();
     }
 
     public class SectionReportResult
@@ -94,7 +96,8 @@ namespace Topo.Services
                     CurrentMembers = members,
                     AwardNames = awardNames,
                     GroupUnitIds = groupUnits.Select(u => u.id).ToHashSet(),
-                    Previous = request.PreviousRosters.GetValueOrDefault(unitId)
+                    Previous = request.PreviousRosters.GetValueOrDefault(unitId),
+                    NotLeaders = new HashSet<string>(request.NotLeadersByUnit.GetValueOrDefault(unitId) ?? new HashSet<string>(), StringComparer.OrdinalIgnoreCase)
                 };
 
                 progress?.Invoke($"{unitName}: events");
@@ -141,7 +144,7 @@ namespace Topo.Services
                 }
 
                 result.Report.Sections.Add(SectionReportBuilder.Build(input));
-                result.Rosters[unitId] = SectionReportBuilder.TakeSnapshot(members, now);
+                result.Rosters[unitId] = SectionReportBuilder.TakeSnapshot(SectionReportBuilder.WithoutNotLeaders(members, input.NotLeaders), now);
             }
 
             return result;

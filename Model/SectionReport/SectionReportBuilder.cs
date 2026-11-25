@@ -60,6 +60,9 @@ namespace Topo.Model.SectionReport
         // another group. When empty, anyone with earlier records is taken to be from this group.
         public HashSet<string> GroupUnitIds { get; set; } = new HashSet<string>();
         public RosterSnapshot? Previous { get; set; }
+        // Adults the leader has said are not leaders of this section (a group leader, say): the report leaves them out of the leaders, the events'
+        // attendance and the new and departed leaders. Each is the member number, or the id when there is none (see SectionReportBuilder.KeyOf).
+        public HashSet<string> NotLeaders { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         // The members of the next section's unit, when the person can see it
         public List<NextSectionMember> NextSectionMembers { get; set; } = new List<NextSectionMember>();
     }
@@ -110,6 +113,13 @@ namespace Topo.Model.SectionReport
             return index <= 0 ? "" : SectionOrder[index - 1];
         }
 
+        // How a person is told apart from others in the report: their member number, or their id when they have none
+        public static string KeyOf(MemberListModel member) => PersonKey(member.member_number, member.id);
+
+        // The members without the adults who are not leaders of the section
+        public static List<MemberListModel> WithoutNotLeaders(IEnumerable<MemberListModel> members, ISet<string> notLeaders) =>
+            members.Where(m => !(UnitReportBuilder.IsLeader(m) && notLeaders.Contains(KeyOf(m)))).ToList();
+
         public static RosterSnapshot TakeSnapshot(IEnumerable<MemberListModel> members, DateTime savedOn)
         {
             var list = Distinct(members);
@@ -137,7 +147,7 @@ namespace Topo.Model.SectionReport
             };
 
             // a person listed twice is one person
-            var members = Distinct(input.CurrentMembers);
+            var members = WithoutNotLeaders(Distinct(input.CurrentMembers), input.NotLeaders);
             var youth = members.Where(m => !UnitReportBuilder.IsLeader(m)).ToList();
             var leaders = UnitReportBuilder.LeadersOf(members);
             var currentKeys = members.Select(m => PersonKey(m.member_number, m.id)).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -290,7 +300,7 @@ namespace Topo.Model.SectionReport
             {
                 var leaderKeys = (evt.Event.attendance?.leader_members ?? new Attendance_Members[0])
                     .Select(a => PersonKey(a.member_number, a.id)).ToHashSet(StringComparer.OrdinalIgnoreCase);
-                foreach (var person in Attendees(evt.Event))
+                foreach (var person in Attendees(evt.Event, input.NotLeaders))
                 {
                     var key = PersonKey(person.member_number, person.id);
                     if (currentKeys.Contains(key) || leaderKeys.Contains(key))
@@ -315,7 +325,7 @@ namespace Topo.Model.SectionReport
                 model.NewLeaders = leaders
                     .Where(l => !previousKeys.Contains(PersonKey(l.member_number, l.id)))
                     .Select(Name).OrderBy(n => n, StringComparer.OrdinalIgnoreCase).ToList();
-                foreach (var person in input.Previous.Leaders.Where(p => !currentKeys.Contains(PersonKey(p.MemberNumber, p.Id))))
+                foreach (var person in input.Previous.Leaders.Where(p => !currentKeys.Contains(PersonKey(p.MemberNumber, p.Id)) && !input.NotLeaders.Contains(PersonKey(p.MemberNumber, p.Id))))
                     departed[PersonKey(person.MemberNumber, person.Id)] = person.Name;
             }
 
@@ -324,7 +334,7 @@ namespace Topo.Model.SectionReport
                 foreach (var person in evt.Event.attendance?.leader_members ?? new Attendance_Members[0])
                 {
                     var key = PersonKey(person.member_number, person.id);
-                    if (!currentKeys.Contains(key))
+                    if (!currentKeys.Contains(key) && !input.NotLeaders.Contains(key))
                     {
                         departed.TryAdd(key, $"{person.first_name} {person.last_name}".Trim());
                     }
@@ -337,7 +347,7 @@ namespace Topo.Model.SectionReport
         // Past events (from the start of the period up to now or the end of the period) and the ones still to come
         private static void AddEvents(SectionReportInput input, SectionReportModel model)
         {
-            var current = Distinct(input.CurrentMembers).ToDictionary(m => PersonKey(m.member_number, m.id), m => m, StringComparer.OrdinalIgnoreCase);
+            var current = WithoutNotLeaders(Distinct(input.CurrentMembers), input.NotLeaders).ToDictionary(m => PersonKey(m.member_number, m.id), m => m, StringComparer.OrdinalIgnoreCase);
             ReportEvent ToReportEvent(UnitEventInput item)
             {
                 var evt = item.Event;
@@ -345,7 +355,7 @@ namespace Topo.Model.SectionReport
                 var leaders = 0;
                 var leaderKeys = (evt.attendance?.leader_members ?? new Attendance_Members[0])
                     .Select(a => PersonKey(a.member_number, a.id)).ToHashSet(StringComparer.OrdinalIgnoreCase);
-                foreach (var person in Attendees(evt))
+                foreach (var person in Attendees(evt, input.NotLeaders))
                 {
                     var key = PersonKey(person.member_number, person.id);
                     // a group event also lists other units' members, so only this unit's own are counted
@@ -452,7 +462,7 @@ namespace Topo.Model.SectionReport
                 && e.Event.start_datetime <= input.AsOf);
 
         // Everyone recorded as attending, once
-        private static IEnumerable<Attendance_Members> Attendees(GetEventResultModel evt)
+        private static IEnumerable<Attendance_Members> Attendees(GetEventResultModel evt, ISet<string> notLeaders)
         {
             var attendance = evt.attendance;
             return (attendance?.attendee_members ?? new Attendance_Members[0])
@@ -460,7 +470,8 @@ namespace Topo.Model.SectionReport
                 .Concat(attendance?.assistant_members ?? new Attendance_Members[0])
                 .Concat(attendance?.leader_members ?? new Attendance_Members[0])
                 .GroupBy(a => PersonKey(a.member_number, a.id), StringComparer.OrdinalIgnoreCase)
-                .Select(g => g.First());
+                .Select(g => g.First())
+                .Where(a => !notLeaders.Contains(PersonKey(a.member_number, a.id)));
         }
 
         private static RosterPerson Person(MemberListModel member) =>

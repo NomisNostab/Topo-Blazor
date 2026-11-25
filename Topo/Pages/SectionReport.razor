@@ -39,6 +39,45 @@
     </div>
 
     <div class="form-group mb-3 row">
+        <label class="col-sm-2 col-form-label">Leaders</label>
+        <div class="col-sm-10 col-form-label">
+            @if (!ShowLeaders)
+            {
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="show-leaders" disabled="@(LoadingLeaders || model.SelectedUnits.Count == 0)" @onclick="ShowLeadersClick">
+                    @(LoadingLeaders ? "Reading leaders..." : "Choose who counts as a leader")
+                </button>
+                <span class="text-muted small ms-2">Every adult in a unit counts as a leader of it. Use this to leave out someone who isn't, such as a group leader.</span>
+            }
+            else
+            {
+                @foreach (var unit in LeadersByUnit.Where(u => model.SelectedUnits.Contains(u.Key)))
+                {
+                    <div class="mb-2" id="@("leaders-" + unit.Key)">
+                        @if (model.SelectedUnits.Count > 1)
+                        {
+                            <div class="fw-bold">@model.Units[unit.Key]</div>
+                        }
+                        <div class="d-flex flex-wrap gap-4">
+                            @foreach (var leader in unit.Value)
+                            {
+                                <label class="text-nowrap">
+                                    <input type="checkbox" checked="@(!IsNotLeader(unit.Key, leader))"
+                                           @onchange="@(e => SetNotLeader(unit.Key, leader, !(bool)(e.Value ?? false)))" /> @leader.first_name @leader.last_name
+                                </label>
+                            }
+                            @if (unit.Value.Count == 0)
+                            {
+                                <span class="text-muted">No adult leaders in this unit.</span>
+                            }
+                        </div>
+                    </div>
+                }
+                <div class="text-muted small">Ticked people are counted as leaders of the section. Untick someone who isn't (a group leader, say) to leave them out of the report's leaders and of who came to events. This is remembered in this browser.</div>
+            }
+        </div>
+    </div>
+
+    <div class="form-group mb-3 row">
         <label class="col-sm-2 col-form-label">Calendars</label>
         <div class="col-sm-10 col-form-label">
             <div class="d-flex flex-wrap gap-4">

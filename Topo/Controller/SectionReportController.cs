@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Newtonsoft.Json;
+using Topo.Model.Members;
 using Topo.Model.ReportGeneration;
+using Topo.Model.UnitReport;
 using Topo.Model.SectionReport;
 using Topo.Services;
 
@@ -20,6 +22,9 @@ namespace Topo.Controller
 
         [Inject]
         public IReportService _reportService { get; set; }
+
+        [Inject]
+        public IMembersService _membersService { get; set; }
 
         [Inject]
         public Blazored.LocalStorage.ILocalStorageService _localStorageService { get; set; }
@@ -42,6 +47,73 @@ namespace Topo.Controller
         public bool AllUnitsSelected => model.Units.Count > 0 && model.SelectedUnits.Count == model.Units.Count;
 
         private static string RosterKey(string unitId) => $"SectionReportRoster_{unitId}";
+        private static string NotLeadersKey(string unitId) => $"SectionReportNotLeaders_{unitId}";
+
+        // The adults the report counts as leaders of each ticked unit, for the leader to say which are not (a group leader, say)
+        public Dictionary<string, List<MemberListModel>> LeadersByUnit = new Dictionary<string, List<MemberListModel>>();
+        // Who has been said not to be a leader of each unit, kept in this browser so it applies to the next report too
+        public Dictionary<string, HashSet<string>> NotLeaders = new Dictionary<string, HashSet<string>>();
+        public bool ShowLeaders;
+        public bool LoadingLeaders;
+
+        public bool IsNotLeader(string unitId, MemberListModel member) =>
+            NotLeaders.TryGetValue(unitId, out var keys) && keys.Contains(SectionReportBuilder.KeyOf(member));
+
+        internal async Task ShowLeadersClick()
+        {
+            LoadingLeaders = true;
+            try
+            {
+                foreach (var unitId in model.Units.Keys.Where(model.SelectedUnits.Contains))
+                {
+                    var members = await _membersService.GetMembersAsync(unitId);
+                    LeadersByUnit[unitId] = UnitReportBuilder.LeadersOf(members).OrderBy(m => m.last_name).ThenBy(m => m.first_name).ToList();
+                    NotLeaders[unitId] = await ReadNotLeaders(unitId);
+                }
+                ShowLeaders = true;
+            }
+            catch (Exception)
+            {
+                model.ErrorMessage = "Couldn't read the units' leaders.";
+            }
+            finally
+            {
+                LoadingLeaders = false;
+            }
+        }
+
+        internal async Task SetNotLeader(string unitId, MemberListModel member, bool notLeader)
+        {
+            if (!NotLeaders.TryGetValue(unitId, out var keys))
+            {
+                keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                NotLeaders[unitId] = keys;
+            }
+            if (notLeader)
+            {
+                keys.Add(SectionReportBuilder.KeyOf(member));
+            }
+            else
+            {
+                keys.Remove(SectionReportBuilder.KeyOf(member));
+            }
+            Result = null;
+            await _localStorageService.SetItemAsync(NotLeadersKey(unitId), keys.ToList());
+        }
+
+        // Storage that can't be read back is the same as nobody having been set aside
+        private async Task<HashSet<string>> ReadNotLeaders(string unitId)
+        {
+            try
+            {
+                var keys = await _localStorageService.GetItemAsync<List<string>>(NotLeadersKey(unitId));
+                return new HashSet<string>(keys ?? new List<string>(), StringComparer.OrdinalIgnoreCase);
+            }
+            catch (Exception)
+            {
+                return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            }
+        }
 
         protected override async Task OnInitializedAsync()
         {
@@ -75,6 +147,7 @@ namespace Topo.Controller
                 model.SelectedUnits.Remove(unitId);
             }
             Result = null;
+            ShowLeaders = false;
 
             // a unit's calendar is ticked and unticked with it; any other calendar ticked by hand stays as it is
             var calendar = CalendarOf(unitId);
@@ -177,6 +250,7 @@ namespace Topo.Controller
                 {
                     request.PreviousRosters[unitId] = saved;
                 }
+                request.NotLeadersByUnit[unitId] = await ReadNotLeaders(unitId);
             }
 
             Busy = true;
