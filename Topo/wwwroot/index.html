@@ -72,6 +72,18 @@
         });
     };
 
+    // Lets Blazor know when the person changes the selection (not when it is changed from code).
+    window.bindSelect2Change = function (sel, dotNetRef) {
+        $(sel).on('change', function () {
+            dotNetRef.invokeMethodAsync('OnCalendarsChanged');
+        });
+    };
+
+    // Sets the selection from code and refreshes what select2 shows, without raising the change above.
+    window.setSelectedValues = function (sel, values) {
+        $(sel).val(values).trigger('change.select2');
+    };
+
     window.getSelectedValues = function (sel) {
         var results = [];
         var i;
