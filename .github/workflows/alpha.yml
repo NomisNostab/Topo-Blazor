@@ -1,0 +1,103 @@
+name: Deploy alpha (develop)
+
+# Every push to develop builds the tests, publishes the report function to an alpha AWS Lambda, and publishes the site to
+# https://<owner>.github.io/Topo-Blazor/alpha/ (a folder of the gh-pages branch, so the live site at the root is not touched).
+#
+# Repository settings it reads (all optional, see docs/alpha-site.md):
+#   secrets.SYNCFUSION_KEY            the same Syncfusion key main.yml uses, for the site and for the alpha Lambda
+#   secrets.ALPHA_AWS_ROLE_ARN        IAM role GitHub assumes (OIDC) to update the alpha Lambda
+#   vars.ALPHA_LAMBDA_FUNCTION        name of the alpha Lambda function; without it the Lambda step is skipped
+#   vars.ALPHA_REPORT_URL             that function's Function URL; without it the alpha site makes reports with the live Lambda
+on:
+  push:
+    branches: [ develop ]
+  workflow_dispatch:
+
+permissions:
+  contents: write   # push the alpha folder to gh-pages
+  id-token: write   # sign in to AWS without stored keys
+
+# Only one deploy writes to gh-pages at a time; a newer push waits behind the running one
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy-alpha:
+    runs-on: ubuntu-latest
+    env:
+      ALPHA_LAMBDA_FUNCTION: ${{ vars.ALPHA_LAMBDA_FUNCTION }}
+      ALPHA_REPORT_URL: ${{ vars.ALPHA_REPORT_URL }}
+      SYNCFUSION_KEY: ${{ secrets.SYNCFUSION_KEY }}
+    steps:
+    - name: Checkout develop
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+
+    # Nothing goes live if a test fails
+    - name: Run unit tests
+      run: dotnet test ./TopoReportFunctionTestUnix --nologo
+
+    # ---- Report function (Lambda) ----
+    - name: Sign in to AWS
+      if: ${{ env.ALPHA_LAMBDA_FUNCTION != '' }}
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.ALPHA_AWS_ROLE_ARN }}
+        aws-region: ap-southeast-2
+
+    # Linux x64 matches the function's x86_64 architecture
+    - name: Publish and deploy the report function
+      if: ${{ env.ALPHA_LAMBDA_FUNCTION != '' }}
+      run: |
+        dotnet publish ./TopoReportFunction/TopoReportFunction.csproj -c Release -r linux-x64 --self-contained false -o lambda-out --nologo
+        (cd lambda-out && zip -qr ../function.zip .)
+        aws lambda update-function-code --function-name "$ALPHA_LAMBDA_FUNCTION" --zip-file fileb://function.zip
+        aws lambda wait function-updated --function-name "$ALPHA_LAMBDA_FUNCTION"
+
+    # The function reads its Syncfusion key from the SyncfusionLicense environment variable. Set it from the same secret the site uses,
+    # keeping any other variables the function already has (update-function-configuration replaces them all)
+    - name: Set the function's Syncfusion key
+      if: ${{ env.ALPHA_LAMBDA_FUNCTION != '' && env.SYNCFUSION_KEY != '' }}
+      run: |
+        aws lambda get-function-configuration --function-name "$ALPHA_LAMBDA_FUNCTION" --query 'Environment.Variables' --output json > current-env.json
+        python3 -c 'import json,os; v=json.load(open("current-env.json")) or {}; v["SyncfusionLicense"]=os.environ["SYNCFUSION_KEY"]; json.dump({"Variables": v}, open("new-env.json","w"))'
+        aws lambda update-function-configuration --function-name "$ALPHA_LAMBDA_FUNCTION" --environment file://new-env.json > /dev/null
+        aws lambda wait function-updated --function-name "$ALPHA_LAMBDA_FUNCTION"
+        rm -f current-env.json new-env.json
+
+    # ---- Site ----
+    - name: Replace Syncfusion key
+      if: ${{ env.SYNCFUSION_KEY != '' }}
+      run: sed -i "s@__SYNCFUSION-KEY__@$SYNCFUSION_KEY@g" ./Topo/Program.cs
+
+    # The site sends its reports to the address written in ReportService.cs; point it at the alpha Lambda instead of the live one
+    - name: Point the site at the alpha Lambda
+      if: ${{ env.ALPHA_REPORT_URL != '' }}
+      run: sed -i -E "s@https://[a-z0-9]+\.lambda-url\.ap-southeast-2\.on\.aws/@$ALPHA_REPORT_URL@g" ./Topo/Services/ReportService.cs
+
+    - name: Publish the site
+      run: dotnet publish ./Topo/Topo.csproj -c Release -o release --nologo
+
+    # The alpha site lives in the alpha folder of the project site
+    - name: Set the base path, title and the ALPHA banner
+      run: |
+        INDEX=release/wwwroot/index.html
+        sed -i 's@<base href="/" />@<base href="/Topo-Blazor/alpha/" />@' $INDEX
+        sed -i 's@<title>Topo</title>@<title>Topo ALPHA</title>@' $INDEX
+        BANNER="<div style=\"position:fixed;bottom:0;right:0;z-index:99999;background:#c0392b;color:#fff;padding:2px 10px;font:12px sans-serif;border-top-left-radius:6px;opacity:.9\">ALPHA - develop ${GITHUB_SHA::7} - not released</div>"
+        sed -i "s@</body>@$BANNER</body>@" $INDEX
+        grep -q 'Topo-Blazor/alpha/' $INDEX && grep -q 'ALPHA - develop' $INDEX
+        touch release/wwwroot/.nojekyll
+
+    - name: Publish the alpha folder to gh-pages
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        branch: gh-pages
+        folder: release/wwwroot
+        target-folder: alpha
+        clean: true
