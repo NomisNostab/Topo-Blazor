@@ -21,6 +21,14 @@ namespace Topo.Model.Progress
                 .OrderByDescending(r => r.status_updated)
                 .FirstOrDefault();
 
+        // The day to show for that record: Terrain's own date where it has one, otherwise when the record last changed (see AwardDate).
+        // Peak Award records carry no imported date.
+        public static DateTime? LatestAwardedPeakDate(IEnumerable<PeakAwardResult> results, string section)
+        {
+            var record = LatestAwardedPeak(results, section);
+            return record == null ? null : AwardDate.Resolve(record.date_awarded, null, record.status_updated);
+        }
+
         // One milestone record per stage and section, in stage order. A member can earn Milestone 1 in each section, so
         // different sections' milestones are never treated as duplicates of each other. An awarded record beats one
         // that is not, and among records of the same kind the most recently entered wins.

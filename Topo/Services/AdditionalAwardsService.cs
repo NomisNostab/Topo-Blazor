@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+﻿using Topo.Model;
 using Topo.Model.AdditionalAwards;
 using Topo.Model.Approvals;
 
@@ -74,9 +74,7 @@ namespace Topo.Services
                 {
                     var awardSpecification = awardSpecificationsList.Where(a => a.id == result.achievement_meta.additional_award_id).FirstOrDefault();
                     var awardStatus = result.status;
-                    var awardStatusDate = result.status_updated;
-                    if (result.imported != null)
-                        awardStatusDate = DateTime.ParseExact(result.imported.date_awarded, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                    var awardStatusDate = AwardDate.Resolve(result.date_awarded, result.imported?.date_awarded, result.status_updated);
                     var award = approvedAwards.Where(a => a.achievement_id == result.id && a.submission_type.ToLower() == "review").FirstOrDefault();
                     DateTime? awardPresentedDate = new DateTime?();
                     if (award != null)

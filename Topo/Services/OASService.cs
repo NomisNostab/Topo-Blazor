@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.IO;
+using Topo.Model;
 using Topo.Model.Members;
 using Topo.Model.OAS;
 
@@ -261,11 +262,12 @@ namespace Topo.Services
                         continue;
                     }
 
+                    // The date to show: Terrain's recorded award date, else the imported one, else when the record last changed
+                    var awardedDate = AwardDate.Resolve(memberAchievement.date_awarded, memberAchievement.imported?.date_awarded, memberAchievement.status_updated);
+
                     // Imported
-                    if (!string.IsNullOrEmpty(memberAchievement.imported.date_awarded))
+                    if (!string.IsNullOrEmpty(memberAchievement.imported?.date_awarded))
                     {
-                        // Conver string date from yyyy-mm-dd format
-                        var importedDate = DateTime.ParseExact(memberAchievement.imported.date_awarded, "yyyy-MM-dd", CultureInfo.InvariantCulture);
                         // Get all answers
                         var worksheetAnswers = OASWorksheetAnswers
                             .Where(wa => wa.MemberId == memberAchievement.member_id)
@@ -275,7 +277,7 @@ namespace Topo.Services
                         {
                             if (worksheetAnswer != null)
                             {
-                                worksheetAnswer.MemberAnswer = importedDate.ToString("dd/MM/yy");
+                                worksheetAnswer.MemberAnswer = awardedDate.ToString("dd/MM/yy");
                                 worksheetAnswer.Answered = true;
                                 worksheetAnswer.Awarded = true;
                             }
@@ -294,7 +296,7 @@ namespace Topo.Services
                             if (worksheetAnswer != null)
                             {
                                 {
-                                    worksheetAnswer.MemberAnswer = memberAchievement.status_updated.ToString("dd/MM/yy");
+                                    worksheetAnswer.MemberAnswer = awardedDate.ToString("dd/MM/yy");
                                     worksheetAnswer.Answered = true;
                                     worksheetAnswer.Awarded = true;
                                 }
@@ -312,7 +314,7 @@ namespace Topo.Services
                                 .FirstOrDefault();
                             if (worksheetAnswer != null)
                             {
-                                worksheetAnswer.MemberAnswer = memberAchievement.status_updated.ToString("dd/MM/yy");
+                                worksheetAnswer.MemberAnswer = awardedDate.ToString("dd/MM/yy");
                                 worksheetAnswer.Answered = true;
                                 worksheetAnswer.Awarded = true;
                             }
@@ -334,7 +336,7 @@ namespace Topo.Services
                         .FirstOrDefault();
                     if (logbookUpToDate != null)
                     {
-                        logbookUpToDate.MemberAnswer = memberAchievement.status_updated.ToString("dd/MM/yy");
+                        logbookUpToDate.MemberAnswer = awardedDate.ToString("dd/MM/yy");
                         logbookUpToDate.Answered = true;
                         logbookUpToDate.Awarded = true;
                     }

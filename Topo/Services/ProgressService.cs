@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Topo.Model;
+using Newtonsoft.Json;
 using System.Globalization;
 using System.Reflection;
 using Topo.Model.Members;
@@ -35,12 +36,12 @@ namespace Topo.Services
 
             progressDetailsPageViewModel.IntroToScoutingDate = await GetIntroToScouting(memberId);
             var introToSectionDate = await GetIntroToSection(memberId);
-            progressDetailsPageViewModel.IntroToSectionDate = introToSectionDate.ToString("dd/MM/yyyy");
+            progressDetailsPageViewModel.IntroToSectionDate = introToSectionDate?.ToString("dd/MM/yyyy") ?? "";
             progressDetailsPageViewModel.Milestones = await GetMilestoneSummaries(memberId);
             progressDetailsPageViewModel.OASSummaries = await GetOASSummaries(memberId);
             await _terrainAPIService.RevokeAssumedProfiles();
             await _terrainAPIService.AssumeProfile(memberId);
-            progressDetailsPageViewModel.Stats = await GetStats(memberId, introToSectionDate);
+            progressDetailsPageViewModel.Stats = await GetStats(memberId, introToSectionDate ?? new DateTime());
             await _terrainAPIService.RevokeAssumedProfiles();
             progressDetailsPageViewModel.SIASummaries = await GetSIASummaries(memberId);
             progressDetailsPageViewModel.PeakAward = await GetPeakAwardSummary(memberId);
@@ -55,34 +56,21 @@ namespace Topo.Services
             var result = AchievementSelection.LatestAwardedIntro(introToScouting.results);
             if (result != null)
             {
-                if (!string.IsNullOrEmpty(result.imported.date_awarded))
-                {
-                    introToScoutingDate = ConvertStringToDate(result.imported.date_awarded, "yyyy-MM-dd").ToString("dd/MM/yy");
-                }
-                else
-                {
-                    introToScoutingDate = result.status_updated.ToString("dd/MM/yy");
-                }
+                introToScoutingDate = AwardDate.Resolve(result.date_awarded, result.imported?.date_awarded, result.status_updated).ToString("dd/MM/yy");
             }
 
             return introToScoutingDate;
         }
 
-        private async Task<DateTime> GetIntroToSection(string memberId)
+        // Null when the Scout has no awarded Introduction to Section in this section, so the page shows nothing rather than 01/01/0001
+        private async Task<DateTime?> GetIntroToSection(string memberId)
         {
-            var introToSectionDate = new DateTime();
+            DateTime? introToSectionDate = null;
             var introToSection = await _terrainAPIService.GetIntroductionToSectionResultsForMember(memberId);
             var result = AchievementSelection.LatestAwardedIntro(introToSection.results, _storageService.Section);
             if (result != null)
             {
-                if (!string.IsNullOrEmpty(result.imported.date_awarded))
-                {
-                    introToSectionDate = ConvertStringToDate(result.imported.date_awarded, "yyyy-MM-dd");
-                }
-                else
-                {
-                    introToSectionDate = result.status_updated;
-                }
+                introToSectionDate = AwardDate.Resolve(result.date_awarded, result.imported?.date_awarded, result.status_updated);
             }
 
             return introToSectionDate;
@@ -277,11 +265,7 @@ namespace Topo.Services
                 var approvedDate = new DateTime();
                 if (oasResult.status == "awarded")
                 {
-                    awardedDate = oasResult.status_updated;
-                    if (!string.IsNullOrEmpty(oasResult.imported?.date_awarded))
-                    {
-                        awardedDate = ConvertStringToDate(oasResult.imported?.date_awarded, "yyyy-MM-dd");
-                    }
+                    awardedDate = AwardDate.Resolve(oasResult.date_awarded, oasResult.imported?.date_awarded, oasResult.status_updated);
                 } 
                 else if (oasResult.status == "approved")
                 {
@@ -332,7 +316,7 @@ namespace Topo.Services
                     Area = myTI.ToTitleCase(r.answers.special_interest_area_selection.Replace("sia_", "").Replace("_", " ")),
                     Project = r.answers.project_name,
                     Status = myTI.ToTitleCase(r.status.Replace("_", " ")),
-                    Awarded = r.status_updated
+                    Awarded = AwardDate.Resolve(r.date_awarded, r.imported?.date_awarded, r.status_updated)
                 });
 
             return memberSiaProjects.ToList();
@@ -343,16 +327,16 @@ namespace Topo.Services
             var peakAward = new PeakAward();
 
             var courseReflectionResultModel = await _terrainAPIService.GetCourseReflectionResultsForMember(memberid);
-            peakAward.PersonalDevelopmentCourse = AchievementSelection.LatestAwardedPeak(courseReflectionResultModel.results, _storageService.Section)?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.PersonalDevelopmentCourse = AchievementSelection.LatestAwardedPeakDate(courseReflectionResultModel.results, _storageService.Section)?.ToString("dd/MM/yy") ?? "";
 
             var adventurousJourneyResultModel = await _terrainAPIService.GetAdventurousJourneyResultsForMember(memberid);
-            peakAward.AdventurousJourney = AchievementSelection.LatestAwardedPeak(adventurousJourneyResultModel.results, _storageService.Section)?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.AdventurousJourney = AchievementSelection.LatestAwardedPeakDate(adventurousJourneyResultModel.results, _storageService.Section)?.ToString("dd/MM/yy") ?? "";
 
             var personalReflectionResultModel = await _terrainAPIService.GetPersonalReflectionResultsForMember(memberid);
-            peakAward.PersonalReflection = AchievementSelection.LatestAwardedPeak(personalReflectionResultModel.results, _storageService.Section)?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.PersonalReflection = AchievementSelection.LatestAwardedPeakDate(personalReflectionResultModel.results, _storageService.Section)?.ToString("dd/MM/yy") ?? "";
 
             var peakAwardResultModel = await _terrainAPIService.GetPeakAwardResultsForMember(memberid);
-            peakAward.Awarded = AchievementSelection.LatestAwardedPeak(peakAwardResultModel.results, _storageService.Section)?.status_updated.ToString("dd/MM/yy") ?? "";
+            peakAward.Awarded = AchievementSelection.LatestAwardedPeakDate(peakAwardResultModel.results, _storageService.Section)?.ToString("dd/MM/yy") ?? "";
 
             return peakAward;
         }
