@@ -33,7 +33,7 @@ namespace Topo.Controller
         public SignInSheetPageViewModel model = new SignInSheetPageViewModel();
 
         // Live preview of the sheet for the chosen event. Names, columns and layout are applied on the
-        // page; only the section scope changes who is invited, so only it refetches.
+        // page; only the units ticked change who is invited, so only they refetch.
         public string EventId = "";
         public List<MemberListModel>? PreviewMembers;
         public bool PreviewFailed;
@@ -41,8 +41,7 @@ namespace Topo.Controller
 
         private const string OptionsKey = "SignInSheetOptions";
 
-        // Leaders with only one unit have no other sections to include, so the choice is hidden for them.
-        public bool HasMultipleUnits => model.Units.Count > 1;
+        public bool AllUnitsSelected => model.Units.Count > 0 && model.SelectedUnits.Count == model.Units.Count;
 
         private DotNetObjectReference<SignInSheetController>? _selfReference;
         // set when the calendar selection was changed in code, so the select2 box can be refreshed to show it
@@ -87,22 +86,15 @@ namespace Topo.Controller
             var quarterStartMonth = (quarter - 1) * 3 + 1;
             model.CalendarSearchFromDate = DateTime.Today;
             model.CalendarSearchToDate = new DateTime(DateTime.Now.Year, quarterStartMonth, 1).AddMonths(4).AddDays(-1);
-            if (!string.IsNullOrEmpty(_storageService.UnitId))
+            if (!string.IsNullOrEmpty(_storageService.UnitId) && model.Units.ContainsKey(_storageService.UnitId))
             {
-                SelectUnit(_storageService.UnitId);
+                SetUnit(_storageService.UnitId, true);
             }
 
-            model.AvailableSections = (_storageService.UnitSections ?? new Dictionary<string, string>())
-                .Values.Where(v => !string.IsNullOrEmpty(v)).Distinct().OrderBy(v => v).ToList();
             var savedOptions = await _localStorageService.GetItemAsync<SignInSheetOptions>(OptionsKey);
             if (savedOptions != null)
             {
-                savedOptions.SelectedSections ??= Array.Empty<string>();
                 model.Options = savedOptions;
-            }
-            if (!HasMultipleUnits)
-            {
-                model.Options.SectionsScope = SignInSectionsScope.Primary;
             }
 
             await LoadEventsAsync();
@@ -115,26 +107,63 @@ namespace Topo.Controller
             await _localStorageService.SetItemAsync(OptionsKey, model.Options);
         }
 
-        internal async Task UnitChange(ChangeEventArgs e)
+        internal async Task ToggleUnit(string unitId, bool selected)
         {
-            SelectUnit(e.Value?.ToString() ?? "");
+            SetUnit(unitId, selected);
+            await UnitsChanged();
+        }
+
+        internal async Task ToggleAllUnits(bool selected)
+        {
+            foreach (var unitId in model.Units.Keys)
+                SetUnit(unitId, selected);
+            await UnitsChanged();
+        }
+
+        // Ticks or unticks a unit, and its calendar with it
+        private void SetUnit(string unitId, bool selected)
+        {
+            if (selected)
+            {
+                model.SelectedUnits.Add(unitId);
+            }
+            else
+            {
+                model.SelectedUnits.Remove(unitId);
+            }
+            SetCalendarOfUnit(unitId, selected);
+        }
+
+        private async Task UnitsChanged()
+        {
+            // one unit on its own is the unit the rest of Topo works on
+            if (model.SelectedUnits.Count == 1)
+            {
+                _storageService.UnitId = model.SelectedUnits.First();
+            }
             await LoadEventsAsync();
             await RefreshPreview();
         }
 
-        private void SelectUnit(string unitId)
-        {
-            model.UnitId = unitId;
-            _storageService.UnitId = model.UnitId;
-            model.UnitName = _storageService.UnitName;
+        // The units ticked, in the order they are listed
+        private List<string> SelectedUnitIds() => model.Units.Keys.Where(model.SelectedUnits.Contains).ToList();
 
-            // use the calendar named after the unit when there is one
-            var calendarId = FindCalendarForUnit(model.UnitName);
-            if (calendarId != null)
+        // A unit's calendar (the one named after it) is ticked and unticked with it; calendars picked by hand stay as they are
+        private void SetCalendarOfUnit(string unitId, bool selected)
+        {
+            var calendarId = FindCalendarForUnit(model.Units[unitId]);
+            if (calendarId == null)
             {
-                model.SelectedCalendars = new[] { calendarId };
-                _syncCalendarSelection = true;
+                return;
             }
+
+            var calendars = model.SelectedCalendars.Where(c => c != calendarId).ToList();
+            if (selected)
+            {
+                calendars.Add(calendarId);
+            }
+            model.SelectedCalendars = calendars.ToArray();
+            _syncCalendarSelection = true;
         }
 
         // A calendar named the same as the unit; failing that, one whose name contains the unit's name
@@ -227,7 +256,7 @@ namespace Topo.Controller
             var request = ++_previewRequest;
             PreviewFailed = false;
             // the sheet is for a unit; with no event it has a blank title
-            if (string.IsNullOrEmpty(model.UnitId))
+            if (model.SelectedUnits.Count == 0)
             {
                 PreviewMembers = null;
                 return;
@@ -236,9 +265,10 @@ namespace Topo.Controller
             List<MemberListModel>? members = null;
             try
             {
+                var unitIds = SelectedUnitIds();
                 members = string.IsNullOrEmpty(EventId)
-                    ? await _programService.GetMembersForScope(model.Options)
-                    : await _programService.GetInviteesForEvent(EventId, model.Options);
+                    ? await _programService.GetMembersForUnits(unitIds)
+                    : await _programService.GetInviteesForEvent(EventId, unitIds);
             }
             catch (Exception)
             {
@@ -250,25 +280,6 @@ namespace Topo.Controller
                 return;
             PreviewMembers = members;
             PreviewFailed = members == null;
-        }
-
-        internal async Task SectionsScopeChange(ChangeEventArgs e)
-        {
-            if (Enum.TryParse<SignInSectionsScope>(e.Value?.ToString(), out var scope))
-                model.Options.SectionsScope = scope;
-            await SaveOptions();
-            await RefreshPreview();
-        }
-
-        internal async Task ToggleSection(string sectionName, bool selected)
-        {
-            var sections = model.Options.SelectedSections.ToList();
-            sections.RemoveAll(s => string.Equals(s, sectionName, StringComparison.OrdinalIgnoreCase));
-            if (selected)
-                sections.Add(sectionName);
-            model.Options.SelectedSections = sections.ToArray();
-            await SaveOptions();
-            await RefreshPreview();
         }
 
         internal async Task FullNamesChange(ChangeEventArgs e)
@@ -311,16 +322,20 @@ namespace Topo.Controller
                 ? ""
                 : model.Events?.Where(e => e.Id == EventId).FirstOrDefault()?.EventDisplay ?? "";
             var groupName = _storageService.GroupName ?? "Group Name";
-            var unitName = _storageService.UnitName ?? "Unit Name";
-            var section = _storageService.Section;
+            // the units' names (the sheet is for all of them) and, when they are all one section, its logo
+            var units = SelectedUnitIds();
+            var unitName = string.Join(", ", units.Select(id => model.Units[id]));
+            var sections = units.Select(id => (_storageService.UnitSections ?? new Dictionary<string, string>()).GetValueOrDefault(id, "")).Distinct().ToList();
+            var section = sections.Count == 1 ? sections[0] : "";
 
             var serialisedSortedMemberList = JsonConvert.SerializeObject(PreviewMembers.OrderBy(m => m.first_name).ThenBy(m => m.last_name));
             var report = await _reportService.GetSignInSheetReport(groupName, section, unitName, outputType, serialisedSortedMemberList, eventName, model.Options);
 
             var isPdf = outputType == OutputType.PDF;
-            var fileName = (string.IsNullOrEmpty(eventName)
-                ? $"SignInSheet_{unitName.Replace(' ', '_')}"
-                : $"SignInSheet_{unitName.Replace(' ', '_')}_{eventName.Replace(' ', '_')}") + (isPdf ? ".pdf" : ".xlsx");
+            // the units' names and the event's date hold commas and slashes, which don't belong in a file name
+            var nameInFile = System.Text.RegularExpressions.Regex.Replace(unitName, @"[\s,]+", "_");
+            var eventInFile = System.Text.RegularExpressions.Regex.Replace(eventName, @"[\s,/\\:*?""<>|]+", "_");
+            var fileName = (string.IsNullOrEmpty(eventName) ? $"SignInSheet_{nameInFile}" : $"SignInSheet_{nameInFile}_{eventInFile}") + (isPdf ? ".pdf" : ".xlsx");
             await JS.InvokeVoidAsync("BlazorDownloadFile", fileName, isPdf ? "application/pdf" : "application/vnd.ms-excel", report);
         }
     }

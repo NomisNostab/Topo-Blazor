@@ -699,12 +699,18 @@ namespace Topo.Services
                     sheet.SetRowHeight(rowNumber, 62);
             }
 
+            // Names longer than this wrap onto two lines, so the name columns stay narrow enough for a portrait page
+            const int nameWrapChars = 20;
+            const double nameColumnMaxWidth = nameWrapChars * 1.15 + 0.5;
+
             void WriteMembers(IEnumerable<MemberListModel> members)
             {
                 foreach (var member in members)
                 {
                     rowNumber++;
                     sheet.Range[rowNumber, 1].Text = displayNames[member.id];
+                    // a long name wraps onto a second line rather than widening the sheet beyond what fits a portrait page
+                    sheet.Range[rowNumber, 1].CellStyle.WrapText = true;
                     sheet.Range[rowNumber, 2].Text = member.patrol_name;
                     sheet.Range[rowNumber, 3].Text = member.patrol_duty;
                     for (var c = 1; c <= lastColumn; c++)
@@ -712,25 +718,36 @@ namespace Topo.Services
                     if (options.IncludeParticipationColumns)
                     {
                         sheet.Range[rowNumber, participationNameColumn].Text = displayNames[member.id];
+                        sheet.Range[rowNumber, participationNameColumn].CellStyle.WrapText = true;
                         for (var c = participationNameColumn; c <= participationLastColumn; c++)
                             sheet.Range[rowNumber, c].BorderAround();
                     }
                     // taller rows so there is room to write a signature
-                    sheet.SetRowHeight(rowNumber, options.UseTimeInOutSignature ? 24 : 18);
+                    sheet.SetRowHeight(rowNumber, displayNames[member.id].Length > nameWrapChars ? 30 : options.UseTimeInOutSignature ? 24 : 18);
                 }
             }
 
             // Youth by section then leaders (see SignInSheetLayout); a labelled heading row above each group.
             var groups = SignInSheetLayout.GetGroups(memberListModel, displayNames);
+            // the first row of each page after the first, so the height of each page can be added up
+            var pageBreakRows = new List<int>();
             if (!groups.Any())
                 WriteHeader();
             foreach (var group in groups)
             {
                 if (group.Heading != null)
                 {
+                    // each section starts on a new page, so a section is kept on one page when it fits (a longer one runs on to the next)
                     if (group != groups.First())
-                        rowNumber++; // a blank row between sections
-                    rowNumber++;
+                    {
+                        rowNumber++;
+                        sheet.HPageBreaks.Add(sheet.Range[rowNumber, 1]);
+                        pageBreakRows.Add(rowNumber);
+                    }
+                    else
+                    {
+                        rowNumber++;
+                    }
                     sheet.Range[rowNumber, 1].Text = group.Heading;
                     sheet.Range[rowNumber, 1].CellStyle.Font.Bold = true;
                     sheet.Range[rowNumber, 1].CellStyle.Font.Size = 12;
@@ -749,7 +766,7 @@ namespace Topo.Services
             // border to the Role column. So the name and patrol columns are never narrower than that with a little to spare.
             var longestName = memberListModel.Select(m => displayNames[m.id].Length).DefaultIfEmpty(0).Max();
             var longestPatrol = memberListModel.Select(m => (m.patrol_name ?? "").Length).DefaultIfEmpty(0).Max();
-            sheet.SetColumnWidth(1, Math.Max(sheet.GetColumnWidth(1), longestName * 1.15 + 0.5));
+            sheet.SetColumnWidth(1, Math.Min(Math.Max(sheet.GetColumnWidth(1), longestName * 1.15 + 0.5), nameColumnMaxWidth));
             sheet.SetColumnWidth(2, Math.Max(sheet.GetColumnWidth(2), longestPatrol * 1.15 + 0.5));
             const double portraitPageWidth = 97;
             const double landscapePageWidth = 140;
@@ -759,13 +776,14 @@ namespace Topo.Services
             if (options.IncludeParticipationColumns)
             {
                 // autofit sizes the sideways-headed tick columns badly
+                sheet.SetColumnWidth(participationNameColumn, Math.Min(sheet.GetColumnWidth(participationNameColumn), nameColumnMaxWidth));
                 for (var c = participationNameColumn + 1; c <= participationLastColumn; c++)
                     sheet.SetColumnWidth(c, tickColumnWidth);
             }
             if (options.UseTimeInOutSignature)
             {
                 for (var c = attendanceFirstColumn; c <= lastColumn; c++)
-                    sheet.SetColumnWidth(c, (c - attendanceFirstColumn) % 2 == 0 ? 10 : 22);
+                    sheet.SetColumnWidth(c, (c - attendanceFirstColumn) % 2 == 0 ? 8 : 14);
             }
             else
             {
@@ -776,9 +794,13 @@ namespace Topo.Services
             var lastUsedColumn = options.IncludeParticipationColumns ? participationLastColumn : lastColumn;
             for (var c = 1; c <= lastUsedColumn; c++)
                 usedWidth += sheet.GetColumnWidth(c);
-            var portrait = usedWidth <= portraitPageWidth;
+            // portrait where it can be had: a sheet a little wider than the page is shrunk to fit rather than turned sideways,
+            // down to about two thirds of full size, which is still readable
+            const double portraitMaxWidth = portraitPageWidth / 0.68;
+            var portrait = usedWidth <= portraitMaxWidth;
             var spare = (portrait ? portraitPageWidth : landscapePageWidth) - usedWidth;
-            if (spare > 0)
+            // shares extra width (in column width units) out over the columns that hold the writing
+            void ShareOut(double extra)
             {
                 if (options.UseTimeInOutSignature)
                 {
@@ -787,7 +809,7 @@ namespace Topo.Services
                     for (var i = 0; i < weights.Count; i++)
                     {
                         var c = attendanceFirstColumn + i;
-                        sheet.SetColumnWidth(c, sheet.GetColumnWidth(c) + spare * weights[i] / weights.Sum());
+                        sheet.SetColumnWidth(c, sheet.GetColumnWidth(c) + extra * weights[i] / weights.Sum());
                     }
                 }
                 else
@@ -796,8 +818,15 @@ namespace Topo.Services
                     var growing = Enumerable.Range(1, textColumns).Append(attendanceFirstColumn).ToList();
                     var growingWidth = growing.Sum(c => sheet.GetColumnWidth(c));
                     foreach (var c in growing)
-                        sheet.SetColumnWidth(c, sheet.GetColumnWidth(c) * (1 + spare / growingWidth));
+                    {
+                        sheet.SetColumnWidth(c, sheet.GetColumnWidth(c) * (1 + extra / growingWidth));
+                    }
                 }
+            }
+
+            if (spare > 0)
+            {
+                ShareOut(spare);
             }
 
             // the title is 14 point bold, so about 0.7 characters to each unit of the width it is merged across
@@ -806,6 +835,34 @@ namespace Topo.Services
                 titleWidth += sheet.GetColumnWidth(c);
             var titleLines = Math.Max(1, (int)Math.Ceiling((eventName ?? "").Length / (titleWidth * 0.7)));
             sheet.SetRowHeight(titleRow, Math.Max(30, titleLines * 21));
+
+            // Each section is on a page of its own, and the whole sheet is shrunk to the page width as one. A section that is too tall for its
+            // page at that size would run on to a second page, so the sheet is made wider than the page (the extra goes to the writing
+            // columns) and so shrinks further, until the tallest section fits its page. The first page also holds the logo and the title.
+            const double minimumShrink = 0.5; // below this a very long section runs on to a second page instead
+            const double pageHeightSafety = 0.97; // the widths and the page are only known roughly
+            var pageStartRows = new List<int> { 1 };
+            pageStartRows.AddRange(pageBreakRows);
+            var tallestPage = 0.0;
+            for (var page = 0; page < pageStartRows.Count; page++)
+            {
+                var lastRow = page + 1 < pageStartRows.Count ? pageStartRows[page + 1] - 1 : rowNumber;
+                var pageHeight = 0.0;
+                for (var r = pageStartRows[page]; r <= lastRow; r++)
+                {
+                    pageHeight += sheet.GetRowHeight(r);
+                }
+                tallestPage = Math.Max(tallestPage, pageHeight);
+            }
+            var pageWidthUnits = portrait ? portraitPageWidth : landscapePageWidth;
+            var pagePoints = (portrait ? 11.69 : 8.27) * 72 - 0.5 * 72; // the page height less the top and bottom margins
+            var widthNow = Enumerable.Range(1, lastUsedColumn).Sum(c => sheet.GetColumnWidth(c));
+            var shrinkNow = Math.Min(1.0, pageWidthUnits / widthNow);
+            var shrinkNeeded = Math.Max(minimumShrink, pagePoints * pageHeightSafety / Math.Max(1.0, tallestPage));
+            if (shrinkNeeded < shrinkNow)
+            {
+                ShareOut(pageWidthUnits / shrinkNeeded - widthNow);
+            }
 
             sheet.PageSetup.PaperSize = ExcelPaperSize.PaperA4;
             sheet.PageSetup.Orientation = portrait ? ExcelPageOrientation.Portrait : ExcelPageOrientation.Landscape;
