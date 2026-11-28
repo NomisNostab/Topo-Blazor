@@ -13,3 +13,7 @@ To run Topo just go to https://nomisnostab.github.io/Topo-Blazor/ and it will do
 ## Documentation
 
 Please view the [wiki](https://github.com/NomisNostab/Topo-Blazor/wiki) on how to use Topo.
+
+## Running reports locally
+
+`TopoReportServer` runs Topo's pages and a local stand-in for the AWS Lambda report function from one local server, with no AWS account needed. See [docs/report-server.md](docs/report-server.md).

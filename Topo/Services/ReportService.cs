@@ -32,12 +32,30 @@ namespace Topo.Services
         private readonly HttpClient _httpClient;
         private readonly ILogger<TerrainAPIService> _logger;
         private readonly StorageService _storageService;
+        private readonly IConfiguration _configuration;
 
-        public ReportService(HttpClient httpClient, ILogger<TerrainAPIService> logger, StorageService storageService)
+        // Where every report is made. This is the one place the address is set.
+        // The "ReportFunctionUrl" setting overrides it, which is how TopoReportServer points the pages at itself.
+#if DEBUG
+        private const string DefaultReportFunctionUrl = "https://57aqgtwtgggsk47rtvpgqifima0tvhwy.lambda-url.ap-southeast-2.on.aws/";
+#else
+        private const string DefaultReportFunctionUrl = "https://qwhcdbhrempok4kpmk6utzavxq0zjzha.lambda-url.ap-southeast-2.on.aws/";
+#endif
+        private string ReportFunctionUrl
+        {
+            get
+            {
+                var configuredUrl = _configuration["ReportFunctionUrl"];
+                return string.IsNullOrWhiteSpace(configuredUrl) ? DefaultReportFunctionUrl : configuredUrl;
+            }
+        }
+
+        public ReportService(HttpClient httpClient, ILogger<TerrainAPIService> logger, StorageService storageService, IConfiguration configuration)
         {
             _httpClient = httpClient;
             _logger = logger;
             _storageService = storageService;
+            _configuration = configuration;
         }
         public async Task<byte[]> GetMemberListReport(string groupName, string section, string unitName, OutputType outputType, string serialisedSortedMemberList)
         {
@@ -325,12 +343,7 @@ namespace Topo.Services
 
         private async Task<byte[]> CallReportGeneratorFunction(ReportGenerationRequest reportGenerationRequest)
         {
-#if DEBUG
-            string functionUrl = "https://57aqgtwtgggsk47rtvpgqifima0tvhwy.lambda-url.ap-southeast-2.on.aws/";
-#else
-            string functionUrl = "https://qwhcdbhrempok4kpmk6utzavxq0zjzha.lambda-url.ap-southeast-2.on.aws/";
-#endif
-            HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Put, functionUrl);
+            HttpRequestMessage httpRequest = new HttpRequestMessage(HttpMethod.Put, ReportFunctionUrl);
             var content = JsonConvert.SerializeObject(reportGenerationRequest, new JsonSerializerSettings { DateParseHandling = DateParseHandling.None});
             string message = $"Version: {_storageService.Version}; Date: {DateTime.Now.ToString("dd/MM/yyyy : HH:mm:ss")}; ReportGenerationRequestData: {reportGenerationRequest.ReportData}";
             _logger.LogInformation(message);

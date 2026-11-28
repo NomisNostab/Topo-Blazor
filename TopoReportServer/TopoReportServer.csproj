@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <!-- Target framework, nullable and implicit usings come from Directory.Build.props -->
+    <AssemblyName>TopoReportServer</AssemblyName>
+    <RootNamespace>TopoReportServer</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Serves the Topo pages (the Blazor WebAssembly app) as well, so one server gives the pages and the report function -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Topo\Topo.csproj" />
+    <!-- The real report function. The server calls its FunctionHandler directly, so a change to any report is picked up on the next build (or by dotnet watch) -->
+    <ProjectReference Include="..\TopoReportFunction\TopoReportFunction.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The reports read their fonts and logos from Fonts and Images in the working directory (on AWS, the function's folder).
+         They are taken from the function project, so there is one copy, and put beside the server's build output -->
+    <None Include="..\TopoReportFunction\Fonts\*.*" Link="Fonts\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\TopoReportFunction\Images\*.*" Link="Images\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
