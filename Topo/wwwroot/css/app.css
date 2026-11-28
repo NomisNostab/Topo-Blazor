@@ -79,3 +79,26 @@ a, .btn-link {
     z-index: 1;
 }
 
+/* The loading spinner is centred in the page: the white beside the sidebar, or the whole screen where there is no sidebar (the
+   pause while a Remember Me session is restored, and phones). It lets clicks through. The sidebar's width here matches
+   MainLayout.razor.css. */
+.spinner-container {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+@media (min-width: 641px) {
+    .sidebar ~ .spinner-container {
+        left: 250px;
+    }
+
+    .sidebar.icon-only ~ .spinner-container {
+        left: 4rem;
+    }
+}

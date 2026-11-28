@@ -39,6 +39,12 @@ main {
     }
 
 @media (max-width: 640.98px) {
+    /* Stack the menu above the loading spinner, which is fixed to the middle of the screen */
+    .sidebar {
+        position: relative;
+        z-index: 1000;
+    }
+
     .top-row:not(.auth) {
         display: none;
     }

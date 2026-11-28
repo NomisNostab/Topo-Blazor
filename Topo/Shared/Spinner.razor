@@ -1,22 +1,11 @@
-﻿@using Faso.Blazor.SpinKit
-@using Topo.Services
+﻿@using Topo.Services
 
 @inject SpinnerService SpinnerService
 
-<style>
-    .spinner-container {
-        display: flex;
-        flex-direction: column;
-        position: fixed;
-        z-index: 999;
-        top: 50%;
-        left: 50%;
-    }
-</style>
 @if (IsVisible)
 {
     <div class="spinner-container">
-        <SpinKitCircle />
+        <LoadingFigures />
     </div>
 }
 @code

@@ -1,0 +1,154 @@
+/* Colours are the gumtree artwork's own: navy ground, teal figures */
+.loading {
+    --navy: #242a5d;
+    --teal: #14998f;
+    --step: 0.9s;
+    --count: 12;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Wider screens: a row of figures hopping in a wave, on a soft backdrop so it reads over the page */
+.hoppers {
+    display: none;
+    gap: 0.25rem;
+    align-items: flex-end;
+    padding: 2.5rem 1.25rem 0.75rem;
+    border-radius: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.2);
+}
+
+.hopper {
+    width: 4.5rem;
+    height: 4.5rem;
+    fill: var(--teal);
+    animation: hop 1.2s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 0.12s);
+}
+
+.hopper:nth-child(even) {
+    fill: var(--navy);
+}
+
+/* Phones: figures take turns inside a ring */
+.badge {
+    position: relative;
+    width: 6.5rem;
+    height: 6.5rem;
+    border-radius: 50%;
+    background-color: var(--navy);
+    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.3);
+}
+
+/* The ring that turns while the figures change, so it still reads as a spinner */
+.badge::before {
+    content: "";
+    position: absolute;
+    inset: -0.45rem;
+    border-radius: 50%;
+    border: 0.3rem solid rgba(20, 153, 143, 0.25);
+    border-top-color: var(--teal);
+    animation: ring 1.1s linear infinite;
+}
+
+.figure {
+    position: absolute;
+    inset: 0.9rem;
+    width: calc(100% - 1.8rem);
+    height: calc(100% - 1.8rem);
+    fill: var(--teal);
+    opacity: 0;
+    animation: figure calc(var(--count) * var(--step)) infinite;
+    /* Delays are relative to --start, so the figure numbered --start is the first one shown */
+    animation-delay: calc((var(--i) - var(--start)) * var(--step));
+}
+
+.caption {
+    padding: 0.1rem 0.6rem;
+    border-radius: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.85);
+    color: var(--navy);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+@keyframes hop {
+    0%, 60%, 100% {
+        transform: translateY(0);
+    }
+
+    30% {
+        transform: translateY(-2.25rem);
+    }
+}
+
+@keyframes ring {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Each figure takes one twelfth of the cycle: pops in, holds, and fades out just as the next pops in */
+@keyframes figure {
+    0% {
+        opacity: 0;
+        transform: translateY(12%) scale(0.85);
+    }
+
+    1.5%, 8.33% {
+        opacity: 1;
+        transform: none;
+    }
+
+    9.5%, 100% {
+        opacity: 0;
+        transform: translateY(-12%) scale(0.9);
+    }
+}
+
+@media (min-width: 641px) {
+    .badge {
+        display: none;
+    }
+
+    .hoppers {
+        display: flex;
+    }
+}
+
+/* The page is the screen less the 250px sidebar, so a narrow window drops figures from the end of the row to fit */
+@media (min-width: 641px) and (max-width: 789.98px) {
+    .hopper:nth-child(n+6) {
+        display: none;
+    }
+}
+
+@media (min-width: 641px) and (max-width: 719.98px) {
+    .hopper:nth-child(n+5) {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hopper {
+        animation: none;
+    }
+
+    .badge::before {
+        animation: none;
+        border-top-color: rgba(20, 153, 143, 0.25);
+    }
+
+    /* One still figure instead of a changing one */
+    .figure {
+        animation: none;
+        opacity: 0;
+    }
+
+    .figure:first-of-type {
+        opacity: 1;
+    }
+}

@@ -1,0 +1,33 @@
+@* The loading spinner, made of Scouts Australia gumtree figures (wwwroot/images/figures.svg). Phones get
+   a badge where the figures take turns inside a ring, wider screens get a row of figures hopping in a
+   wave; the stylesheet shows one and hides the other at the menu's 641px breakpoint. All the movement
+   is CSS, so there is no timer here. The badge's first figure is picked at random so a short load
+   does not always show the same one. *@
+<div class="loading" role="status" aria-live="polite" style="--start: @_start">
+    <div class="hoppers">
+        @for (var i = 0; i < RowFigures.Length; i++)
+        {
+            <svg class="hopper" style="--i: @i" aria-hidden="true"><use href="images/figures.svg#@RowFigures[i]" /></svg>
+        }
+    </div>
+    <div class="badge">
+        @for (var i = 0; i < Figures.Length; i++)
+        {
+            <svg class="figure" style="--i: @i" aria-hidden="true"><use href="images/figures.svg#@Figures[i]" /></svg>
+        }
+    </div>
+    <div class="caption">Loading...</div>
+</div>
+
+@code {
+    // Spaced so that neighbours are different kinds of activity (water, hill, music, wheels, snow)
+    private static readonly string[] Figures =
+    {
+        "hiker", "kayaker", "archer", "cyclist", "bugler", "diver",
+        "climber", "snowboarder", "guitarist", "windsurfer", "abseiler", "backpacker"
+    };
+
+    private static readonly string[] RowFigures = { "hiker", "cyclist", "kayaker", "archer", "climber", "snowboarder" };
+
+    private readonly int _start = Random.Shared.Next(Figures.Length);
+}
