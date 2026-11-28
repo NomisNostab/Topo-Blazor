@@ -1,0 +1,277 @@
+@page "/approvals/pending"
+@inherits Controller.PendingApprovalsController
+@using Topo.Model.Approvals
+
+<PageTitle>Topo / Pending Approvals</PageTitle>
+
+<div class="mt-3 mb-3 row">
+    <h2>Pending Approvals @GroupName</h2>
+</div>
+
+<div class="form-group mb-3 row">
+    <label for="unit" class="col-sm-2 col-form-label">
+        Select Unit
+    </label>
+    <div class="col-sm-3">
+        <select id="unit" class="form-select" value="@UnitId" @onchange="UnitChange" disabled="@IsBusy">
+            <option value="">Select unit</option>
+            @foreach (var unit in Units)
+            {
+                <option value="@unit.Key">@unit.Value</option>
+            }
+        </select>
+    </div>
+    <div class="col-sm-7">
+        <a href="approvals/approvals" class="btn btn-link">Back to the approvals list</a>
+    </div>
+</div>
+
+@if (IsLoading)
+{
+    <p>Reading the pending approvals from Terrain...</p>
+}
+else if (!string.IsNullOrEmpty(LoadError))
+{
+    <div class="alert alert-danger" role="alert">@LoadError</div>
+    <button type="button" class="btn btn-primary" @onclick="StartClick">Try again</button>
+}
+else if (Session == null)
+{
+    <p>Select a unit to go through its pending approvals one at a time.</p>
+}
+else
+{
+    @if (NotActionable > 0)
+    {
+        <p class="text-muted" id="not-actionable">
+            @NotActionable pending @(NotActionable == 1 ? "request is" : "requests are") not listed here: @(NotActionable == 1 ? "it is" : "they are") your own, or you have already actioned @(NotActionable == 1 ? "it" : "them").
+        </p>
+    }
+
+    @if (!string.IsNullOrEmpty(Notice))
+    {
+        <div class="alert @(NoticeIsWarning ? "alert-warning" : "alert-success")" role="status" id="notice">@Notice</div>
+    }
+
+    @if (Session.IsStopped)
+    {
+        <div class="card mb-3" id="stopped">
+            <div class="card-body">
+                <h4 class="card-title">Session-through stopped</h4>
+                <p>@Summary()</p>
+                <p>
+                    <button type="button" class="btn btn-primary" @onclick="StartClick">Start again</button>
+                    <a href="approvals/approvals" class="btn btn-secondary">Back to the approvals list</a>
+                </p>
+            </div>
+        </div>
+    }
+    else if (Session.Current == null)
+    {
+        <div class="card mb-3" id="end">
+            <div class="card-body">
+                @if (Session.IsAllDone && Session.Completed.Count == 0)
+                {
+                    <h4 class="card-title">Nothing to approve</h4>
+                    <p>There are no pending requests for you to approve or send back in this unit.</p>
+                }
+                else if (Session.IsAllDone)
+                {
+                    <h4 class="card-title">All done</h4>
+                    <p>@Summary()</p>
+                }
+                else
+                {
+                    <h4 class="card-title">End of the list</h4>
+                    <p>@Summary() @Session.RemainingCount @(Session.RemainingCount == 1 ? "request was" : "requests were") skipped and @(Session.RemainingCount == 1 ? "is" : "are") still pending.</p>
+                    <ul>
+                        @foreach (var item in Session.Remaining)
+                        {
+                            <li>@item.MemberName, @item.AchievementName (@item.SubmissionType)</li>
+                        }
+                    </ul>
+                }
+                <p>
+                    @if (!Session.IsAllDone)
+                    {
+                        <button type="button" class="btn btn-primary" @onclick="RestartClick">Go through the skipped ones</button>
+                    }
+                    @if (Session.CanGoBack)
+                    {
+                        <button type="button" class="btn btn-outline-secondary" @onclick="BackClick">Back</button>
+                    }
+                    <button type="button" class="btn btn-primary" @onclick="StartClick">Read Terrain again</button>
+                    <a href="approvals/approvals" class="btn btn-secondary">Back to the approvals list</a>
+                </p>
+            </div>
+        </div>
+    }
+    else
+    {
+        var item = Session.Current;
+        <div class="mb-2" id="progress">
+            <strong>@Session.Position of @Session.Total</strong>
+            @if (Session.SkippedCount > 0)
+            {
+                <span class="text-muted"> (@Session.SkippedCount skipped)</span>
+            }
+            <div class="progress" style="height: 6px;">
+                <div class="progress-bar" role="progressbar" style="width: @(100 * Session.Completed.Count / Math.Max(1, Session.Completed.Count + Session.RemainingCount))%"></div>
+            </div>
+        </div>
+
+        <div class="card mb-3" id="current">
+            <div class="card-body">
+                <h4 class="card-title">@item.MemberName</h4>
+                <h5 class="card-subtitle mb-2 text-muted">@item.AchievementName</h5>
+                <dl class="row mb-0">
+                    <dt class="col-sm-3">Request type</dt>
+                    <dd class="col-sm-9">@item.SubmissionTypeLabel</dd>
+                    <dt class="col-sm-3">Submitted</dt>
+                    <dd class="col-sm-9">@item.SubmissionDate.ToLocalTime().ToString("dd/MM/yyyy")</dd>
+                    @if (!string.IsNullOrEmpty(item.SubmittedBy))
+                    {
+                        <dt class="col-sm-3">Submitted by</dt>
+                        <dd class="col-sm-9">@item.SubmittedBy</dd>
+                    }
+                    @foreach (var previous in item.PreviousActions)
+                    {
+                        <dt class="col-sm-3">Already actioned</dt>
+                        <dd class="col-sm-9">
+                            @previous.By: @previous.Outcome, @previous.Time.ToLocalTime().ToString("dd/MM/yyyy")
+                            @if (!string.IsNullOrEmpty(previous.Comment))
+                            {
+                                <span> &ldquo;@previous.Comment&rdquo;</span>
+                            }
+                        </dd>
+                    }
+                </dl>
+            </div>
+        </div>
+
+        <div class="card mb-3" id="details">
+            <div class="card-body">
+                <h5 class="card-title">Submission details</h5>
+                @if (DetailsLoading)
+                {
+                    <p class="text-muted mb-0">Reading the submission details from Terrain...</p>
+                }
+                else if (DetailsFailed)
+                {
+                    <p class="text-muted mb-0">The submission details could not be read from Terrain.</p>
+                }
+                else if (Details != null)
+                {
+                    @foreach (var detailSection in Details.Sections)
+                    {
+                        <h6 class="mt-3">@detailSection.Title</h6>
+                        @foreach (var group in detailSection.Groups)
+                        {
+                            @if (!string.IsNullOrEmpty(group.Title))
+                            {
+                                <p class="text-muted mb-1">@group.Title</p>
+                            }
+                            @foreach (var field in group.Fields)
+                            {
+                                @switch (field.Kind)
+                                {
+                                    case DetailFieldKind.Note:
+                                        <p class="text-muted mb-1">@field.Label</p>
+                                        break;
+                                    case DetailFieldKind.Tick:
+                                        <div class="mb-1">
+                                            <span>@(field.Ticked ? "\u2611" : "\u2610")</span> @field.Label
+                                            @if (!string.IsNullOrEmpty(field.Verification))
+                                            {
+                                                <div class="text-muted ms-4">@field.Verification</div>
+                                            }
+                                        </div>
+                                        break;
+                                    case DetailFieldKind.Files:
+                                        <div class="mb-2">
+                                            <div class="fw-bold">@field.Label</div>
+                                            @if (field.Files.Count == 0)
+                                            {
+                                                <div class="text-muted">No files</div>
+                                            }
+                                            @foreach (var file in field.Files)
+                                            {
+                                                <div>@file.FileName@(file.UploadedOn.HasValue ? " (uploaded " + file.UploadedOn.Value.ToLocalTime().ToString("dd/MM/yyyy") + ")" : "")</div>
+                                            }
+                                        </div>
+                                        break;
+                                    default:
+                                        <div class="mb-2">
+                                            <div class="fw-bold">@field.Label</div>
+                                            <div style="white-space: pre-wrap;">@(string.IsNullOrEmpty(field.Value) ? "-" : field.Value)</div>
+                                        </div>
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+            </div>
+        </div>
+
+        @if (Pending != null)
+        {
+            <div class="card border-warning mb-3" id="confirm">
+                <div class="card-body">
+                    <h5 class="card-title">Confirm: @Pending.Label</h5>
+                    <p>
+                        This will send <strong>@Pending.Label</strong> to Terrain for <strong>@item.MemberName</strong>, @item.AchievementName.
+                        @if (!string.IsNullOrEmpty(Pending.Comment))
+                        {
+                            <span>The comment sent with it will be: &ldquo;@Pending.Comment&rdquo;</span>
+                        }
+                    </p>
+                    <p class="text-danger mb-2">This cannot be undone from Topo.</p>
+                    <button type="button" class="btn btn-warning" id="confirm-yes" @onclick="ConfirmClick" disabled="@IsBusy">@(IsBusy ? "Sending..." : "Confirm " + Pending.Label)</button>
+                    <button type="button" class="btn btn-outline-secondary" id="confirm-cancel" @onclick="CancelConfirmClick" disabled="@IsBusy">Cancel</button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card mb-3" id="actions">
+                <div class="card-body">
+                    <div class="mb-2">
+                        <label for="comment" class="form-label">Reason for response (optional)</label>
+                        <textarea id="comment" class="form-control" rows="3" maxlength="@ApprovalAction.MaxCommentLength" @bind="Comment" @bind:event="oninput"></textarea>
+                        <div class="form-text">@Comment.Length / @ApprovalAction.MaxCommentLength</div>
+                    </div>
+                    <p class="text-muted mb-2">We recommend going through this submission with the youth member in person before or after requesting an improvement.</p>
+                    <button type="button" class="btn btn-success" id="approve" @onclick="ApproveClick">Approve</button>
+                    <button type="button" class="btn btn-outline-primary" id="improve" @onclick="ImproveClick">Request improvement</button>
+                    @if (!string.IsNullOrEmpty(ValidationMessage))
+                    {
+                        <div class="text-danger mt-2" id="validation">@ValidationMessage</div>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="mb-3">
+            <button type="button" class="btn btn-outline-secondary" id="back" @onclick="BackClick" disabled="@(!Session.CanGoBack || IsBusy)">Back</button>
+            <button type="button" class="btn btn-outline-secondary" id="skip" @onclick="SkipClick" disabled="@IsBusy">Skip</button>
+            <button type="button" class="btn btn-outline-danger" id="stop" @onclick="StopClick" disabled="@IsBusy">Stop</button>
+        </div>
+    }
+}
+
+@code {
+    // What has been done so far, in words
+    private string Summary()
+    {
+        var done = Session!.Completed;
+        if (done.Count == 0)
+        {
+            return "Nothing was actioned.";
+        }
+        var parts = done
+            .GroupBy(c => c.Action.PastTense)
+            .Select(g => $"{g.Count()} {g.Key.ToLower()}");
+        return $"Done so far: {string.Join(", ", parts)}.";
+    }
+}

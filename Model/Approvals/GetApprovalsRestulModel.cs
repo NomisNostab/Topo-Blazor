@@ -47,6 +47,7 @@
         public string outcome { get; set; } = string.Empty;
         public DateTime time{ get; set; }
         public string date_awarded { get; set; }
+        public string? comment { get; set; }
     }
 
     public class Unit_Permissions
