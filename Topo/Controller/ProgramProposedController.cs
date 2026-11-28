@@ -25,6 +25,9 @@ namespace Topo.Controller
         public NavigationManager NavigationManager { get; set; }
 
         public string GroupName = "";
+        // The units to choose from, and the one chosen (the same choice the other pages keep)
+        public Dictionary<string, string> Units = new Dictionary<string, string>();
+        public string UnitId = "";
         // The date the run counts start from: events before it are not counted
         public ProgramIdeasRangeOption SinceRange = ProgramIdeasRangeOption.None;
         public DateTime SinceDate = DateTime.Now.AddYears(-1);
@@ -32,7 +35,7 @@ namespace Topo.Controller
         private DateTime? _countedSince;
         public bool Loading = true;
         public bool FetchFailed;
-        // No unit has been chosen (a leader of several units picks one on the Calendar tab), so there is nothing to read
+        // No unit has been chosen yet, so there is nothing to read
         public bool NoUnit;
         // Counts the reads, so one that finishes after a newer one was asked for does not replace its answer
         private int _loadNumber;
@@ -54,6 +57,19 @@ namespace Topo.Controller
             }
 
             GroupName = _storageService.GroupNameDisplay;
+            Units = _storageService.Units;
+            UnitId = _storageService.UnitId ?? "";
+            await Load();
+        }
+
+        // A unit is chosen on this page, as on the others, and is kept for them
+        internal async Task UnitChange(ChangeEventArgs e)
+        {
+            UnitId = e.Value?.ToString() ?? "";
+            _storageService.UnitId = UnitId;
+            Proposals = new List<ProposedActivityModel>();
+            AreaFilter = "";
+            Open.Clear();
             await Load();
         }
 

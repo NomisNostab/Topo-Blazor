@@ -61,7 +61,7 @@ namespace Topo.Controller
 
             if (model.SelectedCalendars == null || model.SelectedCalendars.Length == 0)
             {
-                model.CalendarErrorMessage = "Please select at least one calendar";
+                model.CalendarErrorMessage = "Please select at least one unit";
                 return false;
             }
             return true;

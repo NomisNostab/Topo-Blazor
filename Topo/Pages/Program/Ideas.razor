@@ -1,22 +1,22 @@
-@page "/program/ideas"
+@page "/programideas"
 @inherits Controller.ProgramIdeasController
 @using Topo.Model.Program
 
 <PageTitle>Topo / Program Ideas</PageTitle>
 
 <div class="mt-3 mb-3 row">
-    <h2>Program @model.GroupName</h2>
+    <h2>Program Ideas @model.GroupName</h2>
 </div>
 
-<ProgramSubNav />
+<ProgramIdeasSubNav />
 
 <EditForm Model="@model">
     <div class="form-group mb-3 row">
         <label for="calendars" class="col-sm-2 col-form-label">
-            Select Calendars
+            Select Unit
         </label>
         <div class="col-sm-8">
-            <select @ref="_select2Reference" id="calendars" class="form-select select2" multiple @bind="model.SelectedCalendars" title="Select one or more calendars to search">
+            <select @ref="_select2Reference" id="calendars" class="form-select select2" multiple @bind="model.SelectedCalendars" title="Select one or more units to search">
                 @foreach (var calendar in model.Calendars)
                 {
                     <option value="@calendar.Key">@calendar.Value</option>
