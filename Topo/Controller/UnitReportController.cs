@@ -63,18 +63,10 @@ namespace Topo.Controller
             _storageService.UnitId = unitId;
 
             // use the calendar named after the unit when there is one
-            var unitName = _storageService.UnitName;
-            if (!string.IsNullOrWhiteSpace(unitName))
+            var match = CalendarMatcher.FindForUnit(model.Calendars, _storageService.UnitName);
+            if (match != null)
             {
-                var name = unitName.Trim();
-                var calendars = model.Calendars.Select(c => (id: c.Key, title: c.Value.Trim())).ToList();
-                var match = calendars.FirstOrDefault(c => string.Equals(c.title, name, StringComparison.OrdinalIgnoreCase)).id
-                    ?? calendars.FirstOrDefault(c => c.title.Contains(name, StringComparison.OrdinalIgnoreCase)).id
-                    ?? calendars.FirstOrDefault(c => c.title.Length > 0 && name.Contains(c.title, StringComparison.OrdinalIgnoreCase)).id;
-                if (match != null)
-                {
-                    model.SelectedCalendars = new HashSet<string> { match };
-                }
+                model.SelectedCalendars = new HashSet<string> { match };
             }
         }
 
@@ -83,13 +75,7 @@ namespace Topo.Controller
             model.AllTime = (bool)(e.Value ?? false);
         }
 
-        // Calendars in a few columns, the shortest names together, so each column need only be as wide as its longest name
-        public List<List<KeyValuePair<string, string>>> CalendarColumns()
-        {
-            var sorted = model.Calendars.OrderBy(c => c.Value.Length).ThenBy(c => c.Value).ToList();
-            var rows = Math.Max(3, (int)Math.Ceiling(sorted.Count / 4.0));
-            return sorted.Chunk(rows).Select(column => column.OrderBy(c => c.Value).ToList()).ToList();
-        }
+        public List<List<KeyValuePair<string, string>>> CalendarColumns() => CalendarMatcher.Columns(model.Calendars);
 
         internal void ToggleCalendar(string calendarId, bool selected)
         {

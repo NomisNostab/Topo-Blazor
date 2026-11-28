@@ -73,8 +73,8 @@
             <div class="col-sm-3">Km hiked</div>
             <div class="col-sm-9">
                 @Report.HikeKm.ToString("#,0.#") km
-                <label class="ms-3"><input type="radio" name="kmmode" value="hike" checked="@(!Report.KmPerPerson)" @onchange="KmModeChange" /> once per hike</label>
-                <label class="ms-2"><input type="radio" name="kmmode" value="person" checked="@Report.KmPerPerson" @onchange="KmModeChange" /> per person on each hike</label>
+                <div><label><input type="radio" name="kmmode" value="hike" checked="@(!Report.KmPerPerson)" @onchange="KmModeChange" /> once per hike</label> <span class="small text-muted ms-2">a 10 km hike counts as 10 km</span></div>
+                <div><label><input type="radio" name="kmmode" value="person" checked="@Report.KmPerPerson" @onchange="KmModeChange" /> once per hike per attendee</label> <span class="small text-muted ms-2">a 10 km hike with 5 attendees counts as 50 km</span></div>
                 <div class="small text-muted">@Report.HikeEvents hike@(Report.HikeEvents == 1 ? "" : "s"), @Report.HikeEventsWithDistance with a distance recorded</div>
             </div>
         </div>
