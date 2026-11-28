@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Globalization;
+using Topo.Model;
 using Topo.Model.Program;
 using System;
 using Topo.Model.Members;
@@ -112,9 +113,11 @@ namespace Topo.Services
             if (getEventsResultModel != null && getEventsResultModel.results != null)
             {
                 var eventList = new List<EventListModel>();
-                foreach (var eventResult in getEventsResultModel.results)
+                // The list has no organisers, leads or assists, so each event is read for those. They are read a few at a time
+                // instead of one after another, and come back in the order the events are listed.
+                var eventDetails = await ReadsAtOnce.SelectAsync(getEventsResultModel.results, e => _terrainAPIService.GetEventAsync(e.id));
+                foreach (var (eventResult, getEventResultModel) in getEventsResultModel.results.Zip(eventDetails))
                 {
-                    var getEventResultModel = await _terrainAPIService.GetEventAsync(eventResult.id);
                     var leads = getEventResultModel.attendance.leader_members.Select(a => string.Concat(a.first_name, " ", a.last_name.AsSpan(0, 1)));
                     var leadNames = string.Join(", ", leads);
                     var assists = getEventResultModel.attendance.assistant_members.Select(a => string.Concat(a.first_name, " ", a.last_name.AsSpan(0, 1)));
