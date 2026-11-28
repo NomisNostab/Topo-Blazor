@@ -2270,7 +2270,7 @@ namespace Topo.Services
             Block("Hiking");
             Row("Km hiked", new[]
             {
-                $"{Number(report.HikeKm)} km, {(report.KmPerPerson ? "added up for everyone on each hike" : "each hike counted once")}",
+                $"{Number(report.HikeKm)} km, {(report.KmPerPerson ? "once per hike per attendee" : "once per hike")}",
                 $"{report.HikeEvents} hike{(report.HikeEvents == 1 ? "" : "s")}, {report.HikeEventsWithDistance} with a distance recorded"
             });
 
