@@ -91,7 +91,6 @@ namespace Topo.Services
                                 wallchartItem.Milestone1Creative = 6;
                                 wallchartItem.Milestone1Outdoors = 6;
                                 wallchartItem.Milestone1PersonalGrowth = 6;
-                                wallchartItem.Milestone1Assist = 0;
                                 wallchartItem.Milestone1Lead = 2;
                                 wallchartItem.Milestone1Awarded = MilestoneDates.AwardedDate(milestoneResult);
                                 wallchartItem.Milestone1Presented = GetPresentedDate(member.id, "Milestone 1");
@@ -102,7 +101,6 @@ namespace Topo.Services
                                 wallchartItem.Milestone1Creative = (int)milestoneResult.event_count.participant.creative;
                                 wallchartItem.Milestone1Outdoors = (int)milestoneResult.event_count.participant.outdoors;
                                 wallchartItem.Milestone1PersonalGrowth = (int)milestoneResult.event_count.participant.personal_growth;
-                                wallchartItem.Milestone1Assist = PALEventCountTotal(milestoneResult.event_count.assistant);
                                 wallchartItem.Milestone1Lead = PALEventCountTotal(milestoneResult.event_count.leader);
                             }
                             break;
@@ -113,7 +111,6 @@ namespace Topo.Services
                                 wallchartItem.Milestone2Creative = 5;
                                 wallchartItem.Milestone2Outdoors = 5;
                                 wallchartItem.Milestone2PersonalGrowth = 5;
-                                wallchartItem.Milestone2Assist = 0;
                                 wallchartItem.Milestone2Lead = 4;
                                 wallchartItem.Milestone2Awarded = MilestoneDates.AwardedDate(milestoneResult);
                                 wallchartItem.Milestone2Presented = GetPresentedDate(member.id, "Milestone 2");
@@ -124,7 +121,6 @@ namespace Topo.Services
                                 wallchartItem.Milestone2Creative = (int)milestoneResult.event_count.participant.creative;
                                 wallchartItem.Milestone2Outdoors = (int)milestoneResult.event_count.participant.outdoors;
                                 wallchartItem.Milestone2PersonalGrowth = (int)milestoneResult.event_count.participant.personal_growth;
-                                wallchartItem.Milestone2Assist = PALEventCountTotal(milestoneResult.event_count.assistant);
                                 wallchartItem.Milestone2Lead = PALEventCountTotal(milestoneResult.event_count.leader);
                             }
                             break; 
@@ -133,7 +129,6 @@ namespace Topo.Services
                             wallchartItem.Milestone3Creative = (int)milestoneResult.event_count.participant.creative;
                             wallchartItem.Milestone3Outdoors = (int)milestoneResult.event_count.participant.outdoors;
                             wallchartItem.Milestone3PersonalGrowth = (int)milestoneResult.event_count.participant.personal_growth;
-                            wallchartItem.Milestone3Assist = PALEventCountTotal(milestoneResult.event_count.assistant);
                             wallchartItem.Milestone3Lead = PALEventCountTotal(milestoneResult.event_count.leader);
                             // "Awarded" here also covers Terrain's "approved" status - see IsAwardedOrApproved.
                             wallchartItem.Milestone3Awarded = IsAwardedOrApproved(milestoneResult.status) ? MilestoneDates.AwardedDate(milestoneResult) : null;

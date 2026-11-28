@@ -110,11 +110,6 @@ namespace Topo.Services
                         milestone1ParticipateOutdoors = milestone1Skipped ? 0 : (milestone1Awarded ? 6 : (int)milestone1.event_count.participant.outdoors),
                         milestone1ParticipateCreative = milestone1Skipped ? 0 : (milestone1Awarded ? 6 : (int)milestone1.event_count.participant.creative),
                         milestone1ParticipatePersonalGrowth = milestone1Skipped ? 0 : (milestone1Awarded ? 6 : (int)milestone1.event_count.participant.personal_growth),
-                        milestone1Assist = milestone1Skipped ? 0 : (milestone1Awarded ? 2 : (int)milestone1.event_count.assistant.community 
-                                                                                            + (int)milestone1.event_count.assistant.outdoors
-                                                                                            + (int)milestone1.event_count.assistant.creative
-                                                                                            + (int)milestone1.event_count.assistant.personal_growth),
-                        milestone1AssistArea = milestone1Skipped ? "" : FormatMilestoneChallengeArea(milestone1.event_count.assistant),
                         milestone1Lead = milestone1Skipped ? 0 : (milestone1Awarded ? 2 : (int)milestone1.event_count.leader.community
                                                                                             + (int)milestone1.event_count.leader.outdoors
                                                                                             + (int)milestone1.event_count.leader.creative
@@ -124,11 +119,6 @@ namespace Topo.Services
                         milestone2ParticipateOutdoors = milestone2Skipped ? 0 : (milestone2Awarded ? 5 : (int)milestone2.event_count.participant.outdoors),
                         milestone2ParticipateCreative = milestone2Skipped ? 0 : (milestone2Awarded ? 5 : (int)milestone2.event_count.participant.creative),
                         milestone2ParticipatePersonalGrowth = milestone2Skipped ? 0 : (milestone2Awarded ? 5 : (int)milestone2.event_count.participant.personal_growth),
-                        milestone2Assist = milestone2Skipped ? 0 : (milestone2Awarded ? 3 : (int)milestone2.event_count.assistant.community
-                                                                                            + (int)milestone2.event_count.assistant.outdoors
-                                                                                            + (int)milestone2.event_count.assistant.creative
-                                                                                            + (int)milestone2.event_count.assistant.personal_growth),
-                        milestone2AssistArea = milestone2Skipped ? "" : FormatMilestoneChallengeArea(milestone2.event_count.assistant),
                         milestone2Lead = milestone2Skipped ? 0 : (milestone2Awarded ? 4 : (int)milestone2.event_count.leader.community
                                                                                             + (int)milestone2.event_count.leader.outdoors
                                                                                             + (int)milestone2.event_count.leader.creative
@@ -138,11 +128,6 @@ namespace Topo.Services
                         milestone3ParticipateOutdoors = milestone3Skipped ? 0 : (milestone3Awarded ? 4 : (int)milestone3.event_count.participant.outdoors),
                         milestone3ParticipateCreative = milestone3Skipped ? 0 : (milestone3Awarded ? 4 : (int)milestone3.event_count.participant.creative),
                         milestone3ParticipatePersonalGrowth = milestone3Skipped ? 0 : (milestone3Awarded ? 4 : (int)milestone3.event_count.participant.personal_growth),
-                        milestone3Assist = milestone3Awarded ? 4 : (int)milestone3.event_count.assistant.community
-                                                                + (int)milestone3.event_count.assistant.outdoors
-                                                                + (int)milestone3.event_count.assistant.creative
-                                                                + (int)milestone3.event_count.assistant.personal_growth,
-                        milestone3AssistArea = milestone3Skipped ? "" : FormatMilestoneChallengeArea(milestone3.event_count.assistant),
                         milestone3Lead = milestone3Awarded ? 6 : (int)milestone3.event_count.leader.community
                                                                 + (int)milestone3.event_count.leader.outdoors
                                                                 + (int)milestone3.event_count.leader.creative

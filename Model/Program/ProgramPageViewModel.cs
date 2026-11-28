@@ -12,6 +12,8 @@ namespace Topo.Model.Program
         [Required(ErrorMessage = "Select a calendar to show")]
         public string CalendarId { get; set; } = "";
         public IEnumerable<EventListModel>? Events { get; set; }
+        // Assists are no longer a role in Terrain, so the Assist column only shows when a listed event still has one
+        public bool ShowAssist => Events != null && Events.Any(e => !string.IsNullOrWhiteSpace(e.Assist));
         public string EventId { get; set; } = "";
 
         public DateTime CalendarSearchFromDate { get; set; } = DateTime.Now;
