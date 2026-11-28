@@ -1,0 +1,59 @@
+@page "/scoutinghistory/member"
+@inherits Controller.ScoutingHistoryController
+@using Topo.Model.ReportGeneration
+
+<PageTitle>Topo / Member History</PageTitle>
+
+<div class="mt-3 mb-3 row">
+    <h2>Scouting History @model.GroupName</h2>
+</div>
+
+<ScoutingHistorySubNav />
+
+<div class="form-group mb-3 row">
+    <label for="unit" class="col-sm-2 col-form-label">Select Unit</label>
+    <div class="col-sm-3">
+        <select id="unit" class="form-select" value="@model.UnitId" @onchange="UnitChange">
+            <option value="">Select unit</option>
+            @foreach (var unit in model.Units)
+            {
+                <option value="@unit.Key">@unit.Value</option>
+            }
+        </select>
+    </div>
+</div>
+
+<div class="form-group mb-3 row">
+    <label for="member" class="col-sm-2 col-form-label">Select Member</label>
+    <div class="col-sm-3">
+        <select id="member" class="form-select" value="@model.MemberId" @onchange="MemberChange"
+                disabled="@(model.Members.Count == 0)">
+            <option value="">Select member</option>
+            @foreach (var member in model.Members)
+            {
+                <option value="@member.id">@member.first_name @member.last_name</option>
+            }
+        </select>
+    </div>
+    <div class="col-sm-7 col-form-label text-muted">Loading a member's whole history can take a minute.</div>
+</div>
+
+@if (!string.IsNullOrEmpty(model.ErrorMessage))
+{
+    <div class="text-danger mb-3">@model.ErrorMessage</div>
+}
+
+@if (model.History != null)
+{
+    var history = model.History;
+
+    <div class="mb-3">
+        <h3>@history.MemberName</h3>
+        <div class="mt-2">
+            <button type="button" class="btn btn-primary" @onclick="@(() => DownloadClick(OutputType.PDF))">Scouting History (pdf)</button>
+            <button type="button" class="btn btn-success" @onclick="@(() => DownloadClick(OutputType.Excel))">Scouting History (xlsx)</button>
+        </div>
+    </div>
+
+    <ScoutingHistoryView History="history" />
+}
